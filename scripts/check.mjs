@@ -28,9 +28,12 @@ if (errors.length) {
 }
 
 const pending = [];
-const config = readFileSync("assets/js/config.js", "utf8");
-if (/phone:\s*""/.test(config)) pending.push("phone number");
-if (/email:\s*""/.test(config)) pending.push("email address");
+if (!html.includes("https://wa.me/50689883466")) pending.push("WhatsApp link");
+if (!html.includes("mailto:grupokuwago@gmail.com")) pending.push("email address");
 
 console.log("Static project checks passed.");
-if (pending.length) console.log(`Pending before publication: ${pending.join(" and ")}.`);
+if (pending.length) {
+  console.log(`Pending before publication: ${pending.join(" and ")}.`);
+} else {
+  console.log("All contact destinations are correctly configured.");
+}
