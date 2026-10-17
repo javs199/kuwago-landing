@@ -431,6 +431,11 @@
       card.setAttribute("aria-label", openCardPattern.replace("{title}", titleText));
     });
 
+    document.querySelectorAll('[data-i18n-alt]').forEach(img => {
+      const key = img.getAttribute('data-i18n-alt');
+      if (dict[key]) img.alt = dict[key];
+    });
+
     // Update project cards dynamic aria-label
     document.querySelectorAll("[data-project-id]").forEach(card => {
       const pid = card.getAttribute("data-project-id");
@@ -994,6 +999,18 @@
       status: "completed",
       before: [],
       after: []
+    },
+    "project-03": {
+      titleKey: "projects.card3_title",
+      status: "completed",
+      before: ["assets/images/projects/living-room-tv-area/before.png"],
+      after: ["assets/images/projects/living-room-tv-area/after.png"]
+    },
+    "project-04": {
+      titleKey: "projects.card4_title",
+      status: "pending",
+      before: [],
+      after: []
     }
   };
 
@@ -1012,6 +1029,35 @@
 
       slider.addEventListener("input", updateSlider);
       slider.addEventListener("change", updateSlider);
+      // Pointer capture keeps mouse and touch drags bound to this comparison.
+      // Native range keyboard controls remain available (arrows, Home and End).
+      if (box.classList.contains("tv-comparison")) {
+        const updateFromPointer = event => {
+          const bounds = box.getBoundingClientRect();
+          slider.value = String(Math.round(Math.max(0, Math.min(100, (event.clientX - bounds.left) / bounds.width * 100))));
+          updateSlider();
+        };
+        slider.addEventListener("pointerdown", event => {
+          if (!event.isPrimary || event.button !== 0) return;
+          event.preventDefault();
+          slider.focus({ preventScroll: true });
+          slider.setPointerCapture(event.pointerId);
+          updateFromPointer(event);
+        });
+        slider.addEventListener("pointermove", event => {
+          if (slider.hasPointerCapture(event.pointerId)) updateFromPointer(event);
+        });
+        slider.addEventListener("pointerup", event => {
+          if (slider.hasPointerCapture(event.pointerId)) {
+            updateFromPointer(event);
+            slider.releasePointerCapture(event.pointerId);
+          }
+        });
+        slider.addEventListener("pointercancel", event => {
+          if (slider.hasPointerCapture(event.pointerId)) slider.releasePointerCapture(event.pointerId);
+        });
+      }
+      updateSlider();
     });
   }
 
@@ -1025,9 +1071,13 @@
     const beforeCount = document.getElementById("project-modal-before-count");
     const afterCount = document.getElementById("project-modal-after-count");
 
+    const beforePlaceholder = beforeGallery?.innerHTML || '';
+    const afterPlaceholder = afterGallery?.innerHTML || '';
+
     function openProjectDetails(projectId) {
       const project = PROJECTS_DATA[projectId];
       if (!project || !projModal) return;
+      projModal.classList.toggle("project-tv-detail", projectId === "project-03");
 
       const dict = getDictionary(currentLang);
       if (projModalTitle) {
@@ -1036,28 +1086,35 @@
 
       if (projModalStatus) {
         const isCompleted = project.status === "completed";
-        const statusText = (dict && dict[isCompleted ? "projects.status.completed" : "projects.status.in_progress"]) || (isCompleted ? "Completed" : "In progress");
+        const isPending = project.status === "pending";
+        const statusKey = isPending ? "projects.status.pending" : (isCompleted ? "projects.status.completed" : "projects.status.in_progress");
+        const statusText = (dict && dict[statusKey]) || (isPending ? "Status pending confirmation" : (isCompleted ? "Completed" : "In progress"));
         projModalStatus.textContent = statusText;
-        projModalStatus.className = isCompleted
+        projModalStatus.className = isPending
+          ? "inline-flex items-center px-3 py-0.5 rounded-full text-label-sm font-label-sm font-bold bg-surface-container dark:bg-dark-elevated text-on-surface-variant dark:text-dark-text-secondary border border-outline-variant/30"
+          : isCompleted
           ? "inline-flex items-center px-3 py-0.5 rounded-full text-label-sm font-label-sm font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
           : "inline-flex items-center px-3 py-0.5 rounded-full text-label-sm font-label-sm font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30";
       }
 
-      const countSuffix = currentLang === "es" ? "fotos" : "photos";
-      if (beforeCount) beforeCount.textContent = `${project.before.length} ${countSuffix}`;
-      if (afterCount) afterCount.textContent = `${project.after.length} ${countSuffix}`;
+      const photoCount = count => `${count} ${currentLang === "es" ? (count === 1 ? "foto" : "fotos") : (count === 1 ? "photo" : "photos")}`;
+      if (beforeCount) beforeCount.textContent = photoCount(project.before.length);
+      if (afterCount) afterCount.textContent = photoCount(project.after.length);
 
+      if (beforeGallery) beforeGallery.innerHTML = beforePlaceholder;
+      if (afterGallery) afterGallery.innerHTML = afterPlaceholder;
+      applyTranslations(currentLang);
       if (project.before.length > 0 && beforeGallery) {
         beforeGallery.innerHTML = project.before.map((src, i) => `
-          <div class="aspect-[4/3] rounded-lg overflow-hidden bg-black/20 shadow-sm">
-            <img src="${src}" alt="Before photo ${i + 1}" class="w-full h-full object-cover">
+          <div class="col-span-full rounded-lg overflow-hidden bg-black/20 shadow-sm">
+            <img src="${src}" alt="${dict[project.titleKey]} — ${dict["projects.before"]} ${i + 1}" class="w-full h-auto object-contain">
           </div>
         `).join("");
       }
       if (project.after.length > 0 && afterGallery) {
         afterGallery.innerHTML = project.after.map((src, i) => `
-          <div class="aspect-[4/3] rounded-lg overflow-hidden bg-black/20 shadow-sm">
-            <img src="${src}" alt="After photo ${i + 1}" class="w-full h-full object-cover">
+          <div class="col-span-full rounded-lg overflow-hidden bg-black/20 shadow-sm">
+            <img src="${src}" alt="${dict[project.titleKey]} — ${dict["projects.after"]} ${i + 1}" class="w-full h-auto object-contain">
           </div>
         `).join("");
       }

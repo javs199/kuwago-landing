@@ -337,6 +337,95 @@
         </div>
       </div>
     </div>
+    <!-- Project Card 3: Completed: Living Room TV Area -->
+    <div role="button" tabindex="0" class="project-card showcase-card group bg-pure-white dark:bg-dark-surface rounded-2xl border border-outline-variant/30 dark:border-dark-elevated overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer text-left w-full h-full" data-project-id="project-03" aria-label="View Living Room TV Area details">
+      <div class="before-after-box tv-comparison showcase-card-media bg-surface-container dark:bg-dark-elevated">
+        <div class="before-layer">
+          <img src="assets/images/projects/living-room-tv-area/before.png" alt="Living Room TV Area — Before" data-i18n-alt="projects.tv_before_alt" loading="lazy" decoding="async" draggable="false">
+        </div>
+        <div class="after-layer" style="clip-path: inset(0 0 0 50%);">
+          <img src="assets/images/projects/living-room-tv-area/after.png" alt="Living Room TV Area — After" data-i18n-alt="projects.tv_after_alt" loading="lazy" decoding="async" draggable="false">
+        </div>
+        <span class="comparison-label comparison-label-before" data-i18n="projects.before">Before</span>
+        <span class="comparison-label comparison-label-after" data-i18n="projects.after">After</span>
+        <div class="before-after-divider" style="left: 50%;" aria-hidden="true">
+          <div class="before-after-handle"><span class="material-symbols-outlined text-[18px]">swap_horiz</span></div>
+        </div>
+        <input type="range" min="0" max="100" value="50" step="1" class="before-after-slider-input" aria-label="Before and after comparison slider" data-i18n-aria="projects.slider_label" data-slider-for="project-03">
+      </div>
+      <!-- Card Footer / Details -->
+      <div class="showcase-card-body p-6 flex flex-col justify-between flex-1 gap-4">
+        <div class="flex items-center justify-between gap-3">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span data-i18n="projects.status.completed">Completed</span>
+          </span>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h3 class="font-title-lg text-title-lg font-bold text-on-surface dark:text-warm-off-white" data-i18n="projects.card3_title">Living Room TV Area</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant dark:text-dark-text-secondary mt-1" data-i18n="projects.tv_desc">Before and after the living room TV area</p>
+          </div>
+          <button type="button" class="project-open-btn shrink-0 px-4 py-2 rounded-full bg-surface-container dark:bg-dark-elevated text-primary dark:text-bright-gold font-label-sm text-label-sm font-bold group-hover:bg-primary-container group-hover:text-pure-white dark:group-hover:bg-bright-gold dark:group-hover:text-[#241B29] transition-all flex items-center justify-center gap-1.5 cursor-pointer appearance-none border-none shadow-sm" data-open-project="project-03" aria-label="View Living Room TV Area details">
+            <span data-i18n="projects.view_details">View Before &amp; After gallery</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Card 4: Pending Confirmation -->
+    <div role="button" tabindex="0" class="project-card showcase-card group bg-pure-white dark:bg-dark-surface rounded-2xl border border-outline-variant/30 dark:border-dark-elevated overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer text-left w-full h-full" data-project-id="project-04" aria-label="View Project 04 details">
+      <!-- Card Visual Comparison Component -->
+      <div class="before-after-box showcase-card-media relative aspect-[16/10] sm:aspect-[16/9] w-full bg-surface-container dark:bg-dark-elevated overflow-hidden">
+        <!-- Before Layer (Full width) -->
+        <div class="before-layer absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 bg-surface-container-high dark:bg-[#201526]">
+          <span class="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-pure-white font-label-sm text-label-sm px-3 py-1 rounded-full uppercase tracking-wider font-bold z-10" data-i18n="projects.before">Before</span>
+          <div class="flex flex-col items-center text-center p-4">
+            <span class="material-symbols-outlined text-[36px] text-on-surface-variant/50 dark:text-dark-text-secondary/50 mb-2">history</span>
+            <span class="font-title-lg text-title-lg font-bold text-on-surface dark:text-warm-off-white" data-i18n="projects.before">Before</span>
+            <p class="font-label-sm text-label-sm text-on-surface-variant dark:text-dark-text-secondary mt-1" data-i18n="projects.pending_info">Photos pending confirmation</p>
+          </div>
+        </div>
+        <!-- After Layer (Clipped at 50%) -->
+        <div class="after-layer absolute inset-0 w-full h-full flex flex-col items-center justify-center p-6 bg-surface-container dark:bg-dark-surface overflow-hidden" style="clip-path: inset(0 0 0 50%);">
+          <span class="absolute top-4 right-4 bg-bright-gold text-[#241B29] font-label-sm text-label-sm px-3 py-1 rounded-full uppercase tracking-wider font-bold z-10 shadow-sm" data-i18n="projects.after">After</span>
+          <div class="flex flex-col items-center text-center p-4">
+            <span class="material-symbols-outlined text-[36px] text-dark-gold dark:text-bright-gold mb-2">auto_awesome</span>
+            <span class="font-title-lg text-title-lg font-bold text-on-surface dark:text-warm-off-white" data-i18n="projects.after">After</span>
+            <p class="font-label-sm text-label-sm text-on-surface-variant dark:text-dark-text-secondary mt-1" data-i18n="projects.pending_info">Photos pending confirmation</p>
+          </div>
+        </div>
+        <!-- Slider Divider & Handle -->
+        <div class="before-after-divider" style="left: 50%;">
+          <div class="before-after-handle">
+            <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+          </div>
+        </div>
+        <!-- Interactive Range Input for Slider Dragging -->
+        <input type="range" min="0" max="100" value="50" class="before-after-slider-input" aria-label="Before and after comparison slider" data-slider-for="project-04">
+      </div>
+      <!-- Card Footer / Details -->
+      <div class="showcase-card-body p-6 flex flex-col justify-between flex-1 gap-4">
+        <div class="flex items-center justify-between gap-3">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm font-bold bg-surface-container dark:bg-dark-elevated text-on-surface-variant dark:text-dark-text-secondary border border-outline-variant/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+            <span data-i18n="projects.status.pending">Status pending confirmation</span>
+          </span>
+          <span class="text-label-sm text-on-surface-variant dark:text-dark-text-secondary opacity-75 hidden sm:inline" data-i18n="projects.drag_hint">Drag slider to compare Before &amp; After</span>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h3 class="font-title-lg text-title-lg font-bold text-on-surface dark:text-warm-off-white" data-i18n="projects.card4_title">Project 04</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant dark:text-dark-text-secondary mt-1" data-i18n="projects.details_pending">Project details pending confirmation</p>
+          </div>
+          <button type="button" class="project-open-btn shrink-0 px-4 py-2 rounded-full bg-surface-container dark:bg-dark-elevated text-primary dark:text-bright-gold font-label-sm text-label-sm font-bold group-hover:bg-primary-container group-hover:text-pure-white dark:group-hover:bg-bright-gold dark:group-hover:text-[#241B29] transition-all flex items-center justify-center gap-1.5 cursor-pointer appearance-none border-none shadow-sm" data-open-project="project-04" aria-label="View Project 04 details">
+            <span data-i18n="projects.view_details">View Before &amp; After gallery</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <!-- Section Header -->
