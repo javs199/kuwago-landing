@@ -1,0 +1,28 @@
+/* Standalone loading screen: no dependency on fonts or the Tailwind CDN. */
+.site-loader { display: none; }
+html.loader-pending { overflow: hidden; }
+.loader-pending .site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: #F6F1E9;
+  color: #3B0C5B;
+  opacity: 1;
+  transition: opacity 200ms ease;
+}
+.dark .site-loader { background: #241332; color: #F6F1E9; }
+.site-loader img { display: block; width: auto; height: min(45vh, 300px); max-width: 65vw; object-fit: contain; }
+.site-loader .loader-logo-dark { display: none; }
+.dark .site-loader .loader-logo-light { display: none; }
+.dark .site-loader .loader-logo-dark { display: block; }
+.site-loader p { margin: 0; font: 500 0.875rem/1.5 system-ui, sans-serif; letter-spacing: 0.08em; }
+.loader-pending .site-loader.is-leaving { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .loader-pending .site-loader { transition: none; }
+}

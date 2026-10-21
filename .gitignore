@@ -1,4 +1,9 @@
 dist/
+node_modules/
+release/
 .DS_Store
 Thumbs.db
 *.log
+
+# Trial font binaries are for local evaluation only.
+preview/fonts/

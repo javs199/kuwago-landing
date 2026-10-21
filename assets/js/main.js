@@ -436,14 +436,6 @@
       if (dict[key]) img.alt = dict[key];
     });
 
-    // Update project cards dynamic aria-label
-    document.querySelectorAll("[data-project-id]").forEach(card => {
-      const pid = card.getAttribute("data-project-id");
-      const proj = PROJECTS_DATA[pid];
-      const titleText = (proj && dict[proj.titleKey]) ? dict[proj.titleKey] : (card.querySelector("h3, p")?.textContent.trim() || "project");
-      card.setAttribute("aria-label", openCardPattern.replace("{title}", titleText));
-    });
-
     // Update mobile menu button dynamic aria-label
     const menuBtn = document.getElementById("mobile-menu-button");
     if (menuBtn) {
@@ -838,8 +830,6 @@
       if (document.hidden) return;
       if (propModal && !propModal.classList.contains("hidden")) return;
       if (modal && !modal.classList.contains("hidden")) return;
-      const projModal = document.getElementById("project-details-modal");
-      if (projModal && !projModal.classList.contains("hidden")) return;
 
       const nextIndex = (sharedCarouselIndex + 1) % 8;
       cardStates.forEach((state) => {
@@ -986,195 +976,9 @@
     sections.forEach((section) => observer.observe(section));
   }
 
-  // Projects Data Structure (awaiting confirmed photo assignments)
-  const PROJECTS_DATA = {
-    "project-01": {
-      titleKey: "projects.card1_title",
-      status: "in_progress",
-      before: [],
-      after: []
-    },
-    "project-02": {
-      titleKey: "projects.card2_title",
-      status: "completed",
-      before: [],
-      after: []
-    },
-    "project-03": {
-      titleKey: "projects.card3_title",
-      status: "completed",
-      before: ["assets/images/projects/living-room-tv-area/before.png"],
-      after: ["assets/images/projects/living-room-tv-area/after.png"]
-    },
-    "project-04": {
-      titleKey: "projects.card4_title",
-      status: "pending",
-      before: [],
-      after: []
-    }
-  };
-
-  function setupProjectSliders() {
-    document.querySelectorAll(".before-after-slider-input").forEach((slider) => {
-      const box = slider.closest(".before-after-box");
-      if (!box) return;
-      const afterLayer = box.querySelector(".after-layer");
-      const divider = box.querySelector(".before-after-divider");
-
-      const updateSlider = () => {
-        const val = slider.value;
-        if (afterLayer) afterLayer.style.clipPath = `inset(0 0 0 ${val}%)`;
-        if (divider) divider.style.left = `${val}%`;
-      };
-
-      slider.addEventListener("input", updateSlider);
-      slider.addEventListener("change", updateSlider);
-      // Pointer capture keeps mouse and touch drags bound to this comparison.
-      // Native range keyboard controls remain available (arrows, Home and End).
-      if (box.classList.contains("tv-comparison")) {
-        const updateFromPointer = event => {
-          const bounds = box.getBoundingClientRect();
-          slider.value = String(Math.round(Math.max(0, Math.min(100, (event.clientX - bounds.left) / bounds.width * 100))));
-          updateSlider();
-        };
-        slider.addEventListener("pointerdown", event => {
-          if (!event.isPrimary || event.button !== 0) return;
-          event.preventDefault();
-          slider.focus({ preventScroll: true });
-          slider.setPointerCapture(event.pointerId);
-          updateFromPointer(event);
-        });
-        slider.addEventListener("pointermove", event => {
-          if (slider.hasPointerCapture(event.pointerId)) updateFromPointer(event);
-        });
-        slider.addEventListener("pointerup", event => {
-          if (slider.hasPointerCapture(event.pointerId)) {
-            updateFromPointer(event);
-            slider.releasePointerCapture(event.pointerId);
-          }
-        });
-        slider.addEventListener("pointercancel", event => {
-          if (slider.hasPointerCapture(event.pointerId)) slider.releasePointerCapture(event.pointerId);
-        });
-      }
-      updateSlider();
-    });
-  }
-
-  function setupProjectModal() {
-    const projModal = document.getElementById("project-details-modal");
-    const projModalTitle = document.getElementById("project-modal-title");
-    const projModalStatus = document.getElementById("project-modal-status");
-    const projModalClose = document.getElementById("project-modal-close");
-    const beforeGallery = document.getElementById("project-modal-before-gallery");
-    const afterGallery = document.getElementById("project-modal-after-gallery");
-    const beforeCount = document.getElementById("project-modal-before-count");
-    const afterCount = document.getElementById("project-modal-after-count");
-
-    const beforePlaceholder = beforeGallery?.innerHTML || '';
-    const afterPlaceholder = afterGallery?.innerHTML || '';
-
-    function openProjectDetails(projectId) {
-      const project = PROJECTS_DATA[projectId];
-      if (!project || !projModal) return;
-      projModal.classList.toggle("project-tv-detail", projectId === "project-03");
-
-      const dict = getDictionary(currentLang);
-      if (projModalTitle) {
-        projModalTitle.textContent = (dict && dict[project.titleKey]) ? dict[project.titleKey] : projectId;
-      }
-
-      if (projModalStatus) {
-        const isCompleted = project.status === "completed";
-        const isPending = project.status === "pending";
-        const statusKey = isPending ? "projects.status.pending" : (isCompleted ? "projects.status.completed" : "projects.status.in_progress");
-        const statusText = (dict && dict[statusKey]) || (isPending ? "Status pending confirmation" : (isCompleted ? "Completed" : "In progress"));
-        projModalStatus.textContent = statusText;
-        projModalStatus.className = isPending
-          ? "inline-flex items-center px-3 py-0.5 rounded-full text-label-sm font-label-sm font-bold bg-surface-container dark:bg-dark-elevated text-on-surface-variant dark:text-dark-text-secondary border border-outline-variant/30"
-          : isCompleted
-          ? "inline-flex items-center px-3 py-0.5 rounded-full text-label-sm font-label-sm font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
-          : "inline-flex items-center px-3 py-0.5 rounded-full text-label-sm font-label-sm font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30";
-      }
-
-      const photoCount = count => `${count} ${currentLang === "es" ? (count === 1 ? "foto" : "fotos") : (count === 1 ? "photo" : "photos")}`;
-      if (beforeCount) beforeCount.textContent = photoCount(project.before.length);
-      if (afterCount) afterCount.textContent = photoCount(project.after.length);
-
-      if (beforeGallery) beforeGallery.innerHTML = beforePlaceholder;
-      if (afterGallery) afterGallery.innerHTML = afterPlaceholder;
-      applyTranslations(currentLang);
-      if (project.before.length > 0 && beforeGallery) {
-        beforeGallery.innerHTML = project.before.map((src, i) => `
-          <div class="col-span-full rounded-lg overflow-hidden bg-black/20 shadow-sm">
-            <img src="${src}" alt="${dict[project.titleKey]} — ${dict["projects.before"]} ${i + 1}" class="w-full h-auto object-contain">
-          </div>
-        `).join("");
-      }
-      if (project.after.length > 0 && afterGallery) {
-        afterGallery.innerHTML = project.after.map((src, i) => `
-          <div class="col-span-full rounded-lg overflow-hidden bg-black/20 shadow-sm">
-            <img src="${src}" alt="${dict[project.titleKey]} — ${dict["projects.after"]} ${i + 1}" class="w-full h-auto object-contain">
-          </div>
-        `).join("");
-      }
-
-      projModal.classList.remove("hidden");
-      projModal.classList.add("flex");
-      document.body.style.overflow = "hidden";
-      previousFocus = document.activeElement;
-      projModalClose?.focus();
-    }
-
-    function closeProjectDetails() {
-      if (!projModal) return;
-      projModal.classList.add("hidden");
-      projModal.classList.remove("flex");
-      document.body.style.overflow = "";
-      previousFocus?.focus();
-    }
-
-    document.querySelectorAll("[data-open-project]").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const pid = btn.getAttribute("data-open-project");
-        openProjectDetails(pid);
-      });
-    });
-
-    document.querySelectorAll("[data-project-id]").forEach((card) => {
-      card.addEventListener("click", (e) => {
-        if (e.target.closest(".before-after-slider-input") || e.target.closest("[data-open-project]")) return;
-        const pid = card.getAttribute("data-project-id");
-        openProjectDetails(pid);
-      });
-
-      card.addEventListener("keydown", (e) => {
-        if (e.target.closest(".before-after-slider-input") || e.target.closest("[data-open-project]")) return;
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          const pid = card.getAttribute("data-project-id");
-          openProjectDetails(pid);
-        }
-      });
-    });
-
-    projModalClose?.addEventListener("click", closeProjectDetails);
-    projModal?.addEventListener("click", (e) => {
-      if (e.target === projModal) closeProjectDetails();
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (!projModal || projModal.classList.contains("hidden")) return;
-      if (e.key === "Escape") closeProjectDetails();
-    });
-  }
-
   setupMobileNavigation();
   setupGallery();
   setupPropertyCards();
-  setupProjectSliders();
-  setupProjectModal();
   setupContactLinks();
   setupNavigationState();
   setupTheme();

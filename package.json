@@ -5,7 +5,12 @@
   "description": "Provisional public landing page for Grupo Kuwago.",
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "build": "node scripts/build.mjs",
-    "check": "node scripts/check.mjs"
+    "build": "npm run css && node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test:loader": "node --test scripts/test-loader.mjs",
+    "css": "tailwindcss -i styles/tailwind.input.css -o assets/css/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.19"
   }
 }

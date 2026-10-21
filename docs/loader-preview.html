@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es" class="dark loader-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>KUWAGO — Curiosidad · 3,5 segundos</title>
+  <link rel="stylesheet" href="../assets/css/loader.css">
+  <style>
+    .preview-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; font: 14px system-ui, sans-serif; }
+    .preview-actions button, .preview-actions a { padding: .7rem 1rem; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 999px; text-decoration: none; cursor: pointer; font: inherit; }
+  </style>
+</head>
+<body>
+  <main class="site-loader">
+    <img class="loader-logo-light" src="../assets/images/brand/03-curiosidad-morado.svg" width="460" height="980" alt="Kuwago: inclinación de cabeza y doble parpadeo">
+    <img class="loader-logo-dark" src="../assets/images/brand/03-curiosidad.svg" width="460" height="980" alt="Kuwago: inclinación de cabeza y doble parpadeo">
+    <p>Curiosidad · ciclo de 3,5 segundos</p>
+    <div class="preview-actions">
+      <button id="preview-theme" type="button">Cambiar tema</button>
+      <a href="../">Abrir la landing</a>
+    </div>
+  </main>
+  <script>document.getElementById('preview-theme').addEventListener('click', () => document.documentElement.classList.toggle('dark'));</script>
+</body>
+</html>

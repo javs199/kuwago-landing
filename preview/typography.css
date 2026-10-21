@@ -1,0 +1,11 @@
+/* Internal evaluation only: excluded from production. See docs/BRAND-WEB.md. */
+@font-face { font-family: 'Kuwago Ramillas Preview'; src: url('fonts/tt-ramillas-trial-regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Kuwago Ramillas Preview'; src: url('fonts/tt-ramillas-trial-medium.ttf') format('truetype'); font-weight: 500 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Kuwago Ramillas Preview'; src: url('fonts/tt-ramillas-trial-bold.ttf') format('truetype'); font-weight: 700 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Kuwago Helvetica Local'; src: local('Helvetica Neue'), local('HelveticaNeue'); font-weight: 400; }
+@font-face { font-family: 'Kuwago Helvetica Local'; src: local('Helvetica Neue Medium'), local('HelveticaNeue-Medium'); font-weight: 500 600; }
+@font-face { font-family: 'Kuwago Helvetica Local'; src: local('Helvetica Neue Bold'), local('HelveticaNeue-Bold'); font-weight: 700 900; }
+:root { --font-heading: 'Kuwago Ramillas Preview', Georgia, serif; --font-body: 'Kuwago Helvetica Local', Helvetica, Arial, sans-serif; }
+body, .font-body-md, .font-body-lg, .font-label-md, .font-label-sm, .site-loader p { font-family: var(--font-body); }
+h1, h2, h3, .font-display-lg, .font-headline-lg, .font-headline-md, .font-title-lg { font-family: var(--font-heading); }
+h1, h2, h3 { font-weight: 500; }

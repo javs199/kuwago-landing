@@ -1,10 +1,12 @@
 # Grupo Kuwago — provisional landing
 
-Static, dependency-free project prepared from the Google Stitch export for deployment on Hostinger at `grupokuwago.com`.
+Static landing prepared from the Google Stitch export for deployment on Hostinger at `grupokuwago.com`. Tailwind CSS is compiled locally; production needs no Node.js runtime.
 
 ## Local preview
 
 Requires Node.js 18 or newer.
+
+Install build dependencies with `npm ci` and generate styles with `npm run css` before the first local preview. Run `npm run css` again after changing utility classes.
 
 ```bash
 npm run dev
@@ -36,11 +38,14 @@ The generated `dist/` directory contains the files that should be uploaded to Ho
 
 ## Current external dependencies
 
-- Tailwind CSS browser CDN
 - Google Fonts: Hanken Grotesk
 - Google Material Symbols
 
 The Stitch images have already been downloaded into `assets/images/` so the public page does not depend on temporary Google image URLs.
+
+V1 omits Before / After projects. Their source is preserved in `docs/v2-projects/`; project images are excluded from `dist/`. Upload only `dist/`, never the source repository, brand library or internal references.
+
+The build uses Tailwind 3 to preserve the approved visual design. Its npm audit findings affect build-time dependencies; no npm packages are shipped to the static web host. Review and migrate these dependencies as part of ongoing maintenance.
 
 ## Reference material
 

@@ -3,13 +3,25 @@ import { existsSync, readFileSync } from "node:fs";
 const html = readFileSync("index.html", "utf8");
 const requiredFiles = [
   "assets/css/styles.css",
+  "assets/css/tailwind.css",
+  "robots.txt",
+  "sitemap.xml",
   "assets/js/config.js",
   "assets/js/main.js",
-  "assets/images/logo.jpg",
-  "assets/images/hero.jpg",
+  "assets/css/loader.css",
+  "assets/js/loader.js",
+  "assets/images/brand/03-curiosidad.svg",
+  "assets/images/brand/03-curiosidad-morado.svg",
+  "assets/images/brand/kuwago-favicon.svg",
+  "assets/images/brand/kuwago-isotipo-morado.svg",
+  "assets/images/brand/kuwago-isotipo-dorado-plano.svg",
+  "assets/fonts/bodoni-moda/BodoniModa_48pt-Regular.ttf",
+  "assets/fonts/bodoni-moda/OFL.txt",
+  "assets/images/carabao-portada.webp",
 ];
 
 const errors = [];
+if (html.includes("cdn.tailwindcss.com")) errors.push("Production must use compiled local Tailwind CSS.");
 for (const file of requiredFiles) {
   if (!existsSync(file)) errors.push(`Missing required file: ${file}`);
 }
@@ -20,6 +32,10 @@ if (/https:\/\/lh3\.googleusercontent\.com/.test(html)) {
 
 if (!html.includes("grupokuwago.com")) {
   errors.push("Confirmed domain is missing from index.html.");
+}
+
+if (/id="projects-section"|data-project-id=|id="project-details-modal"/.test(html)) {
+  errors.push("V1 must not include the Before / After project section or its dialog.");
 }
 
 if (errors.length) {

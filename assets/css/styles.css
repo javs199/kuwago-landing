@@ -282,3 +282,41 @@ footer nav a:focus-visible {
   .project-tv-detail .overflow-y-auto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-content: start; }
   #project-details-modal.project-tv-detail .overflow-y-auto > * { margin-top: 0; min-width: 0; }
 }
+
+/* Brandkit owl with the approved Bodoni Moda wordmark. */
+@font-face {
+  font-family: 'Kuwago Bodoni Moda';
+  src: url('../fonts/bodoni-moda/BodoniModa_48pt-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+.brand-lockup { display: inline-flex; align-items: center; flex-shrink: 0; gap: 12px; min-height: 48px; color: #3B0C5B; }
+.brand-symbol { display: block; width: 27px; height: 48px; object-fit: contain; flex: none; }
+.brand-wordmark { font-family: 'Kuwago Bodoni Moda', 'Bodoni MT', serif; font-size: 27px; line-height: 1; font-weight: 400; letter-spacing: 0.045em; }
+.brand-logo-dark { display: none; }
+.dark .brand-logo-light { display: none; }
+.dark .brand-logo-dark { display: block; }
+.dark .brand-lockup { color: #B98850; }
+@media (max-width: 379px) { header .brand-lockup { gap: 8px; } header .brand-wordmark { font-size: 23px; } header .brand-symbol { width: 23px; height: 42px; } }
+
+/* Fade the glass layer only, keeping navigation and focus rings crisp. */
+.site-header {
+  --header-glass: rgba(255, 255, 255, 0.64);
+  background: transparent;
+  border-bottom: 0;
+  isolation: isolate;
+}
+.dark .site-header { --header-glass: rgba(36, 23, 44, 0.58); }
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -32px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--header-glass);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
+}
