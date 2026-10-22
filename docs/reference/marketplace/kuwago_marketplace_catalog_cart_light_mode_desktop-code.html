@@ -1,0 +1,351 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Kuwago Marketplace Catalog &amp; Cart — Light Mode Desktop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#fff7fc",
+                        "on-tertiary-container": "#928a99",
+                        "primary-container": "#3b0c5b",
+                        "surface-dim": "#e5d5e9",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#e2b6ff",
+                        "surface-tint": "#784b98",
+                        "surface": "#fff7fc",
+                        "surface-container-low": "#fdefff",
+                        "dark-gold": "#8F691F",
+                        "primary": "#200037",
+                        "surface-bright": "#fff7fc",
+                        "secondary-fixed-dim": "#e9c178",
+                        "bright-gold": "#D1AD66",
+                        "tertiary": "#140f1a",
+                        "on-primary-container": "#a97acb",
+                        "on-background": "#211826",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#7d7480",
+                        "secondary-container": "#fed489",
+                        "secondary": "#775a1a",
+                        "on-secondary-container": "#785a1b",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#4c444f",
+                        "on-secondary-fixed-variant": "#5d4202",
+                        "dark-bg": "#160B1D",
+                        "outline-variant": "#cec3d0",
+                        "dark-surface": "#24172C",
+                        "on-primary-fixed-variant": "#5e337e",
+                        "pure-white": "#FFFFFF",
+                        "secondary-fixed": "#ffdea5",
+                        "inverse-surface": "#372d3c",
+                        "dark-text-secondary": "#CFC4D2",
+                        "on-tertiary-fixed": "#1e1925",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#edddf1",
+                        "surface-variant": "#edddf1",
+                        "on-surface": "#211826",
+                        "surface-container": "#f9e9fd",
+                        "error-container": "#ffdad6",
+                        "dark-elevated": "#302039",
+                        "tertiary-fixed": "#e9dfef",
+                        "tertiary-fixed-dim": "#cdc3d3",
+                        "warm-off-white": "#F8F6FA",
+                        "on-primary-fixed": "#2e004d",
+                        "on-tertiary-fixed-variant": "#4a4451",
+                        "tertiary-container": "#292430",
+                        "surface-container-high": "#f3e3f7",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#f3daff",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed": "#271900",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#fcecff",
+                        "primary-fixed-dim": "#e2b6ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "max-content-width": "1440px",
+                        "gutter": "24px",
+                        "sidebar-width": "280px",
+                        "margin-mobile": "16px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-md": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "title-lg": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.warm-off-white'); color: theme('colors.on-background'); font-family: 'Hanken Grotesk', sans-serif; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-surface dark:bg-dark-surface docked full-width top-0 sticky border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-max-content-width mx-auto bg-surface/95 backdrop-blur-md">
+<div class="flex items-center gap-6">
+<a class="font-display-lg text-title-lg text-primary dark:text-bright-gold tracking-tight" href="#">Kuwago Concierge</a>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-on-surface-variant dark:text-dark-text-secondary font-medium hover:text-primary dark:hover:text-bright-gold transition-colors duration-200" href="#">Home</a>
+<a class="text-primary dark:text-bright-gold font-bold border-b-2 border-primary dark:border-bright-gold pb-1" href="#">Explore Experiences</a>
+<a class="text-on-surface-variant dark:text-dark-text-secondary font-medium hover:text-primary dark:hover:text-bright-gold transition-colors duration-200" href="#">Categories</a>
+<a class="text-on-surface-variant dark:text-dark-text-secondary font-medium hover:text-primary dark:hover:text-bright-gold transition-colors duration-200" href="#">How It Works</a>
+<a class="text-on-surface-variant dark:text-dark-text-secondary font-medium hover:text-primary dark:hover:text-bright-gold transition-colors duration-200" href="#">Contact</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-primary hover:bg-surface-container-high rounded-full transition-colors group">
+<span class="material-symbols-outlined text-[24px]">shopping_cart</span>
+<span class="absolute top-0 right-0 bg-bright-gold text-pure-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-surface">2</span>
+</button>
+<div class="relative group">
+<button class="flex items-center gap-2 bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+                        Portal Access
+                        <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+<div class="absolute right-0 mt-2 w-56 bg-pure-white rounded-lg shadow-lg border border-outline-variant opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+<a class="block px-4 py-3 text-body-md font-body-md text-on-surface hover:bg-surface-container-low transition-colors rounded-t-lg" href="#">Guest Stay Portal</a>
+<a class="block px-4 py-3 text-body-md font-body-md text-on-surface hover:bg-surface-container-low transition-colors border-t border-outline-variant/30" href="#">Owner Portal</a>
+<a class="block px-4 py-3 text-body-md font-body-md text-on-surface hover:bg-surface-container-low transition-colors border-t border-outline-variant/30 rounded-b-lg" href="#">Administrator Portal</a>
+</div>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="flex-grow w-full max-w-max-content-width mx-auto px-margin-desktop py-8">
+<!-- Introduction -->
+<section class="mb-12">
+<nav aria-label="Breadcrumb" class="flex text-label-sm font-label-sm text-on-surface-variant mb-4">
+<ol class="inline-flex items-center space-x-1 md:space-x-3">
+<li class="inline-flex items-center">
+<a class="hover:text-primary transition-colors" href="#">Home</a>
+</li>
+<li>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span>
+<span class="text-primary font-bold">Explore experiences</span>
+</div>
+</li>
+</ol>
+</nav>
+<div class="max-w-3xl">
+<span class="text-dark-gold font-label-md text-label-md uppercase tracking-wider block mb-2">KUWAGO CONCIERGE MARKETPLACE</span>
+<h1 class="font-display-lg text-display-lg text-primary mb-4">Experiences made for your stay</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Discover curated adventures, wellness, dining, and private experiences across Uvita and Costa Rica's South Pacific.</p>
+</div>
+</section>
+<!-- Main Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter relative">
+<!-- Left Content (70%) -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Category Chips -->
+<div class="flex overflow-x-auto pb-4 -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0 gap-3 no-scrollbar scroll-smooth">
+<button class="whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md bg-primary-container text-pure-white border border-transparent shadow-sm">All Experiences</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md bg-pure-white text-primary border border-outline-variant hover:border-primary transition-colors">Wellness</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md bg-pure-white text-primary border border-outline-variant hover:border-primary transition-colors">Private Dining</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md bg-pure-white text-primary border border-outline-variant hover:border-primary transition-colors">Water Adventures</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md bg-pure-white text-primary border border-outline-variant hover:border-primary transition-colors">Land Adventures</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md bg-pure-white text-primary border border-outline-variant hover:border-primary transition-colors">Nature &amp; Wildlife</button>
+</div>
+<!-- Experience Catalog Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Card 1 -->
+<div class="bg-pure-white border border-outline-variant rounded-lg overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
+<div class="relative h-48 w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A serene private yoga session taking place on a lush tropical wooden deck overlooking the deep blue ocean. The morning light is soft and golden, casting long shadows. A luxurious villa is partially visible in the background, surrounded by vibrant green palm trees and exotic foliage. The mood is tranquil, exclusive, and high-end." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuRLwMmCl-tos7fcsBs432XSdQvcm1nhR_RQ2IdV65ex3oApcsyDC9cBIbkSt5qvXJSt1Bx7WDHBoCFdVq-wbmSE9bUkO9sL6mLXl-Rdl08zPU1uaLJqIInfqyL1s0ySaI9FI-9aV1UFmllbpNi5svmxw2v2uy32JBUlr_kaq0zvkEcQLIDkB_TUCf331aVftBQLu-sAIxQaiCrDI2PL042R6AIE6NcQ_M12uLZsSY1foxGAI4gzw6">
+<div class="absolute top-3 left-3 bg-warm-off-white/90 backdrop-blur px-2 py-1 rounded text-label-sm font-label-sm text-primary">Wellness</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<h3 class="font-title-lg text-title-lg text-primary mb-2">Private Sunset Yoga</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">A rejuvenating private session tailored to your skill level, guided by a local expert instructor.</p>
+<div class="flex flex-wrap gap-y-2 gap-x-4 mb-4 text-label-md font-label-md text-on-surface-variant">
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 90 mins</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">group</span> Private</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> In-Villa</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+<div>
+<div class="text-label-sm font-label-sm text-dark-gold">Availability confirmation required</div>
+<div class="font-headline-md text-headline-md text-primary">From $120 <span class="text-body-md font-body-md text-on-surface-variant">/ person</span></div>
+</div>
+</div>
+<div class="mt-4 flex gap-3">
+<button class="flex-1 bg-pure-white border border-outline-variant text-primary font-label-md text-label-md py-2 rounded hover:border-primary transition-colors text-center">View details</button>
+<button class="flex-1 bg-primary-container text-pure-white font-label-md text-label-md py-2 rounded hover:bg-primary-container/90 transition-colors text-center">Choose options</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-pure-white border border-outline-variant rounded-lg overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
+<div class="relative h-48 w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An exquisite private chef experience presented on a beautifully set dining table outdoors, under a wooden pergola. Gourmet dishes are artfully plated, featuring fresh local seafood and tropical garnishes. The setting sun illuminates the scene with warm, golden tones, creating an atmosphere of refined luxury and culinary excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDv7oGb1rTYfynzDPy1b8YOv0sP41g-GEriMs9dOk5t7C8eDfYJeuRJ-Nd59e3mxl6bikjKa3xqScWrge6GNsSo04DWJ8PjhpzuUj_E4vMvl5PUZa-u5Jzai-CCcdJNwEQPXwaVJ00kNAqT6DFjoA8dAQLArUMqsFJmBc2H915luddZ3wBFZ1cCoUy_i1si4lXgKFfydGGzY3B0AoXIeJdy8_eVN5YwT6hM9a1Pxv8v8jyMBlACbifs">
+<div class="absolute top-3 left-3 bg-warm-off-white/90 backdrop-blur px-2 py-1 rounded text-label-sm font-label-sm text-primary">Private Dining</div>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<h3 class="font-title-lg text-title-lg text-primary mb-2">Gourmet Private Chef</h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">An exquisite culinary journey prepared in your villa's kitchen, featuring local organic ingredients and tailored menus.</p>
+<div class="flex flex-wrap gap-y-2 gap-x-4 mb-4 text-label-md font-label-md text-on-surface-variant">
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> 3 Hours</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">group</span> Private</div>
+<div class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span> In-Villa</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+<div>
+<div class="text-label-sm font-label-sm text-dark-gold">Availability confirmation required</div>
+<div class="font-headline-md text-headline-md text-primary">From $350 <span class="text-body-md font-body-md text-on-surface-variant">/ dinner</span></div>
+</div>
+</div>
+<div class="mt-4 flex gap-3">
+<button class="flex-1 bg-pure-white border border-outline-variant text-primary font-label-md text-label-md py-2 rounded hover:border-primary transition-colors text-center">View details</button>
+<button class="flex-1 bg-primary-container text-pure-white font-label-md text-label-md py-2 rounded hover:bg-primary-container/90 transition-colors text-center">Choose options</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Content - Sticky Cart (30%) -->
+<div class="lg:col-span-4">
+<div class="sticky top-[100px] bg-pure-white border border-outline-variant rounded-lg p-6 shadow-sm">
+<div class="flex justify-between items-center mb-6 pb-4 border-b border-outline-variant/30">
+<h2 class="font-headline-md text-headline-md text-primary">Your experience cart</h2>
+<span class="bg-surface-container-high text-primary font-label-sm text-label-sm px-2 py-1 rounded-full">2 Items</span>
+</div>
+<!-- Cart Items List -->
+<div class="flex flex-col gap-4 mb-6">
+<!-- Cart Item 1 -->
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded overflow-hidden flex-shrink-0 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A thrilling surf lesson in the turquoise waters of Uvita, Costa Rica. A tanned instructor guides a guest on a longboard, with a lush green jungle coastline in the background. The bright midday sun creates sparkling reflections on the waves, evoking a sense of active luxury and tropical adventure." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVKwW_JGGBZs7cuQklU-Kn52MLfFcGgYXx3bJvU0rce78XUkq431Fx8pdDy5LS2_uX3atG8zvst3lWH5hsBWt-jjbVeQBUY8-cLGwQ2JjvCEMHIiJOHxPbhd5bpGGZc9V34ZtoGZiRf6meTPa3KCFdIMFRF2FibhbkZRfuflZ9erDeWjlh3Yt2wECVqh0fA4qGfwLnQJBGg2zy7CaEAnWTFL38Fdi1pwJ4w-ykcu1oMU7dg7SiNdiH">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<h4 class="font-title-lg text-title-lg text-primary text-[16px] leading-tight">Private Surf Lessons</h4>
+<span class="font-label-md text-label-md text-primary">$180.00</span>
+</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant flex gap-3 mt-1">
+<span>Nov 15, 2024</span>
+<span>2 Travelers</span>
+</div>
+<div class="flex gap-4 mt-2 text-label-sm font-label-sm">
+<button class="text-primary hover:underline">Edit</button>
+<button class="text-error hover:underline">Remove</button>
+</div>
+</div>
+</div>
+<div class="h-px w-full bg-outline-variant/30"></div>
+<!-- Cart Item 2 -->
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded overflow-hidden flex-shrink-0 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A close up of a beautifully plated gourmet dessert from a private chef experience. The dessert features tropical fruits, delicate chocolate work, and edible flowers on a dark ceramic plate. The lighting is intimate and warm, suggesting an elegant evening meal in a luxurious setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwYXrZmpCL5SKGzf9hX57jy6xFTmDugC5lWs6hLmDQkyHEk1GIHBSKK01njpj-huzWWK3Kzd8RRBGxTFE3RW4IK0g1TzKAWNE0wTNlZ6mFUMpmVuPwaoDellOTF-IlE95weYvMsBF_in_LPGvTmPUMCpbSWNWm2o3rVDAVPc1q07LS8qUzB9O3LnrnPCVcSTpSRH8Js7DsEgslRhcg0JhoygQuCX2qoE2tLGY6pFR_4WTP7KM5DeyZ">
+</div>
+<div class="flex-grow flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<h4 class="font-title-lg text-title-lg text-primary text-[16px] leading-tight">Gourmet Private Chef</h4>
+<span class="font-label-md text-label-md text-primary">$350.00</span>
+</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant flex gap-3 mt-1">
+<span>Nov 17, 2024</span>
+<span>Dinner (4 pax)</span>
+</div>
+<div class="flex gap-4 mt-2 text-label-sm font-label-sm">
+<button class="text-primary hover:underline">Edit</button>
+<button class="text-error hover:underline">Remove</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Cart Summary -->
+<div class="bg-warm-off-white rounded p-4 mb-6">
+<div class="flex justify-between font-body-md text-body-md text-on-surface-variant mb-2">
+<span>Subtotal</span>
+<span>$530.00</span>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant mb-4 border-b border-outline-variant/30 pb-4">
+<span>Taxes &amp; Fees</span>
+<span class="text-right">Calculated after availability confirmation</span>
+</div>
+<div class="flex justify-between items-center font-headline-md text-headline-md text-primary">
+<span>Estimated Total</span>
+<span>$530.00</span>
+</div>
+</div>
+<button class="w-full bg-primary-container text-pure-white font-label-md text-label-md py-3 rounded-lg hover:bg-primary-container/90 transition-colors shadow-sm flex items-center justify-center gap-2 mb-4">
+                        Continue to booking
+                        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<div class="flex items-start gap-2 text-label-sm font-label-sm text-on-surface-variant bg-surface-container-low p-3 rounded">
+<span class="material-symbols-outlined text-[16px] text-dark-gold flex-shrink-0 mt-0.5">info</span>
+<p>You will not be charged until availability and final pricing are confirmed by our concierge team.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-tertiary dark:bg-dark-bg full-width bottom-0 border-t border-outline dark:border-tertiary-container flat no shadows mt-auto">
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-gutter px-margin-desktop py-12 max-w-max-content-width mx-auto">
+<div class="col-span-2 lg:col-span-2 flex flex-col gap-4">
+<span class="font-headline-md text-headline-md text-bright-gold">Kuwago Concierge</span>
+<p class="font-body-md text-body-md text-on-tertiary dark:text-dark-text-secondary opacity-80 max-w-xs">
+                    © 2024 Kuwago Concierge Uvita. All rights reserved. Sovereign Modernism in Hospitality.
+                </p>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-sm text-label-sm text-bright-gold uppercase tracking-wider mb-2">Explore</span>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Home</a>
+<a class="font-body-md text-body-md text-bright-gold font-bold hover:text-bright-gold transition-colors duration-200 underline" href="#">Explore Experiences</a>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Categories</a>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">How It Works</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-sm text-label-sm text-bright-gold uppercase tracking-wider mb-2">Portals</span>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Guest Stay Portal</a>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Owner Portal</a>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Administrator Portal</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-sm text-label-sm text-bright-gold uppercase tracking-wider mb-2">Legal &amp; Contact</span>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Contact</a>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-tertiary/70 dark:text-dark-text-secondary/60 hover:text-bright-gold transition-colors duration-200" href="#">Uvita Contact Info</a>
+</div>
+</div>
+</footer>
+</body></html>

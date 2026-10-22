@@ -1,6 +1,7 @@
 module.exports = {
   "content": [
     "./index.html",
+    "./concierge-marketplace.html",
     "./assets/js/**/*.js"
   ],
   "darkMode": "class",

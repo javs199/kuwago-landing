@@ -380,9 +380,9 @@
     if (!dict) return;
 
     document.documentElement.lang = lang;
-    document.title = dict["site.title"];
+    document.title = document.body.dataset.page === "marketplace" ? dict["mp.title"] : dict["site.title"];
     const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.content = dict["site.desc"];
+    if (metaDesc) metaDesc.content = dict[document.body.dataset.page === "marketplace" ? "mp.intro" : "site.desc"];
 
     document.querySelectorAll("[data-i18n]").forEach(el => {
       const key = el.getAttribute("data-i18n");
@@ -404,6 +404,8 @@
       const key = el.getAttribute("data-i18n-title");
       if (dict[key]) el.setAttribute("title", dict[key]);
     });
+
+    document.dispatchEvent(new CustomEvent("kuwago:language", { detail: { lang } }));
 
     // Handle pending contact links title
     const contactLinks = document.querySelectorAll('.contact-pending');
@@ -588,8 +590,12 @@
       <a href="#about" data-i18n="nav.about">About</a>
       <a href="#gallery" data-i18n="nav.gallery">Gallery</a>
       <a href="#contact" data-i18n="nav.contact">Contact</a>
+      <span class="concierge-access" data-page="conciergeMarketplace"><span data-i18n="nav.concierge">Services</span><small data-i18n="nav.coming_soon">Coming soon</small></span>
       <div id="mobile-header-actions"></div>
     `;
+    if (document.body.dataset.page === "marketplace") {
+      mobileMenu.querySelectorAll('a[href^="#"]').forEach(link => link.setAttribute("href", `index.html${link.getAttribute("href")}`));
+    }
     header.appendChild(mobileMenu);
 
     // Move the existing controls so theme/language state and listeners stay shared.
@@ -605,7 +611,7 @@
       text.textContent = label;
       control.prepend(text);
     }
-    const mobileBreakpoint = window.matchMedia('(max-width: 767px)');
+    const mobileBreakpoint = window.matchMedia('(max-width: 1023px)');
     const placeControls = () => {
       const target = mobileBreakpoint.matches ? mobileActions : rightActions;
       if (target) controls.forEach(control => target.appendChild(control));
@@ -634,7 +640,7 @@
     });
 
     window.addEventListener("resize", () => {
-      if (window.innerWidth >= 768) setOpen(false);
+      if (window.innerWidth >= 1024) setOpen(false);
     });
 
     document.addEventListener("keydown", (event) => {
@@ -969,6 +975,25 @@
     configure(emailLink, contact.email, "mailto:", "Email address");
   }
 
+  function setupConciergeNavigation() {
+    const page = window.KUWAGO_PAGES?.conciergeMarketplace;
+    if (!page?.enabled || page.path !== '/concierge-marketplace.html') return;
+    document.querySelectorAll('[data-page="conciergeMarketplace"]').forEach(slot => {
+      const link = document.createElement('a');
+      link.href = page.path;
+      if (document.body.dataset.page === 'marketplace') link.setAttribute('aria-current', 'page');
+      link.className = 'concierge-access';
+      link.dataset.i18n = 'nav.concierge';
+      link.textContent = 'Services';
+      slot.replaceWith(link);
+      if (link.closest('#mobile-menu')) {
+        link.addEventListener('click', () => {
+          document.getElementById('mobile-menu-button')?.click();
+        });
+      }
+    });
+  }
+
   function setupNavigationState() {
     const sections = [...document.querySelectorAll("main section[id]")];
     const links = [...document.querySelectorAll('a[href^="#"]')]
@@ -994,6 +1019,7 @@
   }
 
   setupMobileNavigation();
+  setupConciergeNavigation();
   setupGallery();
   setupPropertyCards();
   setupContactLinks();

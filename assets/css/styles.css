@@ -362,3 +362,26 @@ footer .footer-copyright { text-align: center; justify-self: center; width: 100%
   footer .footer-layout > .footer-socials { grid-column: 3; grid-row: 1; }
   footer .footer-copyright { grid-column: 1 / -1; }
 }
+
+/* Reserved Concierge access: status text, never an inactive fake link. */
+.concierge-access { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; font-size: 14px; line-height: 1.35; font-weight: 600; color: #4c444f; text-align: center; }
+.concierge-access small { font-size: 11px; color: #775a1a; font-weight: 500; }
+.dark .concierge-access { color: #F8F6FA; }
+.dark .concierge-access small { color: #D1AD66; }
+.site-header nav { gap: 16px; }
+.site-header nav .concierge-access { max-width: 148px; }
+#mobile-menu > .concierge-access { display: flex; align-items: flex-start; padding: .9rem 1.5rem; text-align: left; font-size: 16px; }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .site-header nav { display: none; }
+  #mobile-menu-button { display: flex; }
+}
+@media (min-width: 768px) {
+  footer .footer-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr); }
+}
+
+/* Enabled service links follow the same typography as the other navigation links. */
+a.concierge-access { font-size: inherit; line-height: inherit; font-weight: 700; color: #200037; white-space: nowrap; }
+.site-header nav a.concierge-access { padding: 4px 0; }
+.dark a.concierge-access { color: #F8F6FA; }
+a.concierge-access:hover { color: #775a1a; }
+.dark a.concierge-access:hover { color: #D1AD66; }

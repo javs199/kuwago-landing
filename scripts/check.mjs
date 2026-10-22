@@ -1,3 +1,4 @@
+import { getConciergePage } from './page-config.mjs';
 import { existsSync, readFileSync } from "node:fs";
 
 const html = readFileSync("index.html", "utf8");
@@ -23,6 +24,19 @@ const requiredFiles = [
 ];
 
 const errors = [];
+try {
+  const page = getConciergePage();
+  if (page) {
+    const pageHtml = readFileSync(page, 'utf8');
+    if (/cdn\.tailwindcss\.com|https:\/\/lh3\.googleusercontent\.com/.test(pageHtml)) errors.push('Marketplace must use local CSS and images.');
+    for (const [, path] of pageHtml.matchAll(/(?:src|href)="(assets\/[^"?#]+)"/g)) {
+      if (!existsSync(path)) errors.push(`Marketplace asset missing: ${path}`);
+    }
+    for (const [, id] of pageHtml.matchAll(/href="#([^" ]+)"/g)) {
+      if (!pageHtml.includes(`id="${id}"`)) errors.push(`Marketplace fragment missing: ${id}`);
+    }
+  }
+} catch (error) { errors.push(error.message); }
 if (html.includes("cdn.tailwindcss.com")) errors.push("Production must use compiled local Tailwind CSS.");
 for (const file of requiredFiles) {
   if (!existsSync(file)) errors.push(`Missing required file: ${file}`);
