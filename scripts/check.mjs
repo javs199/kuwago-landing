@@ -1,4 +1,5 @@
 import { getConciergePage } from './page-config.mjs';
+import { checkPwa } from './pwa-check.mjs';
 import { existsSync, readFileSync } from "node:fs";
 
 const html = readFileSync("index.html", "utf8");
@@ -24,6 +25,7 @@ const requiredFiles = [
 ];
 
 const errors = [];
+errors.push(...checkPwa());
 try {
   const page = getConciergePage();
   if (page) {

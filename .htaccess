@@ -1,6 +1,16 @@
 Options -Indexes
 DirectoryIndex index.html
 
+<IfModule mod_mime.c>
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+<FilesMatch "^(index\.html|concierge-marketplace\.html|manifest\.webmanifest|sw\.js|pwa\.js)$">
+  <IfModule mod_expires.c>
+    ExpiresActive Off
+  </IfModule>
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{HTTP_HOST} ^www\.grupokuwago\.com$ [NC]
@@ -11,6 +21,10 @@ DirectoryIndex index.html
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set X-Frame-Options "SAMEORIGIN"
+  <FilesMatch "^(index\.html|concierge-marketplace\.html|manifest\.webmanifest|sw\.js|pwa\.js)$">
+    Header always set Cache-Control "no-cache, max-age=0, must-revalidate"
+    Header always unset Expires
+  </FilesMatch>
 </IfModule>
 
 <IfModule mod_expires.c>

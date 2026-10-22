@@ -26,5 +26,7 @@ cpSync("assets", `${output}/assets`, {
 cpSync(".htaccess", `${output}/.htaccess`);
 cpSync("robots.txt", `${output}/robots.txt`);
 cpSync("sitemap.xml", `${output}/sitemap.xml`);
+cpSync("manifest.webmanifest", `${output}/manifest.webmanifest`);
+cpSync("sw.js", `${output}/sw.js`);
 
 console.log("Production files created in dist/.");
