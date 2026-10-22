@@ -571,7 +571,7 @@
     menuButton.setAttribute("aria-controls", "mobile-menu");
     menuButton.innerHTML = `<span class="material-symbols-outlined text-[24px]">menu</span>`;
 
-    const rightActions = headerContainer.querySelector("div:last-child");
+    const rightActions = headerContainer.lastElementChild;
     if (rightActions) {
       rightActions.insertBefore(menuButton, rightActions.firstChild);
     } else {
@@ -588,14 +588,31 @@
       <a href="#about" data-i18n="nav.about">About</a>
       <a href="#gallery" data-i18n="nav.gallery">Gallery</a>
       <a href="#contact" data-i18n="nav.contact">Contact</a>
-      <div class="flex items-center gap-2 p-[0.9rem_1.5rem] border-t border-outline-variant dark:border-dark-elevated transition-colors">
-        <div class="flex items-center bg-surface-container dark:bg-dark-elevated rounded-full p-0.5" role="group" aria-label="Language selection" data-i18n-aria="nav.lang_select">
-          <button type="button" data-lang-mobile="en" class="px-4 py-1.5 rounded-full text-label-md font-bold transition-all">EN</button>
-          <button type="button" data-lang-mobile="es" class="px-4 py-1.5 rounded-full text-label-md font-bold transition-all">ES</button>
-        </div>
-      </div>
+      <div id="mobile-header-actions"></div>
     `;
     header.appendChild(mobileMenu);
+
+    // Move the existing controls so theme/language state and listeners stay shared.
+    const controls = rightActions ? [...rightActions.children].filter(node => node !== menuButton) : [];
+    const mobileActions = mobileMenu.querySelector('#mobile-header-actions');
+    const themeButton = document.getElementById('theme-toggle');
+    const account = controls.find(node => node.querySelector('.material-symbols-outlined')?.textContent.trim() === 'person');
+    for (const [control, key, label] of [[themeButton, 'theme.appearance', 'Appearance'], [account, 'nav.account', 'Account']]) {
+      if (!control) continue;
+      const text = document.createElement('span');
+      text.className = 'mobile-action-label';
+      text.dataset.i18n = key;
+      text.textContent = label;
+      control.prepend(text);
+    }
+    const mobileBreakpoint = window.matchMedia('(max-width: 767px)');
+    const placeControls = () => {
+      const target = mobileBreakpoint.matches ? mobileActions : rightActions;
+      if (target) controls.forEach(control => target.appendChild(control));
+    };
+    placeControls();
+    mobileBreakpoint.addEventListener('change', placeControls);
+
 
     const setOpen = (open) => {
       mobileMenu.hidden = !open;

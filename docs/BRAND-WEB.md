@@ -14,3 +14,11 @@ No se desplegó esta revisión.
 ## Clonar y revisar
 
 Los binarios Trial de preview/fonts están excluidos de Git. Para reproducir la evaluación interna, copiar TT Ramillas Trial Regular.ttf, Medium.ttf y Bold.ttf desde la biblioteca privada a preview/fonts/tt-ramillas-trial-regular.ttf, tt-ramillas-trial-medium.ttf y tt-ramillas-trial-bold.ttf. Sin ellos se utiliza el fallback de la vista previa. No publicar la carpeta preview.
+
+## Cambio vigente de logotipo
+
+Por petición del usuario, Libre Bodoni sustituye Bodoni Moda en el texto KUWAGO. Se alojan Regular (400, pie) y Bold (700, cabecera) con su licencia OFL en assets/fonts/libre-bodoni. Se conservan tamaños e isotipo. Los despliegues se registran localmente en release/.
+
+## Footer V1.1
+
+Instagram, Facebook y TikTok usan URLs centralizadas en assets/js/config.js. Los enlaces son accesibles, abren en otra pestaña con noopener noreferrer y muestran un estado no interactivo si falta una URL válida. Redes a la derecha y copyright centrado en la fila inferior; se omite el dominio bajo el logo. Comprobado localmente en móvil/escritorio, temas claro/oscuro y español/inglés.

@@ -69,9 +69,10 @@ footer nav a:focus-visible {
   left: 0;
   width: 100%;
   z-index: 50;
-  border-top: 1px solid #cec3d0;
-  border-bottom: 1px solid #cec3d0;
-  background: #ffffff;
+  border: 0;
+  background: var(--header-glass);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   box-shadow: 0 14px 28px rgba(36, 27, 41, 0.12);
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
@@ -89,14 +90,11 @@ footer nav a:focus-visible {
 }
 
 #mobile-menu a:hover {
-  background: #f9e9fd;
+  background: rgba(59, 12, 91, 0.08);
 }
 
 .dark #mobile-menu {
-  background: #24172C;
-  border-top-color: #302039;
-  border-bottom-color: #302039;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
 }
 
 .dark #mobile-menu a {
@@ -104,7 +102,7 @@ footer nav a:focus-visible {
 }
 
 .dark #mobile-menu a:hover {
-  background: #302039;
+  background: rgba(209, 173, 102, 0.1);
   color: #D1AD66;
 }
 
@@ -283,24 +281,24 @@ footer nav a:focus-visible {
   #project-details-modal.project-tv-detail .overflow-y-auto > * { margin-top: 0; min-width: 0; }
 }
 
-/* Brandkit owl with the approved Bodoni Moda wordmark. */
+/* Brandkit owl with the approved Libre Bodoni wordmark. */
 @font-face {
-  font-family: 'Kuwago Bodoni Moda';
-  src: url('../fonts/bodoni-moda/BodoniModa_48pt-Regular.ttf') format('truetype');
+  font-family: 'Kuwago Libre Bodoni';
+  src: url('../fonts/libre-bodoni/LibreBodoni-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 .brand-lockup { display: inline-flex; align-items: center; flex-shrink: 0; gap: 12px; min-height: 48px; color: #3B0C5B; }
 .brand-symbol { display: block; width: 27px; height: 48px; object-fit: contain; flex: none; }
-.brand-wordmark { font-family: 'Kuwago Bodoni Moda', 'Bodoni MT', serif; font-size: 27px; line-height: 1; font-weight: 400; letter-spacing: 0.045em; }
+.brand-wordmark { font-family: 'Kuwago Libre Bodoni', 'Bodoni MT', serif; font-size: 27px; line-height: 1; font-weight: 400; letter-spacing: 0.045em; }
 .brand-logo-dark { display: none; }
 .dark .brand-logo-light { display: none; }
 .dark .brand-logo-dark { display: block; }
 .dark .brand-lockup { color: #B98850; }
 @media (max-width: 379px) { header .brand-lockup { gap: 8px; } header .brand-wordmark { font-size: 23px; } header .brand-symbol { width: 23px; height: 42px; } }
 
-/* Fade the glass layer only, keeping navigation and focus rings crisp. */
+/* Uniform translucent glass across the full header. */
 .site-header {
   --header-glass: rgba(255, 255, 255, 0.64);
   background: transparent;
@@ -311,12 +309,56 @@ footer nav a:focus-visible {
 .site-header::before {
   content: '';
   position: absolute;
-  inset: 0 0 -32px;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
   background: var(--header-glass);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
+}
+
+@font-face {
+  font-family: 'Kuwago Libre Bodoni';
+  src: url('../fonts/libre-bodoni/LibreBodoni-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+header .brand-wordmark { font-weight: 700; }
+
+/* On narrow screens the header contains only the brand and menu trigger. */
+.mobile-action-label { display: none; }
+#mobile-menu { max-height: calc(100dvh - 80px); overflow-y: auto; }
+#mobile-header-actions { display: grid; gap: 16px; padding: 16px 24px 24px; border-top: 1px solid rgba(125, 116, 128, 0.2); }
+#mobile-header-actions > [role="group"] { display: flex; justify-self: start; }
+#mobile-header-actions > a { display: inline-flex; padding: 10px 24px; color: #fff; text-align: center; }
+.dark #mobile-header-actions > a { color: #241B29; }
+#mobile-header-actions .mobile-action-label { display: inline; }
+#mobile-header-actions #theme-toggle,
+#mobile-header-actions > div:has(> .material-symbols-outlined) { display: flex; justify-content: space-between; width: 100%; height: auto; min-height: 44px; padding: 10px 12px; border-radius: 12px; }
+
+#mobile-header-actions > div:has(> .material-symbols-outlined) { color: #fff; }
+
+/* Footer social links and honest, non-interactive pending states. */
+footer .footer-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+footer .footer-socials { display: flex; align-items: flex-start; gap: 12px; }
+footer .footer-social-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+footer .footer-social-control { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid rgba(59, 12, 91, .2); border-radius: 50%; color: #3B0C5B; }
+footer span.footer-social-control { opacity: .5; }
+footer .footer-social-link { transition: color .2s ease, background-color .2s ease, border-color .2s ease; }
+footer .footer-social-link:hover { color: #775a1a; background: rgba(185, 136, 80, .1); border-color: #B98850; }
+.dark footer .footer-social-control { color: #D1AD66; border-color: rgba(209, 173, 102, .35); }
+.dark footer .footer-social-link:hover { color: #F6F1E9; background: rgba(209, 173, 102, .12); border-color: #D1AD66; }
+footer .footer-social-status { font-size: 11px; line-height: 1.4; }
+footer .footer-social-status[hidden] { display: none; }
+footer .footer-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: center; }
+footer .footer-layout > .footer-socials { justify-self: end; }
+footer .footer-layout > nav { justify-self: center; }
+footer .footer-copyright { text-align: center; justify-self: center; width: 100%; padding-top: 8px; }
+@media (min-width: 768px) {
+  footer .footer-layout { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  footer .footer-layout > .footer-brand { grid-column: 1; grid-row: 1; }
+  footer .footer-layout > nav { grid-column: 2; grid-row: 1; }
+  footer .footer-layout > .footer-socials { grid-column: 3; grid-row: 1; }
+  footer .footer-copyright { grid-column: 1 / -1; }
 }

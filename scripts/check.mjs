@@ -7,6 +7,7 @@ const requiredFiles = [
   "robots.txt",
   "sitemap.xml",
   "assets/js/config.js",
+  "assets/js/footer-socials.js",
   "assets/js/main.js",
   "assets/css/loader.css",
   "assets/js/loader.js",
@@ -15,8 +16,9 @@ const requiredFiles = [
   "assets/images/brand/kuwago-favicon.svg",
   "assets/images/brand/kuwago-isotipo-morado.svg",
   "assets/images/brand/kuwago-isotipo-dorado-plano.svg",
-  "assets/fonts/bodoni-moda/BodoniModa_48pt-Regular.ttf",
-  "assets/fonts/bodoni-moda/OFL.txt",
+  "assets/fonts/libre-bodoni/LibreBodoni-Regular.ttf",
+  "assets/fonts/libre-bodoni/OFL.txt",
+  "assets/fonts/libre-bodoni/LibreBodoni-Bold.ttf",
   "assets/images/carabao-portada.webp",
 ];
 
