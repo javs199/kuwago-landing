@@ -61,7 +61,17 @@ $env:PORT = '4174'
 npm run dev
 ```
 
-## Verificación pendiente tras publicación autorizada
+## Verificación de producción — 22 de octubre de 2026
+
+Publicado en https://grupokuwago.com/ con el código del commit `25ecb79`.
+
+- Manifest, HTML, Service Worker y registro comparados por SHA-256 contra el paquete. Hostinger entrega `application/manifest+json` y cabeceras `no-cache, max-age=0, must-revalidate` sin Expires para esos documentos.
+- Los cuatro PNG procesados por el hosting conservan dimensiones, opacidad y similitud de píxeles con los originales; la zona segura del maskable se verificó también sobre la respuesta pública.
+- Registro real `data-pwa-worker=ready` observado en landing y Servicios por HTTPS. Dos tarjetas de Servicios y navegación presentes, sin desbordamiento en escritorio.
+- ZIP de instalación retirado del directorio público. Paquete: `release/kuwago-pwa-25ecb79.zip`; respaldo: `release/backup-before-pwa-25ecb79/`; registro: `release/kuwago-pwa-25ecb79-deploy.json`.
+- Pendiente: panel Application de Chrome, instalación en Android/iOS físicos y una futura prueba de actualización con la app instalada. No se afirma haber instalado la app en un dispositivo real.
+
+## Procedimiento de publicación y pruebas finales
 
 1. Publicar el contenido de dist incluyendo `.htaccess`, `/manifest.webmanifest`, `/sw.js`, `/assets/js/pwa.js` y los cuatro iconos. Conservar respaldo. Invalidar la caché del hosting si sigue mostrando el HTML anterior.
 2. Confirmar desde HTTPS real que ambos HTML enlazan el mismo manifest, sus iconos son PNG válidos sin errores y `scope`/`start_url` siguen en el dominio canónico. Verificar que Hostinger/CDN respeta MIME y revalidación; la prueba local no ejecuta Apache ni verifica sus directivas.
