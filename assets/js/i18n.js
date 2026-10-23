@@ -255,6 +255,60 @@ const i18n = {
   }
 };
 
+// Installation copy shares the site's existing language dictionaries.
+Object.assign(i18n.en, Object.fromEntries(Object.entries({
+  title: 'Take Kuwago with you',
+  description: 'Open Kuwago directly from your device as an app.',
+  manual_description: 'See how to add Kuwago from your browser.',
+  install: 'Install application', later: 'Not now', menu: 'Install Kuwago',
+  guide_title: 'Install Kuwago', close: 'Close instructions',
+  guide_note: 'Browser options vary by version and device. A shortcut is not always an installed app. These instructions do not confirm installation.',
+  ios_share: 'In Safari, open the Share menu (the square with an upward arrow).',
+  ios_add: 'Choose Add to Home Screen. If it is missing, look under Edit Actions.',
+  ios_open: 'Keep Open as Web App enabled if offered, then tap Add. Open Kuwago from its icon to check that it runs in its own window.',
+  ios_safari: 'Open https://grupokuwago.com/ in Safari first; the next steps refer to Safari, not your current browser.',
+  android_menu: 'In Chrome, open the three-dot menu ⋮.',
+  android_install: 'Choose Install app, or Add to Home screen and then Install if offered. If only a shortcut is available, do not treat it as a completed app installation.',
+  open_icon: 'Confirm using the browser’s controls, then open Kuwago from its icon. Check that it opens in a separate app window.',
+  chrome_menu: 'In Chrome, look for the install icon in the address bar or open the three-dot menu ⋮.',
+  chrome_install: 'Look under Cast, save, and share → Install page as app (wording varies). If it is not offered, installation may be unavailable or the app may already be installed.',
+  chrome_any_install: 'Look for Install app or Install page as app in Chrome’s menu. On some devices it appears under Add to Home screen. Use Install if offered; a shortcut alone does not confirm app installation.',
+  desktop_open: 'Confirm in the browser dialog and open Kuwago from your device’s application launcher.',
+  edge_menu: 'In Edge, open Settings and more ⋯.',
+  edge_install: 'Look under More tools → Apps → Install this site as an app (some versions show Apps directly). If unavailable, installation may be blocked or already complete.',
+  firefox_menu: 'In Firefox for Android, open the browser menu.',
+  firefox_add: 'Look for Install or Add app to Home screen. Follow the browser’s available options.',
+  firefox_limit: 'Some devices create a browser shortcut rather than a standalone app. This site cannot confirm that result; use Chrome if you need its Android installation flow.',
+  unavailable: 'This browser has not provided an installation option. Open Kuwago in Chrome, Edge or Safari on a supported device.',
+  prompt_error: 'The browser could not open the installation dialog. No installation was confirmed.',
+}).map(([key,value]) => [`pwa.install.${key}`, value])));
+Object.assign(i18n.es, Object.fromEntries(Object.entries({
+  title: 'Lleva Kuwago contigo',
+  description: 'Abre Kuwago desde tu dispositivo como una aplicación.',
+  manual_description: 'Descubre cómo añadir Kuwago desde tu navegador.',
+  install: 'Instalar aplicación', later: 'Ahora no', menu: 'Instalar Kuwago',
+  guide_title: 'Instalar Kuwago', close: 'Cerrar instrucciones',
+  guide_note: 'Las opciones cambian según la versión y el dispositivo. Un acceso directo no siempre equivale a una app instalada. Estas instrucciones no confirman la instalación.',
+  ios_share: 'En Safari, abre Compartir (el cuadrado con una flecha hacia arriba).',
+  ios_add: 'Selecciona Añadir a pantalla de inicio. Si no aparece, revisa Editar acciones.',
+  ios_open: 'Mantén Abrir como app web si aparece y pulsa Añadir. Abre Kuwago desde su icono para comprobar que funciona en su propia ventana.',
+  ios_safari: 'Primero abre https://grupokuwago.com/ en Safari; los pasos siguientes corresponden a Safari, no a tu navegador actual.',
+  android_menu: 'En Chrome, abre el menú de tres puntos ⋮.',
+  android_install: 'Elige Instalar aplicación, o Añadir a pantalla de inicio y luego Instalar si aparece. Si solo ofrece un acceso directo, no lo consideres una instalación de app completada.',
+  open_icon: 'Confirma con los controles del navegador y abre Kuwago desde su icono. Comprueba que se abre en una ventana de aplicación independiente.',
+  chrome_menu: 'En Chrome, busca el icono de instalación en la barra de direcciones o abre el menú ⋮.',
+  chrome_install: 'Busca Transmitir, guardar y compartir → Instalar página como aplicación (el texto puede variar). Si no aparece, la instalación puede no estar disponible o la app ya puede estar instalada.',
+  chrome_any_install: 'Busca Instalar aplicación o Instalar página como aplicación en el menú de Chrome. En algunos dispositivos aparece bajo Añadir a pantalla de inicio. Usa Instalar si se ofrece; un acceso directo por sí solo no confirma la instalación de una app.',
+  desktop_open: 'Confirma en el diálogo del navegador y abre Kuwago desde el menú de aplicaciones de tu dispositivo.',
+  edge_menu: 'En Edge, abre Configuración y más ⋯.',
+  edge_install: 'Busca Más herramientas → Aplicaciones → Instalar este sitio como una aplicación (algunas versiones muestran Aplicaciones directamente). Si no aparece, la instalación puede estar bloqueada o ya completada.',
+  firefox_menu: 'En Firefox para Android, abre el menú del navegador.',
+  firefox_add: 'Busca Instalar o Añadir aplicación a pantalla de inicio y sigue las opciones disponibles.',
+  firefox_limit: 'En algunos dispositivos se crea un acceso del navegador en lugar de una app independiente. El sitio no puede confirmar ese resultado; usa Chrome si necesitas su instalación para Android.',
+  unavailable: 'Este navegador no ha ofrecido una opción de instalación. Abre Kuwago en Chrome, Edge o Safari desde un dispositivo compatible.',
+  prompt_error: 'El navegador no pudo abrir el diálogo de instalación. No se confirmó ninguna instalación.',
+}).map(([key,value]) => [`pwa.install.${key}`, value])));
+
 if (typeof window !== "undefined") {
   window.i18n = i18n;
 }

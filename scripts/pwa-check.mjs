@@ -25,8 +25,11 @@ export function checkPwa(root = '.') {
       for (const required of ['rel="manifest" href="/manifest.webmanifest"', 'name="theme-color" content="#3B0C5B"', 'rel="apple-touch-icon" sizes="180x180" href="/assets/images/pwa/apple-touch-icon.png"', 'name="apple-mobile-web-app-capable" content="yes"', 'defer src="/assets/js/pwa.js"']) {
         require(html.includes(required), `${page}: PWA metadata missing: ${required}`);
       }
+      for (const path of ['/assets/css/pwa-install.css', '/assets/js/pwa-install-state.js', '/assets/js/pwa-install.js']) {
+        require(html.includes(`"${path}"`), `${page}: missing installation component ${path}`);
+      }
     }
-    for (const file of ['sw.js', 'assets/js/pwa.js']) require(existsSync(join(root, file)), `Missing PWA file: ${file}`);
+    for (const file of ['sw.js', 'assets/js/pwa.js', 'assets/js/pwa-install-state.js', 'assets/js/pwa-install.js', 'assets/css/pwa-install.css']) require(existsSync(join(root, file)), `Missing PWA file: ${file}`);
   } catch (error) { errors.push(`PWA validation: ${error.message}`); }
   return errors;
 }

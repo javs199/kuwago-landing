@@ -1,5 +1,7 @@
 # Grupo Kuwago — PWA V1
 
+La experiencia personalizada de instalación se está implementando localmente sobre esta base, sin publicar cambios. Su comportamiento, archivos, pruebas y límites se describen en [PWA-INSTALLATION.md](PWA-INSTALLATION.md). Las referencias siguientes a ausencia de promoción propia corresponden a la V1 ya publicada.
+
 Estado: configuración implementada y comprobada localmente el 22 de octubre de 2026. El usuario autorizó después commit, push y publicación en Hostinger. La verificación del dominio, versión y respaldo se registra en release/ y en el checklist de Notion. La instalación real en dispositivos Android/iOS sigue pendiente de prueba manual.
 
 ## Auditoría y alcance
