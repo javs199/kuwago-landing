@@ -67,3 +67,7 @@ Vista normal local: http://127.0.0.1:4174/. En Chrome sin evento disponible, el 
 - [Microsoft: instalación de aplicaciones en Edge](https://support.microsoft.com/en-us/edge/install-manage-or-uninstall-apps-in-microsoft-edge).
 - [Apple: añadir una app web desde Safari](https://support.apple.com/en-lamr/guide/iphone/iphea86e5236/ios).
 - [Mozilla: aplicaciones web en Android](https://support.mozilla.org/en-US/kb/use-web-apps-firefox-android).
+
+## Publicación del instalador — 22 de octubre de 2026
+
+Publicado con autorización del usuario en Hostinger. Se versionó la URL de i18n.js en ambas páginas para que las traducciones nuevas no dependan de una copia anterior con caché de siete días. Se conserva el manifest y el Service Worker. Paquete y respaldo bajo release/; ver registro kuwago-install-9f8b21b-deploy.json.
