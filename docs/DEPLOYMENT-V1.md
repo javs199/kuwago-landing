@@ -40,3 +40,7 @@ No se ha realizado una auditoría exhaustiva de todos los navegadores o tamaños
 ## Recuperación y próximas publicaciones
 
 Conservar el ZIP y su suma SHA-256 como referencia de esta primera versión. Antes del siguiente deploy, respaldar el contenido existente del alojamiento; generar un nuevo paquete y nombre de versión sin sobrescribir este ZIP. Para restaurar V1, cargar su contenido público en la raíz del mismo sitio y verificar HTTPS, estilos y galerías. No había una versión pública previa que recuperar.
+
+## Coherencia de recursos entre publicaciones
+
+El build agrega a las URLs locales de CSS y JavaScript un parámetro v derivado de SHA-256. Cuando cambia un archivo, cambia su URL y el navegador descarga la versión correspondiente aunque conserve una copia anterior durante siete días. No se modifica el diseño ni se borran preferencias. Los recursos PWA con revalidación obligatoria conservan sus URLs. Validación: npm run test:assets y comprobación responsive del paquete de dist. Esta corrección responde al logo desbordado y controles antiguos observados en dispositivos con recursos en caché.

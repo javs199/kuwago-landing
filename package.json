@@ -7,6 +7,7 @@
     "dev": "node scripts/serve.mjs",
     "build": "npm run css && node scripts/build.mjs",
     "check": "node scripts/check.mjs",
+    "test:assets": "node --test scripts/test-asset-versioning.mjs",
     "test:loader": "node --test scripts/test-loader.mjs",
     "test:pwa": "node --test scripts/test-pwa.mjs scripts/test-pwa-install.mjs",
     "css": "tailwindcss -i styles/tailwind.input.css -o assets/css/tailwind.css --minify"

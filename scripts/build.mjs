@@ -1,6 +1,7 @@
 import { getConciergePage } from './page-config.mjs';
 import { cpSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, sep } from "node:path";
+import { versionAssets } from './asset-versioning.mjs';
 
 const conciergePage = getConciergePage();
 const output = "dist";
@@ -9,10 +10,10 @@ mkdirSync(output, { recursive: true });
 
 // Trial fonts are licensed for internal evaluation only. Never export preview links.
 const html = readFileSync("index.html", "utf8").replace(/<link\b[^>]*\bdata-preview-only[^>]*>\s*/g, "");
-writeFileSync(`${output}/index.html`, html);
+writeFileSync(`${output}/index.html`, versionAssets(html));
 if (conciergePage) {
   const pageHtml = readFileSync(conciergePage, "utf8").replace(/<link\b[^>]*\bdata-preview-only[^>]*>\s*/g, "");
-  writeFileSync(`${output}/${conciergePage}`, pageHtml);
+  writeFileSync(`${output}/${conciergePage}`, versionAssets(pageHtml));
 }
 // V1 omits project photos; keep source assets available for V2.
 const projectImages = resolve("assets/images/projects");
