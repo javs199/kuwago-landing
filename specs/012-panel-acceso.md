@@ -60,3 +60,22 @@ Cada tarjeta: icono Material Symbols coherente (p. ej. `luggage`, `admin_panel_s
 - Sin deploy ni push. Pendiente la revisión independiente de Antigravity en una sesión nueva.
 
 ## Resultado de la revisión
+
+**Veredicto:** `Cambios requeridos`
+
+1. `assets/css/styles.css:338,340` — Al convertir el contenedor del icono `person` de `<div>` a `<button id="account-button">`, las reglas móviles `#mobile-header-actions > div:has(> .material-symbols-outlined)` quedaron huérfanas (código muerto) y dejaron de aplicarse al control de cuenta dentro del menú móvil (`max-width: 1023px`). Como `setupMobileNavigation()` en `assets/js/main.js:661-669` le antepone `<span class="mobile-action-label">Cuenta</span>` (`display: inline`), el botón en el menú móvil conserva `w-8 h-8 rounded-full` (32×32 px) sin `width: 100%` ni `color: #fff`, desbordando el texto «Cuenta»/«Account» y el icono fuera del círculo de 32 px. — **Arreglo sugerido:** reemplazar `#mobile-header-actions > div:has(> .material-symbols-outlined)` en las líneas 338 y 340 por `#mobile-header-actions #account-button`.
+
+### Evidencia de verificación ejecutada en revisión
+- **Archivos tocados en el commit de la spec (`0a93fcd..0fce775`):** `assets/css/styles.css`, `assets/js/config.js`, `assets/js/i18n.js`, `assets/js/main.js`, `concierge-marketplace.html`, `index.html` y `specs/012-panel-acceso.md` (coinciden con la spec). Nota: `git diff main...HEAD` incluye además los 3 commits previos aún no mergeados a `main` (`b3a7efd`, `6595ce8`, `0a93fcd`), y `git status` muestra `M assets/css/tailwind.css` y `?? menu/` previos en el árbol de trabajo.
+- **`npm run build`:** `Done in 259ms. Production files created in dist/.` (exit 0).
+- **`npm run check`:** `Contracts built; public runtime prepared. Static project checks passed. All contact destinations are correctly configured.` (exit 0).
+- **`npm run lint:catalog`:** 0 errores, 0 warnings (exit 0).
+- **Eliminación de `footer-admin-link`:** 0 coincidencias en `index.html` y `concierge-marketplace.html`; `footer.admin` eliminado de `assets/js/i18n.js`.
+
+### Corrección del hallazgo de revisión — 2026-11-03
+- Se reemplazan las dos apariciones del selector móvil del antiguo `div` por `#mobile-header-actions #account-button`; se recuperan ancho completo, altura mínima de 44 px, espaciado, radio y texto blanco. No se cambia la lógica ni el contenido del panel.
+- Playwright/Edge contra `dist/`, 390×844, ambas páginas, ES/EN y claro/oscuro: 8/8 PASS. El control mide 342×44 px, el color calculado es `rgb(255, 255, 255)` y texto/icono quedan dentro de sus límites, sin desbordamiento. Enter abre, Esc cierra y devuelve el foco al botón visible. Captura del menú móvil revisada visualmente.
+- Regresión completa de la spec: 16/16 combinaciones PASS (1440/390 px, ambas páginas, ambos idiomas y temas), incluido teclado, foco, clic exterior y destino admin en la misma pestaña interceptado localmente.
+- `npm run build`, `npm run check`, `npm run lint:catalog` y `git diff --check`: PASS. Se conserva byte por byte el cambio previo de `tailwind.css`; `menu/` permanece fuera del commit.
+- Evidencia adicional fuera del repo: `%TEMP%/kuwago-012-review/` y `%TEMP%/kuwago-012-review-test.py`.
+- Se conserva el veredicto original de Antigravity como historial; hallazgo corregido, pendiente de nueva revisión independiente. Estado: **en revisión**. Sin deploy ni push.

@@ -335,9 +335,9 @@ header .brand-wordmark { font-weight: 700; }
 .dark #mobile-header-actions > a { color: #241B29; }
 #mobile-header-actions .mobile-action-label { display: inline; }
 #mobile-header-actions #theme-toggle,
-#mobile-header-actions > div:has(> .material-symbols-outlined) { display: flex; justify-content: space-between; width: 100%; height: auto; min-height: 44px; padding: 10px 12px; border-radius: 12px; }
+#mobile-header-actions #account-button { display: flex; justify-content: space-between; width: 100%; height: auto; min-height: 44px; padding: 10px 12px; border-radius: 12px; }
 
-#mobile-header-actions > div:has(> .material-symbols-outlined) { color: #fff; }
+#mobile-header-actions #account-button { color: #fff; }
 
 /* Footer social links and honest, non-interactive pending states. */
 footer .footer-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
