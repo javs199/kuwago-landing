@@ -22,6 +22,8 @@ const requiredFiles = [
   "assets/fonts/libre-bodoni/OFL.txt",
   "assets/fonts/libre-bodoni/LibreBodoni-Bold.ttf",
   "assets/images/carabao-portada.webp",
+  "assets/images/email/kuwago-firma-claro-v1.png",
+  "assets/images/email/kuwago-firma-oscuro-v1.png",
 ];
 
 const errors = [];

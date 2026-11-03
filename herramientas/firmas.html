@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Firmas KUWAGO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Herramienta interna. No forma parte del build de la landing. */
+  :root {
+    --bg: #f8f6fa; --panel: #ffffff; --ink: #241332; --muted: #6b5b78;
+    --primary: #3b0c5b; --gold: #b98850; --line: #e6dfeb; --field: #ffffff;
+    --ok: #2f7d4f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #160b1d; --panel: #24172c; --ink: #f6f1e9; --muted: #bfaecb;
+      --primary: #d1ad66; --gold: #d1ad66; --line: #3a2a45; --field: #1c1023; --ok: #7fd3a1;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #160b1d; --panel: #24172c; --ink: #f6f1e9; --muted: #bfaecb;
+    --primary: #d1ad66; --gold: #d1ad66; --line: #3a2a45; --field: #1c1023; --ok: #7fd3a1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Hanken Grotesk", "Segoe UI", Arial, sans-serif; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header h1 { margin: 0; font: 600 20px/1.2 Georgia, "Times New Roman", serif; color: var(--primary); letter-spacing: .02em; }
+  header h1 small { display: block; font: 400 13px/1.4 "Hanken Grotesk", sans-serif; color: var(--muted); letter-spacing: 0; }
+  .toggles { display: flex; gap: 8px; }
+  .toggles button { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  main { display: grid; grid-template-columns: minmax(280px, 380px) 1fr; gap: 24px; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; padding: 16px; } }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+  h2 { margin: 0 0 14px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+  label { display: block; font-size: 13px; font-weight: 500; margin: 12px 0 4px; }
+  label span { color: var(--muted); font-weight: 400; }
+  .seg label span { color: inherit; font-weight: 500; }
+  input, select { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--field); color: var(--ink); font: inherit; }
+  input:focus, select:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg label { flex: 1; margin: 0; text-align: center; padding: 8px; cursor: pointer; font-weight: 500; }
+  .seg input { display: none; }
+  .seg label:has(input:checked) { background: var(--primary); color: var(--bg); }
+  .preview-wrap { border-radius: 10px; padding: 28px 20px; overflow-x: auto; border: 1px dashed var(--line); }
+  .preview-wrap { background: #ffffff; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .actions button { border: 0; border-radius: 8px; padding: 10px 16px; font: inherit; font-weight: 600; cursor: pointer; background: var(--primary); color: var(--bg); }
+  .actions button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  #status { min-height: 1.5em; margin-top: 10px; font-size: 14px; color: var(--ok); }
+  #status.warn { color: #b3541e; }
+  details { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 14px; }
+  summary { cursor: pointer; font-weight: 600; }
+  details ol { padding-left: 20px; margin: 8px 0 0; }
+  details li { margin: 4px 0; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 14px; }
+  code { font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>KUWAGO <small data-i18n="subtitle">Generador de firmas de correo</small></h1>
+  <div class="toggles">
+    <button type="button" id="langBtn" aria-label="Cambiar idioma">EN</button>
+    <button type="button" id="themeBtn" data-i18n="themeBtn">Tema</button>
+  </div>
+</header>
+
+<main>
+  <section aria-labelledby="formTitle">
+    <h2 id="formTitle" data-i18n="formTitle">Datos</h2>
+
+    <label for="preset" data-i18n="preset">Persona</label>
+    <select id="preset"></select>
+
+    <label for="name" data-i18n="name">Nombre</label>
+    <input id="name" autocomplete="name" maxlength="60">
+
+    <label for="role" data-i18n="role">Cargo</label>
+    <input id="role" maxlength="60">
+
+    <label for="company" data-i18n="company">Empresa</label>
+    <input id="company" maxlength="60">
+
+    <label for="phone"><b data-i18n="phone">Teléfono</b> <span data-i18n="optional">(opcional)</span></label>
+    <input id="phone" type="tel" inputmode="tel" maxlength="30" placeholder="+506 0000 0000">
+
+    <label for="email"><b data-i18n="email">Correo</b> <span data-i18n="optional">(opcional)</span></label>
+    <input id="email" type="email" maxlength="80" placeholder="nombre@grupokuwago.com">
+
+    <label for="site" data-i18n="site">Sitio web</label>
+    <input id="site" maxlength="60">
+
+    <label data-i18n="variant">Variante</label>
+    <div class="seg" role="radiogroup">
+      <label><input type="radio" name="variant" value="claro" checked><span data-i18n="light">Claro</span></label>
+      <label><input type="radio" name="variant" value="oscuro"><span data-i18n="dark">Oscuro</span></label>
+    </div>
+    <p class="note" data-i18n="variantNote">Recomendado: Claro. Algunos clientes de correo alteran los fondos oscuros en su modo noche.</p>
+  </section>
+
+  <section aria-labelledby="previewTitle">
+    <h2 id="previewTitle" data-i18n="previewTitle">Vista previa</h2>
+    <div class="preview-wrap" id="previewWrap">
+      <div id="signature"></div>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="copyRich" data-i18n="copyRich">Copiar firma</button>
+      <button type="button" id="copyHtml" class="secondary" data-i18n="copyHtml">Copiar HTML</button>
+      <button type="button" id="downloadHtml" class="secondary" data-i18n="downloadHtml">Descargar .html</button>
+    </div>
+    <div id="status" role="status" aria-live="polite"></div>
+
+    <details open>
+      <summary data-i18n="howGmail">Gmail (web)</summary>
+      <ol data-i18n-list="stepsGmail">
+        <li>Pulsa «Copiar firma».</li>
+        <li>Gmail → ⚙️ → Ver todos los ajustes → General → Firma → Crear nueva.</li>
+        <li>Pega con Ctrl+V en el cuadro y guarda los cambios al final de la página.</li>
+      </ol>
+    </details>
+    <details>
+      <summary data-i18n="howHostinger">Hostinger Webmail</summary>
+      <ol data-i18n-list="stepsHostinger">
+        <li>Pulsa «Copiar firma».</li>
+        <li>Webmail → Ajustes → Identidades (o Firma) → elige tu dirección.</li>
+        <li>Activa el modo de firma HTML si aparece la opción, pega con Ctrl+V y guarda.</li>
+        <li>Si el editor solo acepta código, usa «Copiar HTML» y pégalo en el modo código fuente.</li>
+      </ol>
+    </details>
+    <details>
+      <summary data-i18n="howOutlook">Outlook</summary>
+      <ol data-i18n-list="stepsOutlook">
+        <li>Pulsa «Copiar firma».</li>
+        <li>Outlook web o nuevo: Configuración → Cuentas → Firmas → Nueva firma → pega y guarda.</li>
+        <li>Outlook clásico: Archivo → Opciones → Correo → Firmas → Nueva → pega y acepta.</li>
+      </ol>
+    </details>
+    <p class="note" data-i18n="logoNote">El logo se carga desde grupokuwago.com. Si la vista previa muestra el logo pero el correo recibido no, el archivo aún no se ha publicado en el sitio.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // URL pública fija de los logos (se publican con la landing en assets/images/email/).
+  const LOGO_BASE = 'https://grupokuwago.com/assets/images/email/';
+  const LOCAL_BASE = '../assets/images/email/';
+  const LOGO_FILES = { claro: 'kuwago-firma-claro-v1.png', oscuro: 'kuwago-firma-oscuro-v1.png' };
+
+  // Paleta de las firmas PT2-R3 (recursos-marca/02-uniformes-y-firmas/PT2-R3).
+  const PALETTE = {
+    claro:  { bg: '', name: '#3B0C5B', text: '#241332', link: '#3B0C5B', rule: '#B98850' },
+    oscuro: { bg: '#3B0C5B', name: '#F6F1E9', text: '#F6F1E9', link: '#B98850', rule: '#B98850' },
+  };
+  const SERIF = "Georgia, 'Times New Roman', Times, serif";
+  const SANS = "'Segoe UI', Tahoma, Arial, Helvetica, sans-serif";
+
+  // Teléfonos personales NO se guardan aquí: el repo es público. Solo el número público de contacto.
+  const PRESETS = [
+    { id: 'nahomy', name: 'Nahomy Soraca', role: 'CEO', email: 'nahomysoraca@grupokuwago.com', phone: '+506 8988 3466' },
+    { id: 'jesus', name: 'Jesus Vargas', role: 'Gerente de TI', email: '', phone: '' },
+    { id: 'katherine', name: 'Katherine Sandi', role: 'Concierge', email: 'katherinesandi@grupokuwago.com', phone: '' },
+    { id: 'custom', name: '', role: '', email: '', phone: '' },
+  ];
+  const DEFAULTS = { company: 'Grupo KUWAGO', site: 'grupokuwago.com' };
+
+  const T = {
+    es: {
+      subtitle: 'Generador de firmas de correo', themeBtn: 'Tema', formTitle: 'Datos', preset: 'Persona',
+      name: 'Nombre', role: 'Cargo', company: 'Empresa', phone: 'Teléfono', email: 'Correo', site: 'Sitio web',
+      optional: '(opcional)', variant: 'Variante', light: 'Claro', dark: 'Oscuro',
+      variantNote: 'Recomendado: Claro. Algunos clientes de correo alteran los fondos oscuros en su modo noche.',
+      previewTitle: 'Vista previa', copyRich: 'Copiar firma', copyHtml: 'Copiar HTML', downloadHtml: 'Descargar .html',
+      howGmail: 'Gmail (web)', howHostinger: 'Hostinger Webmail', howOutlook: 'Outlook',
+      stepsGmail: ['Pulsa «Copiar firma».', 'Gmail → ⚙️ → Ver todos los ajustes → General → Firma → Crear nueva.', 'Pega con Ctrl+V en el cuadro y guarda los cambios al final de la página.'],
+      stepsHostinger: ['Pulsa «Copiar firma».', 'Webmail → Ajustes → Identidades (o Firma) → elige tu dirección.', 'Activa el modo de firma HTML si aparece la opción, pega con Ctrl+V y guarda.', 'Si el editor solo acepta código, usa «Copiar HTML» y pégalo en el modo código fuente.'],
+      stepsOutlook: ['Pulsa «Copiar firma».', 'Outlook web o nuevo: Configuración → Cuentas → Firmas → Nueva firma → pega y guarda.', 'Outlook clásico: Archivo → Opciones → Correo → Firmas → Nueva → pega y acepta.'],
+      logoNote: 'El logo se carga desde grupokuwago.com. Si la vista previa muestra el logo pero el correo recibido no, el archivo aún no se ha publicado en el sitio.',
+      custom: 'Otra persona…', copied: 'Firma copiada. Pégala en la configuración de tu correo.',
+      copiedHtml: 'HTML copiado.', copyFail: 'El navegador bloqueó el portapapeles. Selecciona la firma con el ratón y copia con Ctrl+C.',
+      needName: 'Escribe al menos el nombre.', localLogo: 'Vista previa con el logo local: aún no está publicado en grupokuwago.com.',
+    },
+    en: {
+      subtitle: 'Email signature generator', themeBtn: 'Theme', formTitle: 'Details', preset: 'Person',
+      name: 'Name', role: 'Job title', company: 'Company', phone: 'Phone', email: 'Email', site: 'Website',
+      optional: '(optional)', variant: 'Variant', light: 'Light', dark: 'Dark',
+      variantNote: 'Recommended: Light. Some email clients alter dark backgrounds in their night mode.',
+      previewTitle: 'Preview', copyRich: 'Copy signature', copyHtml: 'Copy HTML', downloadHtml: 'Download .html',
+      howGmail: 'Gmail (web)', howHostinger: 'Hostinger Webmail', howOutlook: 'Outlook',
+      stepsGmail: ['Click “Copy signature”.', 'Gmail → ⚙️ → See all settings → General → Signature → Create new.', 'Paste with Ctrl+V and save changes at the bottom of the page.'],
+      stepsHostinger: ['Click “Copy signature”.', 'Webmail → Settings → Identities (or Signature) → pick your address.', 'Enable HTML signature if offered, paste with Ctrl+V and save.', 'If the editor only accepts code, use “Copy HTML” and paste it in source mode.'],
+      stepsOutlook: ['Click “Copy signature”.', 'Outlook web or new: Settings → Accounts → Signatures → New signature → paste and save.', 'Classic Outlook: File → Options → Mail → Signatures → New → paste and OK.'],
+      logoNote: 'The logo loads from grupokuwago.com. If the preview shows it but the received email does not, the file has not been published to the site yet.',
+      custom: 'Someone else…', copied: 'Signature copied. Paste it in your email settings.',
+      copiedHtml: 'HTML copied.', copyFail: 'The browser blocked the clipboard. Select the signature with the mouse and copy with Ctrl+C.',
+      needName: 'Enter at least a name.', localLogo: 'Preview uses the local logo: it is not published on grupokuwago.com yet.',
+    },
+  };
+
+  const $ = id => document.getElementById(id);
+  const fields = ['name', 'role', 'company', 'phone', 'email', 'site'];
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* sin almacenamiento */ } },
+  };
+  let lang = store.get('kuwago-firmas-lang') === 'en' ? 'en' : 'es';
+  let useLocalLogo = false;
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const telHref = p => 'tel:' + p.replace(/[^\d+]/g, '');
+  const siteHref = s => /^https?:\/\//i.test(s) ? s : 'https://' + s.replace(/^\/+/, '');
+  const siteLabel = s => s.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+
+  function values() {
+    const v = {};
+    for (const f of fields) v[f] = $(f).value.trim();
+    v.variant = document.querySelector('input[name="variant"]:checked').value;
+    return v;
+  }
+
+  // HTML para correo: tablas, estilos en línea, fuentes del sistema, imagen absoluta con width/height.
+  function signatureHtml(v, logoBase) {
+    const c = PALETTE[v.variant];
+    const logo = (logoBase || LOGO_BASE) + LOGO_FILES[v.variant];
+    const bgAttr = c.bg ? ` bgcolor="${c.bg}"` : '';
+    const bgStyle = c.bg ? `background-color:${c.bg};` : '';
+    const pad = c.bg ? '5px 26px' : '5px 0';
+    const roleLine = [v.role, v.company].filter(Boolean).map(esc).join('&nbsp;&nbsp;/&nbsp;&nbsp;');
+    const rows = [];
+    if (v.phone) rows.push(`<a href="${esc(telHref(v.phone))}" style="color:${c.text};text-decoration:none;">${esc(v.phone)}</a>`);
+    if (v.email) rows.push(`<a href="mailto:${esc(v.email)}" style="color:${c.text};text-decoration:none;">${esc(v.email)}</a>`);
+    if (v.site) rows.push(`<a href="${esc(siteHref(v.site))}" style="color:${c.link};text-decoration:none;">${esc(siteLabel(v.site))}</a>`);
+    // Contactos en una sola línea para una firma más ancha y baja.
+    const sep = `<span style="color:${c.rule};">&nbsp;&nbsp;·&nbsp;&nbsp;</span>`;
+    const contact = rows.length
+      ? `<tr><td style="padding:8px 0 0 0;font-family:${SANS};font-size:13px;line-height:18px;color:${c.text};mso-line-height-rule:exactly;white-space:nowrap;">${rows.join(sep)}</td></tr>`
+      : '';
+
+    return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="660"${bgAttr} style="border-collapse:collapse;${bgStyle}width:660px;">
+<tr><td style="padding:${pad};">
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse;width:100%;">
+<tr>
+<td valign="middle" width="74" style="width:74px;padding:0 24px 0 0;vertical-align:middle;">
+<a href="${esc(siteHref(v.site || DEFAULTS.site))}" style="text-decoration:none;"><img src="${esc(logo)}" width="74" height="90" alt="KUWAGO" style="display:block;width:74px;height:90px;border:0;outline:none;text-decoration:none;"></a>
+</td>
+<td valign="middle" style="vertical-align:middle;">
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse;width:100%;">
+<tr><td style="font-family:${SERIF};font-size:22px;line-height:26px;color:${c.name};mso-line-height-rule:exactly;">${esc(v.name)}</td></tr>
+${roleLine ? `<tr><td style="padding:2px 0 0 0;font-family:${SANS};font-size:12px;line-height:16px;color:${c.text};mso-line-height-rule:exactly;">${roleLine}</td></tr>` : ''}
+<tr><td style="padding:8px 0 0 0;"><table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse;width:100%;"><tr><td height="1" style="height:1px;line-height:1px;font-size:1px;background-color:${c.rule};border-top:1px solid ${c.rule};">&nbsp;</td></tr></table></td></tr>
+${contact}
+</table>
+</td>
+</tr>
+</table>
+</td></tr>
+</table>`;
+  }
+
+  function render() {
+    const v = values();
+    $('signature').innerHTML = signatureHtml(v, useLocalLogo ? LOCAL_BASE : LOGO_BASE);
+    const img = $('signature').querySelector('img');
+    img.addEventListener('error', () => {
+      if (!useLocalLogo) { useLocalLogo = true; render(); setStatus(T[lang].localLogo, true); }
+    }, { once: true });
+    store.set('kuwago-firmas-data', { preset: $('preset').value, ...v });
+  }
+
+  function setStatus(msg, warn) {
+    $('status').textContent = msg;
+    $('status').classList.toggle('warn', !!warn);
+  }
+
+  async function copyRich() {
+    const v = values();
+    if (!v.name) return setStatus(T[lang].needName, true);
+    const html = signatureHtml(v);
+    const text = [v.name, [v.role, v.company].filter(Boolean).join(' / '), v.phone, v.email, v.site].filter(Boolean).join('\n');
+    try {
+      if (!window.ClipboardItem || !navigator.clipboard?.write) throw new Error('sin ClipboardItem');
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+      })]);
+      setStatus(T[lang].copied);
+    } catch {
+      // Alternativa: copiar la selección del bloque renderizado (con URL pública del logo).
+      const holder = document.createElement('div');
+      holder.style.cssText = 'position:fixed;left:-9999px;top:0;';
+      holder.innerHTML = html;
+      document.body.appendChild(holder);
+      const range = document.createRange();
+      range.selectNodeContents(holder);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      const ok = document.execCommand('copy');
+      sel.removeAllRanges(); holder.remove();
+      setStatus(ok ? T[lang].copied : T[lang].copyFail, !ok);
+    }
+  }
+
+  async function copyHtml() {
+    const v = values();
+    if (!v.name) return setStatus(T[lang].needName, true);
+    try { await navigator.clipboard.writeText(signatureHtml(v)); setStatus(T[lang].copiedHtml); }
+    catch { setStatus(T[lang].copyFail, true); }
+  }
+
+  function downloadHtml() {
+    const v = values();
+    if (!v.name) return setStatus(T[lang].needName, true);
+    const doc = `<!doctype html><html><head><meta charset="utf-8"><title>Firma ${esc(v.name)}</title></head><body>${signatureHtml(v)}</body></html>`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([doc], { type: 'text/html' }));
+    a.download = 'firma-' + (v.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kuwago') + '-' + v.variant + '.html';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function applyPreset(id) {
+    const p = PRESETS.find(x => x.id === id) || PRESETS[PRESETS.length - 1];
+    if (p.id === 'custom') return render();
+    $('name').value = p.name; $('role').value = p.role; $('email').value = p.email; $('phone').value = p.phone;
+    $('company').value = DEFAULTS.company; $('site').value = DEFAULTS.site;
+    render();
+  }
+
+  function applyLang() {
+    const t = T[lang];
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t[el.dataset.i18n]; });
+    document.querySelectorAll('[data-i18n-list]').forEach(el => {
+      el.innerHTML = t[el.dataset.i18nList].map(s => `<li>${esc(s)}</li>`).join('');
+    });
+    $('langBtn').textContent = lang === 'es' ? 'EN' : 'ES';
+    const sel = $('preset'), cur = sel.value;
+    sel.innerHTML = PRESETS.map(p => `<option value="${p.id}">${esc(p.id === 'custom' ? t.custom : p.name)}</option>`).join('');
+    if (cur) sel.value = cur;
+  }
+
+  function initTheme() {
+    const saved = store.get('kuwago-firmas-theme');
+    if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+    $('themeBtn').addEventListener('click', () => {
+      const isDark = document.documentElement.dataset.theme
+        ? document.documentElement.dataset.theme === 'dark'
+        : matchMedia('(prefers-color-scheme: dark)').matches;
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      store.set('kuwago-firmas-theme', next);
+    });
+  }
+
+  // Inicio
+  initTheme();
+  applyLang();
+  const saved = store.get('kuwago-firmas-data');
+  if (saved && typeof saved === 'object') {
+    $('preset').value = PRESETS.some(p => p.id === saved.preset) ? saved.preset : 'custom';
+    for (const f of fields) $(f).value = typeof saved[f] === 'string' ? saved[f] : '';
+    const r = document.querySelector(`input[name="variant"][value="${saved.variant === 'oscuro' ? 'oscuro' : 'claro'}"]`);
+    r.checked = true;
+    render();
+  } else {
+    $('preset').value = 'nahomy';
+    applyPreset('nahomy');
+  }
+
+  $('preset').addEventListener('change', e => applyPreset(e.target.value));
+  for (const f of fields) $(f).addEventListener('input', render);
+  document.querySelectorAll('input[name="variant"]').forEach(r => r.addEventListener('change', render));
+  $('copyRich').addEventListener('click', copyRich);
+  $('copyHtml').addEventListener('click', copyHtml);
+  $('downloadHtml').addEventListener('click', downloadHtml);
+  $('langBtn').addEventListener('click', () => { lang = lang === 'es' ? 'en' : 'es'; store.set('kuwago-firmas-lang', lang); applyLang(); });
+})();
+</script>
+</body>
+</html>
