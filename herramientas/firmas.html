@@ -229,28 +229,30 @@
     const logo = (logoBase || LOGO_BASE) + LOGO_FILES[v.variant];
     const bgAttr = c.bg ? ` bgcolor="${c.bg}"` : '';
     const bgStyle = c.bg ? `background-color:${c.bg};` : '';
-    const pad = c.bg ? '22px 28px' : '4px 0';
+    const pad = c.bg ? '16px 26px' : '4px 0';
     const roleLine = [v.role, v.company].filter(Boolean).map(esc).join('&nbsp;&nbsp;/&nbsp;&nbsp;');
     const rows = [];
     if (v.phone) rows.push(`<a href="${esc(telHref(v.phone))}" style="color:${c.text};text-decoration:none;">${esc(v.phone)}</a>`);
     if (v.email) rows.push(`<a href="mailto:${esc(v.email)}" style="color:${c.text};text-decoration:none;">${esc(v.email)}</a>`);
     if (v.site) rows.push(`<a href="${esc(siteHref(v.site))}" style="color:${c.link};text-decoration:none;">${esc(siteLabel(v.site))}</a>`);
-    const contact = rows.map((r, i) =>
-      `<tr><td style="padding:${i === 0 ? '10px' : '4px'} 0 0 0;font-family:${SANS};font-size:13px;line-height:18px;color:${c.text};mso-line-height-rule:exactly;">${r}</td></tr>`
-    ).join('');
+    // Contactos en una sola línea para una firma más ancha y baja.
+    const sep = `<span style="color:${c.rule};">&nbsp;&nbsp;·&nbsp;&nbsp;</span>`;
+    const contact = rows.length
+      ? `<tr><td style="padding:8px 0 0 0;font-family:${SANS};font-size:13px;line-height:18px;color:${c.text};mso-line-height-rule:exactly;white-space:nowrap;">${rows.join(sep)}</td></tr>`
+      : '';
 
-    return `<table cellpadding="0" cellspacing="0" border="0" role="presentation"${bgAttr} style="border-collapse:collapse;${bgStyle}max-width:520px;">
+    return `<table cellpadding="0" cellspacing="0" border="0" role="presentation"${bgAttr} style="border-collapse:collapse;${bgStyle}max-width:600px;">
 <tr><td style="padding:${pad};">
 <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">
 <tr>
-<td valign="middle" width="94" style="width:94px;padding:0 26px 0 0;vertical-align:middle;">
-<a href="${esc(siteHref(v.site || DEFAULTS.site))}" style="text-decoration:none;"><img src="${esc(logo)}" width="94" height="115" alt="KUWAGO" style="display:block;width:94px;height:115px;border:0;outline:none;text-decoration:none;"></a>
+<td valign="middle" width="70" style="width:70px;padding:0 22px 0 0;vertical-align:middle;">
+<a href="${esc(siteHref(v.site || DEFAULTS.site))}" style="text-decoration:none;"><img src="${esc(logo)}" width="70" height="86" alt="KUWAGO" style="display:block;width:70px;height:86px;border:0;outline:none;text-decoration:none;"></a>
 </td>
 <td valign="middle" style="vertical-align:middle;">
 <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">
-<tr><td style="font-family:${SERIF};font-size:23px;line-height:28px;color:${c.name};mso-line-height-rule:exactly;">${esc(v.name)}</td></tr>
-${roleLine ? `<tr><td style="padding:4px 0 0 0;font-family:${SANS};font-size:12px;line-height:16px;color:${c.text};mso-line-height-rule:exactly;">${roleLine}</td></tr>` : ''}
-<tr><td style="padding:10px 0 0 0;"><table cellpadding="0" cellspacing="0" border="0" role="presentation" width="300" style="border-collapse:collapse;width:300px;"><tr><td height="1" style="height:1px;line-height:1px;font-size:1px;background-color:${c.rule};border-top:1px solid ${c.rule};">&nbsp;</td></tr></table></td></tr>
+<tr><td style="font-family:${SERIF};font-size:22px;line-height:26px;color:${c.name};mso-line-height-rule:exactly;">${esc(v.name)}</td></tr>
+${roleLine ? `<tr><td style="padding:2px 0 0 0;font-family:${SANS};font-size:12px;line-height:16px;color:${c.text};mso-line-height-rule:exactly;">${roleLine}</td></tr>` : ''}
+<tr><td style="padding:8px 0 0 0;"><table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse;width:100%;min-width:360px;"><tr><td height="1" style="height:1px;line-height:1px;font-size:1px;background-color:${c.rule};border-top:1px solid ${c.rule};">&nbsp;</td></tr></table></td></tr>
 ${contact}
 </table>
 </td>

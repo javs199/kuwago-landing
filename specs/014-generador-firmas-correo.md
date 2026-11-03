@@ -11,7 +11,7 @@ Una página local (`herramientas/firmas.html`, se abre con doble clic) donde cua
 
 ## Archivos que toca
 - (Nuevo) `herramientas/firmas.html` — generador. No entra en `dist/`.
-- (Nuevo) `assets/images/email/kuwago-firma-claro-v1.png` y `kuwago-firma-oscuro-v1.png` — logo vertical 284×345 (3× de 94×115), renderizado del vector de la firma PT2-R3. Sí entran en `dist/` y se publican con el próximo deploy.
+- (Nuevo) `assets/images/email/kuwago-firma-claro-v1.png` y `kuwago-firma-oscuro-v1.png` — logo vertical 284×345 (se muestra a 70×86, ~4×), renderizado del vector de la firma PT2-R3. Sí entran en `dist/` y se publican con el próximo deploy.
 - `scripts/check.mjs` — exige los dos PNG en el build.
 
 ## Restricciones
@@ -31,7 +31,8 @@ Una página local (`herramientas/firmas.html`, se abre con doble clic) donde cua
 - Nombres de PNG con `-v1`: los correos ya enviados apuntan a esa URL; un logo nuevo debe ser `-v2`, nunca sobrescribir.
 - Paleta de las firmas PT2-R3 (`#3B0C5B`, `#B98850`, `#F6F1E9`, `#241332`), no los tokens web: es la entrega aprobada para firmas.
 - Variante clara sin fondo (se adapta al blanco del correo); la oscura lleva fondo morado y se marca como no recomendada por el modo noche de Gmail/Outlook.
-- Se añadió correo como línea opcional (no estaba en PT2-R3).
+- Se añadió correo como dato opcional (no estaba en PT2-R3).
+- 2026-11-03, pedido de JV: firma más ancha y baja que PT2-R3. Logo 70×86, contactos en una sola línea separados por «·» dorado, filete al ancho del bloque, máximo ~600 px. En móvil puede requerir desplazamiento horizontal.
 - Presets: Nahomy (con el teléfono público de la landing), Jesus y Katherine sin teléfono; cada uno escribe el suyo. Los datos se recuerdan en `localStorage` del navegador.
 
 ## Resultado de la revisión
