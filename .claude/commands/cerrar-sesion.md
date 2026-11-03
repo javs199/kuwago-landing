@@ -1,0 +1,13 @@
+---
+description: Cierra la sesión: build, spec, Estado actual y commit
+argument-hint: [tarea o número de spec]
+---
+
+Cierra la sesión de trabajo actual. Nota adicional: $ARGUMENTS
+
+Pasos:
+1. Ejecuta el build y confirma que pasa. Si falla, dilo y no cierres como "hecha".
+2. Actualiza la spec activa: Estado (hecha / en revisión), Decisiones tomadas.
+3. Actualiza la sección "Estado actual" de `AGENTS.md` (máx. 10 líneas): fecha de hoy, Hecho, En curso, Siguiente, Bloqueos. Borra lo obsoleto; no acumules historial.
+4. Haz commit de lo pendiente con mensaje `tipo: descripción` en español, en la rama `spec/NNN-...`. No hagas push a main ni deploy.
+5. Dime en 3-5 líneas: qué quedó hecho, qué falta y cuál es la siguiente spec recomendada.
