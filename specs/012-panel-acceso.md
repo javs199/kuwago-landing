@@ -79,3 +79,15 @@ Cada tarjeta: icono Material Symbols coherente (p. ej. `luggage`, `admin_panel_s
 - `npm run build`, `npm run check`, `npm run lint:catalog` y `git diff --check`: PASS. Se conserva byte por byte el cambio previo de `tailwind.css`; `menu/` permanece fuera del commit.
 - Evidencia adicional fuera del repo: `%TEMP%/kuwago-012-review/` y `%TEMP%/kuwago-012-review-test.py`.
 - Se conserva el veredicto original de Antigravity como historial; hallazgo corregido, pendiente de nueva revisión independiente. Estado: **en revisión**. Sin deploy ni push.
+
+### Segunda revisión (`/revisar-diff 012`) — 2026-11-03
+
+**Veredicto:** `OK`
+
+- **Corrección verificada (`4ea4f30`):** `assets/css/styles.css:338,340` usa ahora `#mobile-header-actions #account-button`, restaurando `display: flex; justify-content: space-between; width: 100%; height: auto; min-height: 44px; padding: 10px 12px; border-radius: 12px; color: #fff;` en el menú móvil (`<= 1023px`) y eliminando el selector huérfano.
+- **Archivos tocados en la rama (`0a93fcd..4ea4f30`):** `assets/css/styles.css`, `assets/js/config.js`, `assets/js/i18n.js`, `assets/js/main.js`, `concierge-marketplace.html`, `index.html` y `specs/012-panel-acceso.md` (solo los listados en la spec).
+- **Verificación ejecutada:**
+  - `npm run build` → `Done in 261ms. Production files created in dist/.` (exit 0).
+  - `npm run check` → `Contracts built; public runtime prepared. Static project checks passed. All contact destinations are correctly configured.` (exit 0).
+  - `npm run lint:catalog` → 0 errores, 0 warnings (exit 0).
+  - `footer-admin-link` en `index.html` y `concierge-marketplace.html` → 0 coincidencias.
