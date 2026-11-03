@@ -2,7 +2,7 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "kuwago-admin-api-development",
   "account_id": "7a8bcd7992a3de359d2aff87df2fb693",
-  "main": "__BLOCKED_UNTIL_CURRENT_BACKUP_AND_0007__.ts",
+  "main": "src/development.ts",
   "compatibility_date": "2026-10-24",
   "workers_dev": true,
   "preview_urls": false,
@@ -33,8 +33,7 @@
     "ACCESS_AUD": "dd73f3792def5ce94841273f79026f08e326c98d6fd98925ba0551196bb16adc",
     "MUTATIONS_ENABLED": "true",
     "IMAGE_PROCESSOR": "cloudflare-images-v1",
-    "IMAGE_POLICY_VERIFIED": "kuwago-png-v2",
-    "DEV_IMAGE_INPUT_SHA256": "d6c7e689270a8dc7190983f4da4a5e663ae08b78e553d44e0199babbbe14cca1"
+    "IMAGE_POLICY_VERIFIED": "kuwago-png-v2"
   },
   "d1_databases": [
     {

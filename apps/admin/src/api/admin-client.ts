@@ -1,7 +1,7 @@
 import {AdminServiceSchema,CategorySchema,ServiceRevisionSchema,ServicePriceSchema,type AdminService,type Category,type ServiceRevision} from '@kuwago/contracts';
 export type MediaDocument={id:string;state:'quarantine'|'validated'|'approved'|'rejected'|'retired'|'deleted';version:number;validationCode:string;mimeType:string|null;width:number|null;height:number|null;byteSize:number|null;usageApproval:'pending'|'approved';uploadedBy:string};
 function mediaDocument(value:unknown):MediaDocument{const row=object(value);if(integer(row.version)<1)throw new ApiError(502,'invalid_response');if(!['quarantine','validated','approved','rejected','retired','deleted'].includes(text(row.state))||!['pending','approved'].includes(text(row.usageApproval)))throw new ApiError(502,'invalid_response');return {id:text(row.id),state:row.state as MediaDocument['state'],version:integer(row.version),validationCode:text(row.validationCode),mimeType:row.mimeType===null?null:text(row.mimeType),width:row.width===null?null:integer(row.width),height:row.height===null?null:integer(row.height),byteSize:row.byteSize===null?null:integer(row.byteSize),usageApproval:row.usageApproval as MediaDocument['usageApproval'],uploadedBy:text(row.uploadedBy)};}
-function mediaEnvelope(value:unknown,response:Response):MediaDocument{const result=mediaDocument(object(value).media);if(response.headers.get('ETag')!==`"${result.version}"`)throw new ApiError(502,'invalid_response');return result;}
+function mediaEnvelope(value:unknown,response:Response):MediaDocument{const result=mediaDocument(object(value).media);if(etag(response)!==`"${result.version}"`)throw new ApiError(502,'invalid_response');return result;}
 export type Permission='admin:read'|'drafts:write'|'translations:write'|'services:publish'|'services:unpublish'|'services:archive'|'audit:read'|'media:prepare'|'media:read-private'|'admins:manage';
 export type Identity={id:string;role:'editor'|'admin'|'super_admin';permissions:Permission[]};
 export type DraftInput=Pick<ServiceRevision,'slug'|'categoryId'|'translations'|'options'>&{internalNotes:string;media:Pick<ServiceRevision['media'][number],'id'|'sortOrder'|'alt'>[]};
@@ -11,6 +11,8 @@ export type ServiceSummary={id:string;status:'draft'|'published'|'archived';vers
 export type RevisionSummary={id:string;number:number;createdAt:string;sealedAt:string|null};
 export type SyncStatus={epoch:string;mode:'ready'|'paused';generation:number|null;pendingCount:number;quarantinedCount:number;oldestPendingMs:number;escalatedCount:number;items:{generation:number;delivery_state:string;lastErrorCode:string|null}[]};
 export class ApiError extends Error{constructor(public status:number,public code:string){super(code);}}
+// Cloudflare weakens ETags (W/"n") when it compresses a response; the version is the same.
+function etag(response:Response):string|null{const value=response.headers.get('ETag');return value?.startsWith('W/')?value.slice(2):value;}
 function object(value:unknown):Record<string,unknown>{if(!value||typeof value!=='object'||Array.isArray(value))throw new ApiError(502,'invalid_response');return value as Record<string,unknown>;}
 function text(value:unknown):string{if(typeof value!=='string')throw new ApiError(502,'invalid_response');return value;}
 function integer(value:unknown):number{if(!Number.isSafeInteger(value)||(value as number)<0)throw new ApiError(502,'invalid_response');return value as number;}
@@ -21,7 +23,7 @@ const permissions:Permission[]=['admin:read','drafts:write','translations:write'
 function identity(value:unknown):Identity{const row=object(object(value).administrator);if(!roles.includes(text(row.role)))throw new ApiError(502,'invalid_response');const grants=array(row.permissions).map(text);if(grants.some(p=>!permissions.includes(p as Permission)))throw new ApiError(502,'invalid_response');return {id:text(row.id),role:row.role as Identity['role'],permissions:grants as Permission[]};}
 function document(value:unknown,response:Response):ServiceDocument{
   const row=object(value);const parsed=AdminServiceSchema.safeParse(row.data);const version=integer(row.version);
-  if(!parsed.success||version<1||response.headers.get('ETag')!==`"${version}"`)throw new ApiError(502,'invalid_response');
+  if(!parsed.success||version<1||etag(response)!==`"${version}"`)throw new ApiError(502,'invalid_response');
   if(row.delivery!==undefined&&!['visible','pending','superseded'].includes(text(row.delivery)))throw new ApiError(502,'invalid_response');
   const result:ServiceDocument={data:parsed.data,version};
   if(row.delivery!==undefined)result.delivery=row.delivery as NonNullable<ServiceDocument['delivery']>;
