@@ -2,7 +2,7 @@
 
 - **Estado:** borrador
 - **Ejecuta:** Claude Code (Cloudflare + D1, delicado)
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity (`/revisar-diff`)
 - **Diseño:** n/a
 - **Rama:** `spec/003-baseline-0007-dev`
 

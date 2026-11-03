@@ -2,7 +2,7 @@
 
 - **Estado:** borrador
 - **Ejecuta:** Codex
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity (`/revisar-diff`)
 - **Diseño:** `design/01-landing/captura.png` (tras la spec 004) — la salida visual no debe cambiar
 - **Rama:** `spec/005-audit-tailwind`
 

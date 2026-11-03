@@ -1,8 +1,8 @@
 # Spec 001 — Guía Carabao dentro del repo y del build (sin la contraseña Wi-Fi)
 
-- **Estado:** borrador
+- **Estado:** cancelada (2026-11-03)
 - **Ejecuta:** Codex (cambio mecánico de build)
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity
 - **Diseño:** n/a (se copia la página ya publicada, sin cambios visuales)
 - **Rama:** `spec/001-guia-carabao-en-build`
 
@@ -35,6 +35,7 @@ Que https://grupokuwago.com/menu/ salga del propio `npm run build`, para que un 
 - [ ] `dist/sitemap.xml` no menciona /menu/
 
 ## Decisiones
+- 2026-11-03 — **Cancelada por JV.** /menu/ es temporal para un cliente: se deja tal cual en Hostinger y se retira del proyecto cuando el sitio esté listo (spec 011). La rama `spec/001-guia-carabao-en-build` (407a71f) se borró sin mergear y nunca se subió.
 - 2026-11-02: el repo es público (JV), por eso la contraseña va por marcador y archivo local ignorado.
 
 ## Resultado de la revisión

@@ -2,7 +2,7 @@
 
 - **Estado:** borrador (decisión de JV pendiente)
 - **Ejecuta:** Antigravity (UI) + Claude Code (Access)
-- **Revisa:** Gemini CLI
+- **Revisa:** Codex la parte UI (la hizo Antigravity); Antigravity la parte Access
 - **Diseño:** `design/10-admin-login-*/` (spec 004; 4 variantes de Stitch)
 - **Rama:** `spec/008-sesion-admin`
 

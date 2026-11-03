@@ -8,7 +8,7 @@ import { IconButton, StatusBadge } from './ui';
 import { LanguageSwitcher, ThemeToggle } from './preferences-controls';
 import { useAdminRoute } from '../routing';
 import {useOptionalSession} from '../api/session';
-import {cloudflareDevelopment,developmentNotice} from '../deployment';
+import {cloudflareDevelopment,developmentNotice,signOutToPublicSite} from '../deployment';
 
 function Brand() {
   const { theme, t } = usePreferences();
@@ -27,7 +27,7 @@ export function DesktopSidebar() {
   return <aside className="desktop-sidebar"><Brand /><nav aria-label={t('mainNav')}><NavigationList /></nav>
     <div className="sidebar-footer"><div className="local-profile"><span className="profile-symbol"><UserRound size={22} aria-hidden="true" /></span><div><strong>{t('local')}</strong><span>{session?.identity?session.identity.role:t('noSession')}</span></div></div>
       <button type="button" disabled><ShieldCheck size={18} aria-hidden="true" />{t('security')}<small>{t('soon')}</small></button>
-      <button type="button" disabled title={t('noSession')}><LogOut size={18} aria-hidden="true" />{t('signOut')}</button>
+      <button type="button" disabled={!cloudflareDevelopment||!session?.identity} title={session?.identity?undefined:t('noSession')} onClick={()=>void signOutToPublicSite()}><LogOut size={18} aria-hidden="true" />{t('signOut')}</button>
     </div>
   </aside>;
 }

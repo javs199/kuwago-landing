@@ -7,7 +7,7 @@
 ## Proyecto
 - **Cliente / marca:** Grupo Kuwago (agencia Astro Gecko)
 - **Qué es:** landing pública bilingüe (ES/EN) e instalable (PWA) de Grupo Kuwago, con galerías de 4 propiedades (Carabao Villa 29 fotos, Villa Maya 113, Casa Bella Mía 88, Casa Heliconia 40; datos en `assets/js/main.js` e `inventory.json`), una página Concierge/Marketplace de vista previa y un portal Admin (React) con backend Cloudflare que por ahora solo existe en DEV.
-- **URL producción:** https://grupokuwago.com/ (landing) · https://grupokuwago.com/menu/ (guía Carabao, publicada aparte, `noindex`, sin autenticación)
+- **URL producción:** https://grupokuwago.com/ (landing) · https://grupokuwago.com/menu/ (guía Carabao **temporal** para un cliente, publicada aparte, `noindex`, sin autenticación; se retira con la spec 011)
 - **URL staging / DEV:** https://kuwago-admin-api-development.ch-jesus-99.workers.dev/ (Admin + API DEV, detrás de Cloudflare Access). La landing no tiene staging.
 - **Repo:** https://github.com/javs199/kuwago-landing (rama única `main`)
 - **Seguimiento con el cliente (Notion):** https://app.notion.com/p/40d8625cf846811393b4ee5f21de57ec — estado comercial, pagos, material y bitácora. El estado técnico vive aquí y en `specs/`.
@@ -91,7 +91,7 @@ Infra de la agencia ya pagada: Hostinger Business (50 sitios) y Cloudflare Worke
 8. Toda spec de UI referencia su pantalla en `design/`. Sin pantalla, no se implementa UI nueva.
 9. Si algo es ambiguo, elige la lectura más probable y anótala en la spec bajo "Decisiones".
 10. **D1 remota:** ninguna escritura ni migración sin respaldo completo vigente y restaurable y autorización explícita por operación (lectura, credencial, export, migración, bootstrap y deploy se autorizan por separado). Destino fijo: D1 `c5cfbe44-4fd0-4c2a-83c1-b833935534ba`. Ante una respuesta ambigua, parar y reconciliar por lectura: nunca reintentar. No edites migraciones aplicadas (0001–0006) ni sus hashes. Un ID de D1 recordado de memoria nunca sustituye al de `scripts/safe-d1/policy.mjs` (el 2026-11-02 la cuenta tenía una sola D1: esta).
-11. **Deploy de la landing:** subir solo el contenido de `dist/`; nunca el repo, `preview/`, `release/` ni material de marca. **Conservar `public_html/menu`** (no está en el build).
+11. **Deploy de la landing:** subir solo el contenido de `dist/`; nunca el repo, `preview/`, `release/` ni material de marca. **Conservar `public_html/menu`** (no está en el build) hasta que se ejecute la spec 011.
 12. Landing y admin están aislados: no mezcles dependencias ni salidas (`verify:isolation` lo comprueba).
 
 ## Roles de herramientas
@@ -100,14 +100,15 @@ Infra de la agencia ya pagada: Hostinger Business (50 sitios) y Cloudflare Worke
 | Claude Code | Escribe las specs (plan mode) y hace lo delicado: lógica, Cloudflare, scripts, Affinity | Cambios masivos (su cuota es la más escasa) |
 | Codex | **Ejecutor principal** de specs de lógica y cambios mecánicos | Deploy, decisiones de arquitectura |
 | Antigravity | **Ejecutor de UI**: convierte pantallas de `design/` (Stitch) en código | Lógica de negocio, Cloudflare |
-| Gemini CLI | **Revisor por defecto** del diff contra la spec; análisis de mucho contexto (repo completo, logs largos) | Escribir código de producción |
+| Antigravity como revisor | **Revisor por defecto** del diff contra la spec (`.agent/workflows/revisar-diff.md`, modelo Gemini) | Escribir código en la misma sesión en que revisa |
+| Gemini CLI | No se usa: Google cerró el login de cuentas individuales (2026-11-03) | — |
 
-Regla de revisión: revisa Gemini CLI. Si Gemini fue quien ejecutó (caso raro), revisa Codex.
+Regla de revisión: revisa Antigravity en una sesión nueva. Si Antigravity fue quien ejecutó (UI), revisa Codex.
 
 ## Estado actual
 <!-- Lo actualiza el comando cerrar-sesion. Máx. 10 líneas. Lo más reciente arriba. -->
-- **Última actualización:** 2026-11-02
-- **Hecho:** landing V1.1 en producción (galerías, ES/EN, temas, PWA, redes, Concierge/Marketplace de vista previa); guía Carabao en /menu/; Admin + API DEV desplegados con Access (Google + MFA) y solo lectura (`MUTATIONS_ENABLED=false`); primer Super Admin (JV) creado en D1 DEV. Último commit `e6eccea`, subido a origin.
+- **Última actualización:** 2026-11-03
+- **Hecho:** landing V1.1 en producción (galerías, ES/EN, temas, PWA, redes, Concierge/Marketplace de vista previa); guía Carabao en /menu/; Admin + API DEV desplegados con Access (Google + MFA) y solo lectura (`MUTATIONS_ENABLED=false`); primer Super Admin (JV) creado en D1 DEV. Sistema IA mergeado en main (PR #1, `99c39aa`).
 - **En curso:** gestión de servicios en DEV (migración 0007 y autoaprobación super_admin preparadas en local).
-- **Siguiente:** specs en borrador 001–010 (orden sugerido: 001, 004, 003 → 006 → 007; 002 y 010 esperan al cliente).
-- **Bloqueos / decisiones pendientes:** 0007 en NO-GO (la auditoría D1 cambió tras el respaldo; requiere nueva comparación completa). Marketplace con precios/proveedores sin confirmar. Guía Carabao fuera del repo y con dos correos de contacto distintos en el PDF. 7 avisos de npm audit en Tailwind 3 (solo build).
+- **Siguiente:** spec 004 (design desde Stitch) → 003 → 006 → 007. 001 y 002 canceladas (la guía /menu/ es temporal). 010 espera elegir iCal o channel manager. 011 al terminar el sitio.
+- **Bloqueos / decisiones pendientes:** 0007 en NO-GO (la auditoría D1 cambió tras el respaldo; requiere nueva comparación completa). Marketplace con precios/proveedores sin confirmar. Guía /menu/ expone código de puerta y Wi-Fi sin autenticación (aceptado por JV como temporal). Casa Cielo en espera de los dueños. 7 avisos de npm audit en Tailwind 3 (solo build).

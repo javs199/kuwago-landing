@@ -559,6 +559,62 @@
     });
   }
 
+  function setupAccountPanel() {
+    const button = document.getElementById('account-button');
+    const panel = document.getElementById('account-panel');
+    const closeButton = document.getElementById('account-panel-close');
+    const adminLink = document.getElementById('account-admin-link');
+    if (!button || !panel || !closeButton || !adminLink) return;
+
+    const adminUrl = window.KUWAGO_ACCESS?.admin;
+    if (adminUrl) adminLink.href = adminUrl;
+    else adminLink.setAttribute('aria-disabled', 'true');
+
+    const close = () => {
+      panel.close();
+      button.setAttribute('aria-expanded', 'false');
+      button.focus({ preventScroll: true });
+    };
+    button.addEventListener('click', () => {
+      if (panel.open) return close();
+      panel.showModal();
+      button.setAttribute('aria-expanded', 'true');
+      closeButton.focus();
+    });
+    closeButton.addEventListener('click', close);
+    panel.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      close();
+    });
+    // Keep the mobile menu open so the restored account control remains visible.
+    panel.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab') {
+        const lastControl = adminLink.hasAttribute('href') ? adminLink : closeButton;
+        if (event.shiftKey && document.activeElement === closeButton) {
+          event.preventDefault();
+          lastControl.focus();
+        } else if (!event.shiftKey && document.activeElement === lastControl) {
+          event.preventDefault();
+          closeButton.focus();
+        }
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        close();
+      }
+    });
+    panel.addEventListener('click', (event) => {
+      const bounds = panel.getBoundingClientRect();
+      if (event.target === panel && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) close();
+    });
+    window.matchMedia('(max-width: 1023px)').addEventListener('change', () => {
+      if (!panel.open) return;
+      close();
+      if (button.closest('[hidden]')) document.getElementById('mobile-menu-button')?.focus();
+    });
+  }
+
   function setupMobileNavigation() {
     const nav = document.querySelector("header nav");
     const headerContainer = document.querySelector("header > div");
@@ -1019,6 +1075,7 @@
   }
 
   setupMobileNavigation();
+  setupAccountPanel();
   setupConciergeNavigation();
   setupGallery();
   setupPropertyCards();

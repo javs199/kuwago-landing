@@ -13,9 +13,19 @@ export function createStaticCatalogAdapter() {
   } };
 }
 
-// Future HTTP adapters must implement CatalogAdapter and return unknown JSON.
-// Their responses must pass this boundary with expectedSource="api".
-// No fetch, endpoint, automatic fallback, or demo replacement is configured here.
+/**
+ * Read-only HTTP adapter for the public catalog Worker. Returns unknown JSON;
+ * loadCatalog validates it with expectedSource="api". No fallback to demo data.
+ * @param {string} baseUrl @returns {CatalogAdapter}
+ */
+export function createApiCatalogAdapter(baseUrl) {
+  return { async load({signal} = {}) {
+    const response = await fetch(`${baseUrl}/v1/catalog`, {signal, credentials:'omit', cache:'no-store', headers:{Accept:'application/json'}});
+    if (!response.ok) throw new Error(`catalog_${response.status}`);
+    return response.json();
+  } };
+}
+
 /** @param {CatalogAdapter} adapter @param {'api'|'static_reference'} expectedSource */
 export async function loadCatalog(adapter, expectedSource, options = {}) {
   let input;
@@ -41,11 +51,11 @@ export function cartAvailability(item, catalog) {
 
 // This is a presentation adapter, not a commercial price calculation.
 /** @param {import('../../packages/contracts/dist/public.js').PublicCatalogService} service */
-export function toMarketplaceCard(service) {
+export function toMarketplaceCard(service, mediaBase = '') {
   const option = service.options[0], image = [...service.media].sort((a,b) => a.sortOrder-b.sortOrder)[0];
   return {
     id:service.id, revisionId:service.revisionId, optionId:option.id, category:service.categoryId,
-    image:image.url, alt:image.alt, es:service.translations.es, en:service.translations.en,
+    image:mediaBase && image.url.startsWith('/v1/') ? mediaBase + image.url : image.url, alt:image.alt, es:service.translations.es, en:service.translations.en,
     durationMinutes:option.durationMinutes, experienceType:option.experienceType, venue:option.venue,
     price:option.price, referencePrice:service.referencePrice, source:service.source,
     unit:service.referencePrice?.unit || option.price?.unit || 'service',

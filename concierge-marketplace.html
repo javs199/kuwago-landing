@@ -31,10 +31,35 @@
     <span class="material-symbols-outlined hidden dark:block">light_mode</span>
   </button>
   <a class="hidden sm:inline-flex items-center justify-center bg-primary-container dark:bg-bright-gold text-on-primary dark:text-[#241B29] font-label-md text-label-md px-6 py-2.5 rounded-full hover:bg-primary dark:hover:bg-[#b59556] transition-colors shadow-sm" href="index.html#contact" data-i18n="nav.contact_btn">Contact Us</a>
-  <div class="w-8 h-8 rounded-full bg-primary dark:bg-dark-elevated flex items-center justify-center">
-    <span class="material-symbols-outlined text-on-primary dark:text-warm-off-white text-[18px]">person</span>
+  <button id="account-button" type="button" class="account-button w-8 h-8 rounded-full bg-primary dark:bg-dark-elevated flex items-center justify-center" aria-haspopup="dialog" aria-expanded="false" aria-controls="account-panel" aria-label="Open access panel" data-i18n-aria="account.open">
+    <span class="material-symbols-outlined text-on-primary dark:text-warm-off-white text-[18px]" aria-hidden="true">person</span>
+  </button>
+</div></div></header>
+<dialog id="account-panel" aria-labelledby="account-panel-title">
+  <div class="account-panel-heading">
+    <h2 id="account-panel-title" data-i18n="account.title">Your access</h2>
+    <button type="button" id="account-panel-close" aria-label="Close access panel" data-i18n-aria="account.close"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
   </div>
-</div></div></header><main class="marketplace" id="marketplace-home">
+  <div class="account-cards">
+    <div class="account-card" aria-disabled="true">
+      <span class="material-symbols-outlined account-card-icon" aria-hidden="true">luggage</span>
+      <span class="account-card-copy"><strong data-i18n="account.guests.title">Guests</strong><span data-i18n="account.guests.desc">Your stay and services</span><small data-i18n="account.soon">Coming soon</small></span>
+    </div>
+    <a class="account-card" id="account-admin-link" rel="nofollow">
+      <span class="material-symbols-outlined account-card-icon" aria-hidden="true">admin_panel_settings</span>
+      <span class="account-card-copy"><strong data-i18n="account.admin.title">Administrators</strong><span data-i18n="account.admin.desc">Management portal</span></span>
+    </a>
+    <div class="account-card" aria-disabled="true">
+      <span class="material-symbols-outlined account-card-icon" aria-hidden="true">home_work</span>
+      <span class="account-card-copy"><strong data-i18n="account.owners.title">Owners</strong><span data-i18n="account.owners.desc">Your property and reports</span><small data-i18n="account.soon">Coming soon</small></span>
+    </div>
+    <div class="account-card" aria-disabled="true">
+      <span class="material-symbols-outlined account-card-icon" aria-hidden="true">storefront</span>
+      <span class="account-card-copy"><strong data-i18n="account.providers.title">Providers</strong><span data-i18n="account.providers.desc">Services and bookings</span><small data-i18n="account.soon">Coming soon</small></span>
+    </div>
+  </div>
+</dialog>
+<main class="marketplace" id="marketplace-home">
 <section class="mp-hero" aria-labelledby="mp-title">
 <img src="assets/images/marketplace/coast.jpg" alt="" fetchpriority="high">
 <div class="mp-hero-content">

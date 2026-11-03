@@ -91,7 +91,7 @@
 .confirm-dialog h2 { margin-bottom: 16px; }
 .confirm-dialog p { margin-bottom: 16px; color: var(--text-secondary); }
 .confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-@media(min-width: 1440px) { .service-editor { grid-template-columns: minmax(0, 1fr) 304px; } .publication-sidebar { position: sticky; top: 96px; } }
+@media(min-width: 1440px) { .service-editor { grid-template-columns: minmax(0, 1fr) 304px; } .publication-sidebar { position: sticky; top: 96px; } .editor-save-bar { grid-column: 1; position: sticky; bottom: 16px; z-index: 5; box-shadow: 0 4px 16px rgb(0 0 0 / 8%); } }
 @media(max-width: 1279px) {
  .services-table, .services-table tbody { display: block; }
  .services-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }

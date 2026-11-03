@@ -97,8 +97,9 @@ async function digest(bytes:ArrayBuffer){return Array.from(new Uint8Array(await 
 async function validateMedia(env:CatalogEnvironment,actor:Administrator,id:string,version:number,bytes:ArrayBuffer,requestId:string){
   let normalized;
   try{
-    if(env.IMAGE_PROCESSOR==='cloudflare-images-v1'){
-      if(!env.DEV_IMAGE_INPUT_SHA256||await digest(bytes)!==env.DEV_IMAGE_INPUT_SHA256)throw new ApiFailure(403,'image_input_not_authorized');
+    // Single-PNG lock only while DEV_IMAGE_INPUT_SHA256 is configured; without it, real photos go through the normal limits.
+    if(env.IMAGE_PROCESSOR==='cloudflare-images-v1'&&env.DEV_IMAGE_INPUT_SHA256){
+      if(await digest(bytes)!==env.DEV_IMAGE_INPUT_SHA256)throw new ApiFailure(403,'image_input_not_authorized');
       // Consume before contacting Images. Failure/timeout never restores this single-use authorization.
       const claim=await env.DB.prepare('INSERT INTO dev_image_transform_claim(id,media_id,input_sha256) VALUES (1,?,?) ON CONFLICT(id) DO NOTHING RETURNING id').bind(id,env.DEV_IMAGE_INPUT_SHA256).all();
       if(!claim.results.length)throw new ApiFailure(409,'image_transform_authorization_consumed');
