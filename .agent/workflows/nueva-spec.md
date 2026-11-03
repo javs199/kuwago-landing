@@ -12,7 +12,7 @@ Pasos:
    - Archivos que toca: lista concreta de rutas reales.
    - Restricciones: incluye lo que NO se debe tocar.
    - Criterio de verificación: comprobaciones observables, incluido el build.
-   - Ejecuta: Codex para lógica y cambios mecánicos; Antigravity para UI a partir de `design/`; Claude Code solo si hay Cloudflare, scripts, Affinity o lógica delicada. Revisa: Gemini CLI.
+   - Ejecuta: Codex para lógica y cambios mecánicos; Antigravity para UI a partir de `design/`; Claude Code solo si hay Cloudflare, scripts, Affinity o lógica delicada. Revisa: Antigravity (`/revisar-diff`); si ejecuta Antigravity, revisa Codex.
 4. Si la tarea toca UI, busca su pantalla en `design/` y ponla en el campo Diseño. Si no existe, detente y pídeme exportarla de Stitch.
 5. Si la tarea es demasiado grande para una sesión, divídela en varias specs y dilo.
 6. Muéstrame la spec y las dudas abiertas. No empieces a implementar.

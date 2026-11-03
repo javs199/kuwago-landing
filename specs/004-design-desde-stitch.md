@@ -2,7 +2,7 @@
 
 - **Estado:** borrador
 - **Ejecuta:** Codex (mecánico)
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity (`/revisar-diff`)
 - **Diseño:** n/a (esta spec crea la carpeta de diseño)
 - **Rama:** `spec/004-design-stitch`
 

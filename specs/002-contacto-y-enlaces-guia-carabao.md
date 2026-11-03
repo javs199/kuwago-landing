@@ -1,8 +1,8 @@
 # Spec 002 — Correo de contacto y enlaces Canva de la guía Carabao
 
-- **Estado:** borrador (bloqueada: falta respuesta del cliente)
+- **Estado:** cancelada (2026-11-03)
 - **Ejecuta:** Codex
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity
 - **Diseño:** n/a (solo texto y enlaces)
 - **Rama:** `spec/002-contacto-guia-carabao`
 - **Depende de:** spec 001 (la guía debe estar en el repo)
@@ -25,5 +25,6 @@ Que el huésped vea un único correo de contacto correcto y que ningún enlace d
 - [ ] Cada enlace externo de la guía responde 200 sin pedir login (comprobado con curl o navegador)
 
 ## Decisiones
+- 2026-11-03 — **Cancelada.** El cliente confirma `nahomysoraca@gmail.com` (el que ya muestra la guía) y que no hay enlaces Canva que mantener. La guía se queda como está (ver spec 011).
 
 ## Resultado de la revisión

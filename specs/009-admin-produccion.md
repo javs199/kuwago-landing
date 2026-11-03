@@ -2,7 +2,7 @@
 
 - **Estado:** borrador (planificación; no implementa)
 - **Ejecuta:** Claude Code
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity (`/revisar-diff`)
 - **Diseño:** n/a
 - **Rama:** `spec/009-plan-produccion-admin`
 

@@ -1,8 +1,8 @@
 # Spec 010 — Calendario de disponibilidad por propiedad
 
-- **Estado:** borrador (bloqueada: falta la fuente de disponibilidad)
+- **Estado:** borrador (fuente definida; falta elegir iCal o channel manager)
 - **Ejecuta:** Codex (adaptador) + Antigravity (UI)
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity revisa el adaptador (Codex); Codex revisa la UI (Antigravity)
 - **Diseño:** {{pantalla de calendario en Stitch, aún no existe}}
 - **Rama:** `spec/010-calendarios`
 
@@ -15,8 +15,10 @@ Que el visitante vea fechas disponibles, ocupadas o sin confirmar de cada propie
 - Posible Worker para leer iCal si la fuente lo exige
 
 ## Restricciones
-- Propiedades con calendario según Notion (21/10): Carabao Villa, Villa Maya y **Casa Cielo**. Casa Cielo es una propiedad real que aún no está en la landing: el cliente la está terminando para publicarla en Airbnb (JV, 2026-11-02). Agregarla a la landing es otra spec, con fotos y textos del cliente.
-- Fuente: {{Airbnb iCal / Booking / PMS / manual}}. Las URLs iCal privadas no se ponen en el repo ni en el chat.
+- Propiedades con calendario: Carabao Villa y Villa Maya. **Casa Cielo queda fuera** hasta que los dueños den luz verde (cliente, 2026-11-03).
+- Fuente (cliente, 2026-11-03): reservas de **Airbnb** + reservas **directas** desde el sitio. Airbnb no tiene API abierta para anfitriones individuales [Probable]; opciones: (a) importar el iCal de Airbnb y exportar un iCal propio que Airbnb importe; (b) un channel manager con API (de pago). Decidir antes de pasar a "lista": {{iCal o channel manager}}.
+- Riesgo de doble reserva: Airbnb refresca iCal cada pocas horas [Probable]. Mientras no haya channel manager, una reserva directa queda "pendiente de confirmar" hasta que JV o el cliente la bloquee en Airbnb.
+- Las URLs iCal privadas no se ponen en el repo ni en el chat.
 - Solo consulta: sin reservas ni cobros.
 - Las propiedades sin alquiler no muestran calendario.
 

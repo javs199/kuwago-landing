@@ -2,7 +2,7 @@
 
 - **Estado:** borrador (depende de la spec 003)
 - **Ejecuta:** Claude Code (Cloudflare + D1, delicado)
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity (`/revisar-diff`)
 - **Diseño:** pantallas actuales de Services en `apps/admin` (extensión del sistema 1A, sin export Stitch propio)
 - **Rama:** `spec/006-recorrido-servicios-dev`
 

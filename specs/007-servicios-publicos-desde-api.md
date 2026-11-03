@@ -1,8 +1,8 @@
 # Spec 007 — La página Servicios lee el catálogo publicado de la API
 
-- **Estado:** borrador (depende de las specs 006 y de un catálogo aprobado por el cliente)
+- **Estado:** borrador (depende de la spec 006)
 - **Ejecuta:** Codex (adaptador) + Claude Code (Worker público)
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity (`/revisar-diff`)
 - **Diseño:** `design/02-concierge-marketplace-*/` (spec 004)
 - **Rama:** `spec/007-servicios-desde-api`
 
@@ -17,7 +17,8 @@ Que la página pública `/concierge-marketplace.html` muestre los servicios publ
 
 ## Restricciones
 - El Worker público no tiene acceso a credenciales del Admin ni a imágenes privadas.
-- No mostrar precios sin moneda explícita (`currency: null` hoy).
+- Catálogo real (cliente, 2026-11-03): los servicios concierge publicados en la guía https://grupokuwago.com/menu/, con sus precios en **USD**. Se cargan en el Admin DEV (spec 006); los ejemplos de Stitch no se publican.
+- No mostrar precios sin moneda explícita: la moneda es USD (`currency: null` hoy en la API, se corrige en esta spec o en la 006).
 - La página sigue `noindex` hasta que el cliente apruebe el catálogo.
 - Sin deploy a Hostinger dentro de esta spec.
 

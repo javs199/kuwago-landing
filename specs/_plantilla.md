@@ -2,7 +2,7 @@
 
 - **Estado:** borrador | lista | en curso | en revisión | hecha
 - **Ejecuta:** Codex (lógica/mecánico) | Antigravity (UI desde design/) | Claude Code (delicado)
-- **Revisa:** Gemini CLI
+- **Revisa:** Antigravity (`/revisar-diff`); si ejecutó Antigravity, revisa Codex
 - **Diseño:** `design/{{NN-pantalla}}/` (obligatorio si toca UI; "n/a" si no)
 - **Rama:** `spec/NNN-{{slug}}`
 

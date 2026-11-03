@@ -20,7 +20,7 @@ Copia esta carpeta a la raíz de cada repo nuevo y rellena los `{{...}}` de `AGE
 | Claude Code (Pro) | Escribe las specs y hace lo delicado: Cloudflare, scripts, Affinity | Es el más fiable planeando, pero tiene la cuota más corta: no la gastes en cambios masivos |
 | Codex (ChatGPT Plus) | Ejecutor principal de specs | Buena cuota para ejecutar y sigue bien una spec cerrada |
 | Antigravity (Google) | Ejecutor de UI desde `design/` | Gasta cuota de Google, no de Claude/OpenAI; agente con navegador para comparar la pantalla |
-| Gemini CLI (Google AI Pro) | Revisor por defecto (`/revisar-diff`) y análisis de repos o logs grandes | Contexto enorme y modelo distinto al que ejecutó, así detecta otros errores |
+| Antigravity IDE (Google AI Pro) | Revisor por defecto (`/revisar-diff`, workflow en `.agent/workflows/`) | Modelo distinto al que ejecutó, así detecta otros errores. Gemini CLI ya no acepta login de cuentas individuales (2026-11-03) |
 | Gemini app | Deep Research y NotebookLM (contenido AGA, investigación de clientes) | Viene en tu plan y ya usas NotebookLM |
 | ChatGPT app | Lluvia de ideas, copy, pensar en voz alta | Fuera del repo; lo útil se pasa a una spec |
 | Grok (gratis) | Dudas rápidas y lo que pasa en X | Prescindible; no le des contexto de clientes |
@@ -50,7 +50,7 @@ Responde cada punto y anota el resultado en la sección **Infraestructura** del 
 0. **Diseñar** — en Google Stitch. Exporta cada pantalla a `design/NN-pantalla/` (HTML/CSS + `captura.png`). Ver `design/LEEME.md`.
 1. **Planear** — Claude Code en *plan mode*: `/nueva-spec <tarea>` → revisas y marcas la spec como "lista".
 2. **Ejecutar** — sesión nueva en la herramienta indicada en "Ejecuta", rama `spec/NNN-slug`: "Implementa specs/NNN-....md".
-3. **Revisar** — Gemini CLI: `/revisar-diff NNN`. Solo diff contra spec. (Si ejecutó Gemini, revisa Codex.)
+3. **Revisar** — Antigravity, sesión nueva: `/revisar-diff NNN`. Solo diff contra spec. (Si ejecutó Antigravity, revisa Codex.)
 4. **Corregir** — si hay "Cambios requeridos", vuelve al ejecutor con esa lista.
 5. **Cerrar** — `/cerrar-sesion`: build, spec en "hecha", Estado actual de AGENTS.md, commit. Tú haces el merge y el deploy.
 
