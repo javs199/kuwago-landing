@@ -1,0 +1,20 @@
+description = "Revisa solo el diff de la rama contra su spec"
+prompt = """
+Revisa el trabajo de la spec: {{args}} (si está vacío, usa la spec con estado "en revisión" o la de la rama actual `spec/NNN-...`).
+
+Reglas: revisa SOLO el diff contra la spec. No reescribas el trabajo ni propongas mejoras fuera de alcance.
+
+Pasos:
+1. Lee la spec en `specs/`.
+2. Obtén el diff: `git diff main...HEAD` (y `git status` por si hay cambios sin commit).
+3. Comprueba:
+   - ¿Cumple el Objetivo?
+   - ¿Toca solo los "Archivos que toca"? Lista cualquier archivo extra.
+   - ¿Viola alguna Restricción o regla de `AGENTS.md`?
+   - Ejecuta el build y cada Criterio de verificación que se pueda correr; pega el resultado.
+   - Si toca UI: compara con la captura de `design/` indicada en la spec (layout, jerarquía, tokens de marca) y lista diferencias visibles.
+   - Bugs evidentes, secretos expuestos, código muerto o archivos basura.
+4. Escribe el veredicto en la sección "Resultado de la revisión" de la spec:
+   `OK` o `Cambios requeridos` + lista numerada (archivo:línea — problema — arreglo sugerido).
+5. Resúmeme el veredicto en 5 líneas como máximo.
+"""
