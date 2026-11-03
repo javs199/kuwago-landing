@@ -1,7 +1,10 @@
-import { createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailability } from './catalog-adapter.js';
+import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailability } from './catalog-adapter.js';
 
 (() => {
-  const adapter = createStaticCatalogAdapter();
+  // With a configured public API the page shows only published services (or an error/empty state), never Stitch examples.
+  const apiBase = (window.KUWAGO_CATALOG_API?.baseUrl || '').replace(/\/+$/,'');
+  const adapter = apiBase ? createApiCatalogAdapter(apiBase) : createStaticCatalogAdapter();
+  const expectedSource = apiBase ? 'api' : 'static_reference';
   const $ = id => document.getElementById(id);
   const cart = [];
   let data = { services: [], categories: [] }, catalog = null, loadState = 'loading';
@@ -102,9 +105,9 @@ import { createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailab
   }
   async function refreshCatalog() {
     loadState = 'loading'; catalog = null; data = {services:[],categories:[]}; renderCards(); renderCart();
-    const result = await loadCatalog(adapter,'static_reference');
+    const result = await loadCatalog(adapter,expectedSource);
     loadState = result.status; catalog = result.catalog;
-    data = catalog ? {categories:catalog.categories,services:catalog.services.map(toMarketplaceCard)} : {services:[],categories:[]};
+    data = catalog ? {categories:catalog.categories,services:catalog.services.map(service => toMarketplaceCard(service,apiBase))} : {services:[],categories:[]};
     if (!data.categories.some(row => row.id === activeCategory)) activeCategory = 'all';
     renderCards(); renderCart();
   }

@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kuwago-catalog-public-development",
+  "account_id": "7a8bcd7992a3de359d2aff87df2fb693",
+  "main": "src/public.ts",
+  "compatibility_date": "2026-10-24",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "APP_ENV": "development",
+    "ALLOWED_ORIGINS": "https://grupokuwago.com,https://www.grupokuwago.com,http://127.0.0.1:4173,http://localhost:4173"
+  },
+  "r2_buckets": [
+    {
+      "binding": "PUBLICATION",
+      "bucket_name": "kuwago-media-development"
+    }
+  ],
+  "services": [
+    {
+      "binding": "CATALOG_BARRIER",
+      "service": "kuwago-catalog-barrier-development"
+    }
+  ]
+}

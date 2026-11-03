@@ -3,8 +3,11 @@ import { manifestKey, parseSnapshot } from './catalog/snapshot.js';
 import { ApiFailure } from './catalog/errors.js';
 import { readBarrier,sha256,type BarrierBinding } from './catalog/head.js';
 export default {
-  async fetch(request:Request,env:{APP_ENV:string;PUBLICATION:PublicationStore;CATALOG_BARRIER?:BarrierBinding}):Promise<Response> {
-    const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
+  async fetch(request:Request,env:{APP_ENV:string;PUBLICATION:PublicationStore;CATALOG_BARRIER?:BarrierBinding;ALLOWED_ORIGINS?:string}):Promise<Response> {
+    const headers:Record<string,string>={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Vary':'Origin'};
+    // Read-only public catalog: only the listed site origins may read it from the browser. No credentials.
+    const origin=request.headers.get('Origin');
+    if(origin&&(env.ALLOWED_ORIGINS??'').split(',').map(v=>v.trim()).filter(Boolean).includes(origin))headers['Access-Control-Allow-Origin']=origin;
     try {
       if(env.APP_ENV!=='development'||!env.PUBLICATION)throw new ApiFailure(503,'catalog_unavailable');
       if(!['GET','HEAD'].includes(request.method))throw new ApiFailure(405,'read_only_api');
@@ -24,7 +27,7 @@ export default {
         const object=await env.PUBLICATION.get('media/'+media[1]);if(!object?.arrayBuffer)throw new ApiFailure(503,'catalog_unavailable');const bytes=await object.arrayBuffer();
         const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
         if(bytes.byteLength>2097152||digest!==media[1]||JSON.stringify(await readBarrier(env.CATALOG_BARRIER))!==JSON.stringify(head))throw new ApiFailure(503,'catalog_unavailable');
-        return new Response(request.method==='HEAD'?null:bytes,{headers:{...headers,'Content-Type':'image/png','Content-Security-Policy':"default-src 'none'; sandbox",'Cross-Origin-Resource-Policy':'same-site'}});
+        return new Response(request.method==='HEAD'?null:bytes,{headers:{...headers,'Content-Type':'image/png','Content-Security-Policy':"default-src 'none'; sandbox",'Cross-Origin-Resource-Policy':'cross-origin'}});
       }
       let body:unknown=catalog;
       if(url.pathname==='/v1/categories')body={categories:catalog.categories};
