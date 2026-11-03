@@ -1,0 +1,1594 @@
+KUWAGO DEV — CIERRE DE PREPARACION DE BOOTSTRAP DE OPERADOR UNICO
+Fecha de reanudacion: 27/10/2026, America/Costa_Rica.
+SOLO REVISION. NO AUTORIZA BOOTSTRAP, EXPORT, MIGRACION O DESPLIEGUE.
+
+1. RESULTADO Y ALCANCE
+Preparacion local completada para revision: lote parametrizado con guardas de
+estado completo, transporte de un solo envio, journal durable, ACK ligado al
+transporte/entorno/ejecucion/etapa/hash, postflight independiente y cierre con
+lectura de verificacion. El actor tecnico sigue deshabilitado y sin roles.
+La captura real de JWT termino PASS ayer; no se repitio al reanudar.
+Los 12 casos dirigidos guardados ya habian terminado: no se repitieron.
+Se completo solo la evidencia faltante del perfil backup-only etapa 6: 1 PASS.
+Total de casos dirigidos distintos acreditados: 13 PASS, 0 pendientes de esos casos.
+NO-GO para operacion remota: falta respaldo completo del estado 6 y autorizacion
+especifica. Todos los gates remotos siguen en false. No se solicita credencial.
+
+Destino fijo:
+{
+  "account": "7a8bcd7992a3de359d2aff87df2fb693",
+  "id": "c5cfbe44-4fd0-4c2a-83c1-b833935534ba",
+  "name": "kuwago-admin-db-development"
+}
+
+No se descartaron cambios. El git diff HEAD ya incluia 9 archivos publicos
+modificados y numerosos modulos sin versionar de fases anteriores. No se tocaron
+esos cambios ajenos. El diff de este adjunto usa las copias previas guardadas en
+.wrangler/bootstrap-review-base, NO pretende comparar todo el proyecto con HEAD.
+Incluye los siete archivos modificados de esta preparacion y cada archivo nuevo.
+
+2. IDENTIDAD REAL Y LIMPIEZA — EVIDENCIA DEPURADA
+Destinatario designado: Jesus Vargas. Cuenta: ch.jesus.99@gmail.com.
+Issuer: https://blue-bread-0e64.cloudflareaccess.com
+Subject verificado: 57fd05c6-e0f3-5838-8e16-4ab77d8dff41
+AUD de la app DEV: dd73f3792def5ce94841273f79026f08e326c98d6fd98925ba0551196bb16adc
+Comprobante privado fuera del repositorio: bootstrap-identity-8e34c507-9d31-4b72-99e7-271a6a01a5ad.json
+SHA-256 del comprobante: c80a18a77447612f9ebe0b419f2fcce88d2445ccdeabc3034386d2839e399f06
+{
+  "kind": "bootstrap-identity-verification",
+  "verificationId": "8e34c507-9d31-4b72-99e7-271a6a01a5ad",
+  "status": "PASS",
+  "verifiedAt": "2026-10-26T07:01:11.521Z",
+  "expiresAt": "2026-10-26T12:42:19.000Z",
+  "issuer": "https://blue-bread-0e64.cloudflareaccess.com",
+  "audience": "dd73f3792def5ce94841273f79026f08e326c98d6fd98925ba0551196bb16adc",
+  "subject": "57fd05c6-e0f3-5838-8e16-4ab77d8dff41",
+  "emailMatchesDesignatedRecipient": true,
+  "signature": "RS256/JWKS",
+  "signatureVerified": true,
+  "issuerVerified": true,
+  "audienceVerified": true,
+  "timeVerified": true,
+  "identityVerified": true,
+  "rawTokenPersisted": false,
+  "remoteD1Requests": 0,
+  "bootstrapAuthorized": false
+}
+La firma se verifico con createAccessVerifier: RS256, JWKS del issuer fijo,
+audiencia, exp/iat/nbf, formato de subject y restricciones de cabecera JOSE.
+Despues de verificar la firma se contrastaron email exacto y subject aprobado.
+No fue solo decodeJwt ni prueba de una sesion activa. JWKS no recibio el JWT.
+VerifiedAt 2026-10-26T07:01:11.521Z = 26/10 01:01:11.521 Costa Rica.
+Expiracion 2026-10-26T12:42:19Z = 26/10 06:42:19 Costa Rica.
+Al reanudar el 27/10, ese JWT YA VENCIO. PASS se conserva como evidencia de
+aquella comprobacion, no como sesion vigente ni permiso permanente de escritura.
+El ejecutor exige otra verificacion privada fresca al ejecutar una autorizacion
+futura; el recibo historico no puede fabricar una capacidad de identidad en memoria.
+
+Limpieza observada al reanudar: los PID de captura 83648 y 86444 no existen,
+no hay hijos de esos procesos, y CLOUDFLARE_API_TOKEN no esta en el entorno actual.
+El codigo vacia el campo, descarta referencias y rellena los buffers de stdin
+con ceros; el hijo finalizo. No se leyo campo, portapapeles, cookie ni JWT para
+esta comprobacion y no se hicieron capturas de pantalla.
+La rutina intentaba borrar el portapapeles solo si seguia conteniendo el mismo
+JWT. No se certifica ahora su contenido ni historiales/sincronizaciones externas.
+JavaScript/.NET no garantizan borrado fisico absoluto de todas las copias en RAM.
+El comprobante contiene solo los campos mostrados, no el JWT ni su hash.
+
+3. MODELO DE OPERADOR UNICO Y AUTORIZACION
+La restriccion SQL de 0003 exige principal_id <> granted_by y se conserva intacta.
+No exige dos personas ni que el concedente tenga rol o acceso interactivo.
+El requisito previo de otro humano era una propuesta de procedimiento, no una
+politica obligatoria de Cloudflare. No se inventa ahora otra persona.
+Jesus autoriza expresamente la operacion futura; hoy solo autorizo prepararla.
+El ejecutor tecnico usa issuer urn:kuwago:technical:bootstrap:development,
+subject = UUID de ejecucion, enabled=0, sin roles canonicos ni legacy, sin claves
+ni identidad Access. El registro se conserva para FK y auditoria, sin privilegios.
+granted_by y audit.actor_id identifican al ejecutor tecnico, no a un revisor
+independiente. action declara single_operator y vincula la referencia de
+autorizacion real mediante su hash; request_id vincula la ejecucion.
+La referencia humana futura debe conservar el texto/ID de la autorizacion de
+Jesus y el alcance/hash aprobado. Un hash por si solo no prueba consentimiento.
+No existe asignacion automatica por login/email; la primera alta usa operacion
+excepcional del operador D1, no un endpoint sin RBAC.
+El control de aprobacion comercial independiente del catalogo NO fue cambiado.
+
+4. EJECUCION DURABLE PREPARADA
+- Entrada scripts/d1-bootstrap-private.mjs: actualmente BLOCKED antes de leer
+  stdin, consultar JWKS/D1 o crear un intento. Solo futura tuberia privada token+jwt.
+- Preflight con permiso de lectura separado: destino fijo, esquema/historial 6,
+  integridad, tablas vacias y semillas; no export ni applyBatch en ese transporte.
+- Recuperacion debe cargarse desde un respaldo 6 cifrado, pinned, restaurable.
+- Permiso de escritura especifico y de un solo uso, ligado a entorno, cuenta,
+  D1, UUID, etapa 6, fingerprint, identidad, fuentes, referencia humana, hash del
+  batch, hash de evidencia de respaldo y maximumBatches=1.
+- Journal fuera de Git, ACL verificadas: attempt con wx, fsync y lectura posterior.
+- Dos snapshots completos y bookmarks estables establecen baseline; bookmarks
+  se guardan cifrados mediante DPAPI con el envelope BKM1 existente.
+- intent durable precede al envio. request-invocation se guarda antes de invocar
+  fetch; por si solo NO demuestra recepcion por Cloudflare. No se afirma eso.
+- Transporte solo admite el objeto batch marcado por el preparador, el hash
+  exacto, la identidad y UUID vinculados. Maximo un envio; sin reintentos.
+- ACK solo tras respuesta aceptada y readbacks completos; esta ligado a la
+  instancia de transporte, entorno, ejecucion, etapa 6 y hashes; se consume una vez.
+- Oraculo independiente: identidades, flags, rol, audit, schema y tablas ajenas
+  proceden del plan/baseline. Solo timestamps generados por el MISMO batch se
+  aceptan como valores dinamicos, con formato UTC exacto y rango envio/respuesta
+  mas tolerancia de 5 segundos. No se adopta toda una respuesta como referencia.
+- Postflight comprueba exactamente dos principals, un rol, un audit, FK, schema,
+  historial y todas las filas de tablas no modificadas; proyecta fingerprint esperado.
+- Checkpoint postflight cifrado persistido, releido y descifrado para comprobarlo.
+  Solo con result y closed durables coherentes se devuelve PASS con durablyClosed.
+- Una respuesta perdida tras commit o un fallo posterior requiere reconciliacion
+  de lectura; no se reenvia ni se interpreta como que no hubo escritura.
+- Misma ejecucion bloqueada por attempt wx tras reinicio; intento ambiguo conserva
+  evidencia. Nueva ejecucion requeriria autorizacion nueva y revision del estado.
+
+Huella del conjunto de fuentes enumerado (release BLOQUEADA): af4a876d236c584ff50ca262803efddee3eda8347a4ebe8f5c689eacfab11987
+Cambiar la autorizacion/flag o una fuente exige fijar/revisar la huella efectiva;
+no actualizar silenciosamente hashes. La huella no es una firma de suministro.
+
+5. RECUPERACION Y OPERACION SEPARADA PENDIENTE
+El unico respaldo SQL remoto completo acreditado sigue siendo de ETAPA 4.
+Los checkpoints 5/6 acreditan estado y cierre, pero NO son backups completos.
+La reconstruccion local 4 + SQL originales + generados de su transaccion propia
+se usa para comparar el fingerprint esperado, NO se presenta como backup remoto 6.
+Baseline 6: 1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5
+Historial exacto: 0001–0006; 32 tablas de aplicacion + d1_migrations/sqlite_sequence.
+El plan seleccionado exige un NUEVO EXPORT COMPLETO del estado 6 antes del alta.
+
+Operacion preparada, no autorizada: 17fe22b3-a7bf-4a86-954b-f4d7c35a7db6
+Perfil: backup-only etapa 6, un inicio de export maximo; credencial temporal
+D1 Read + D1 Write solo por captura oculta y clave de recuperacion EXISTENTE.
+No se certifica el alcance efectivo del token solo por su etiqueta.
+Tras autorizacion separada: revalidar identidad/ACL, hashes y cierre 6,
+schema/historial/fingerprint, bookmark Time Travel; snapshots estables antes del
+export; POST de export oficial una vez, polls acotados de ESA misma operacion,
+sin segundo inicio; descarga firmada sin token en la peticion de descarga.
+El export puede bloquear consultas temporalmente. Rechazo o diferencia: parar.
+No SQL remoto de escritura, restauracion remota, migracion ni bootstrap en el perfil.
+AES-256-GCM existente, DPAPI y recuperacion independiente; custodia NTFS fuera de Git:
+C:\Users\JV\AppData\Local\Kuwago\D1Backups\development
+Solo promover ciphertext tras verificacion, descifrado y restauracion SQLite aislada
+con igualdad exacta de fingerprint. No SQL plano ni URL firmada en disco/logs.
+No sobrescribir respaldos anteriores. Al finalizar descartar credenciales y clave.
+
+Preparacion local del GUI reutilizado (NO ejecutar por este adjunto):
+pwsh -NoProfile -STA -File infra/cloudflare/dev/scripts/backup-once-private.ps1 -BackupProfile stage-six
+Hoy el boton/CLI quedan bloqueados: stageSixBackupApproved=false y approved=false.
+Se preserva el perfil stage-four por defecto y su autorizacion consumida.
+Despues de un eventual PASS de respaldo 6, fijar operationId, SHA del ciphertext,
+SHA de evidencia y bookmark de recuperacion cifrado; loadBootstrapRecovery exige
+sourceStage=6, target exacto y restauracion aislada. No acepta el backup 4.
+Antes del alta futura: snapshot remoto debe seguir coincidiendo con ese backup.
+
+Recuperacion si falla el alta: detener, preservar attempt/ACK/checkpoints, consultar
+en lectura si el batch se aplico; nunca repetir como remedio. Para rollback,
+autorizacion independiente y verificacion de destino/bookmark Time Travel previo,
+o restauracion logica aislada del nuevo backup 6 y procedimiento remoto revisado.
+No restaurar a ciegas sobre escrituras posteriores. No cambiar R2 en este bootstrap;
+si el entorno incorporase datos/media despues, usar el runbook D1–R2 existente,
+no asumir transacciones entre ambos. No se afirma haber probado restauracion remota.
+
+6. PRUEBAS Y LIMITACIONES
+Suite dirigida guardada de la sesion interrumpida:
+node --test test/bootstrap-durable.test.mjs test/single-operator-bootstrap.test.mjs
+✔ durable bootstrap: fixed target, single request, verified independent oracle and durable closure (13482.5289ms)
+✔ durable bootstrap: target mismatch, bookmark race and SQL concurrent change stop without retries (15751.0789ms)
+✔ durable bootstrap: commit with ambiguous response, bad readback or checkpoint collision never claims PASS or retries (28119.1845ms)
+✔ capabilities: remote gate/backup missing; no exports, arbitrary SQL, forged recovery or changed scope (2161.4925ms)
+✔ bootstrap ACK binds transport, environment, execution, stage, batch and source hash, and is consumed once (2072.3792ms)
+✔ stage-six recovery profile validates real closure locally, does not call remote, rejects stage-four/fingerprint mismatch (5121.496ms)
+✔ identity requires real RS256/issuer/audience/subject/email and fresh token; no raw token retained (14.4814ms)
+✔ single operator local D1: technical actor disabled, real recipient only super_admin, faithful audit and no self-grant (1676.8703ms)
+✔ concurrent data changes and another bootstrap invalidate full-state SQL guard with atomic rollback (3255.8542ms)
+✔ missing/fabricated receipts, changed fingerprint and incomplete snapshots are rejected before a batch (1261.8327ms)
+✔ ambiguous response and late SQL failure consume plan without retry or partial grant (2782.2089ms)
+✔ six original migrations remain SQLite-compatible and SQL CHECK still rejects a self-grant (9.4797ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67164.5166
+
+Reanudacion: solo evidencia faltante del pipeline especifico de backup 6:
+node --test test/backup-stage-six-directed.test.mjs
+✔ stage-six backup-only: simulated export, exact pinned baseline, encryption and isolated restoration; no remote writes (4678.589ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5013.7199
+
+El primer fixture de esta prueba adicional mezclaba migraciones con export y fue
+rechazado en restauracion (ALTER/UPDATE prohibidos). Se corrigio EL FIXTURE para
+producir un dump final CREATE/INSERT; no se relajo el restaurador ni produccion.
+Tambien: lint dirigido PASS y parser PowerShell PASS en las dos interfaces.
+No se ejecutaron suites globales, builds o migraciones repetidas al reanudar.
+
+Limitaciones:
+* Pruebas del ejecutor/backup son locales y HTTP simulado; el JWT PASS si uso JWKS real.
+* Sin backend/gateway real desplegado; no se declara validacion E2E remota.
+* Un bookmark estable y CAS de contenido no detectan todo ABA (cambiar y volver
+  exactamente al mismo estado), ni impiden escrituras posteriores al commit.
+* Un archivo result PASS sin closed valido NO constituye cierre durable confirmado.
+* El bloqueo durable cubre misma ejecucion y estado esperado; un operador con
+  acceso a modificar codigo/ACL/credenciales no queda contenido por estas guardas.
+* No garantia de borrado fisico de RAM, portapapeles sincronizado o historial externo.
+* JWT vencido no se reutiliza: el recibo historico no habilita el siguiente intento.
+
+MATRIZ FINAL
+PASS: identidad criptografica historica, limpieza observable de procesos, lote/guardas
+locales, respuestas ambiguas, persistencia, anti-reintento, ACK, backup 6 simulado.
+PREPARADO BLOQUEADO: bootstrap durable, preflight de lectura y backup-only 6 separado.
+PENDIENTE: revision del adjunto, autorizacion de un export 6, ejecucion/verificacion
+de ese backup y pins resultantes; despues autorizacion de un unico bootstrap con
+UUID/hash propios, JWT fresco y preflight. Despliegues siempre separados.
+NO REALIZADO: ningun export remoto nuevo, SQL remoto de escritura, usuario/rol
+remoto, cambio Access, deploy, Hostinger, produccion, commit o push.
+
+7. LOTE SQL EXACTO PARAMETRIZADO Y GUARDAS
+Se muestra el SQL producido por el preparador actual, con las filas baseline
+esperadas reconstruidas localmente y verificadas contra fingerprint 6. Sin D1 remoto.
+Los valores EXECUTION_ID y AUTHORIZATION_SHA256 NO EXISTEN autorizados: aparecen
+como marcadores en params. Son parametros, no una nueva autorizacion ni un script
+listo para pegar en consola. El hash final de lote depende de esos valores futuros.
+Para generar esta plantilla se utilizo solo una identidad firmada SINTETICA offline
+con el par publico esperado y JWKS de test. NO fue otra verificacion real ni se
+utiliza esa identidad sintetica para ejecutar contra Cloudflare. La evidencia
+real es el comprobante PASS anterior, guardado por la captura privada.
+
+Total de statements del unico batch: 43
+
+-- Statement 1
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(type,name,sql)) AS value FROM (SELECT type,name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT LIKE 'sqlite_%' AND name NOT IN ('_cf_KV','_cf_METADATA','d1_migrations','kuwago_migration_guard') ORDER BY type,name))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"index\",\"audit_actor_time\",\"CREATE INDEX audit_actor_time ON audit_events(actor_id,created_at)\"],[\"index\",\"media_state\",\"CREATE INDEX media_state ON media_assets(state,created_at)\"],[\"index\",\"one_active_approval\",\"CREATE UNIQUE INDEX one_active_approval ON commercial_approvals(revision_id,content_hash) WHERE revoked_at IS NULL\"],[\"index\",\"outbox_delivery\",\"CREATE INDEX outbox_delivery ON publication_outbox(delivered_at,generation)\"],[\"index\",\"outbox_retry\",\"CREATE INDEX outbox_retry ON publication_outbox(epoch,delivery_state,next_attempt_at,lease_until)\"],[\"index\",\"revisions_category\",\"CREATE INDEX revisions_category ON service_revisions(category_id)\"],[\"index\",\"revisions_service\",\"CREATE INDEX revisions_service ON service_revisions(service_id,number)\"],[\"index\",\"services_status\",\"CREATE INDEX services_status ON services(status,modified_at)\"],[\"table\",\"admin_role_definitions\",\"CREATE TABLE admin_role_definitions (\\n id TEXT PRIMARY KEY NOT NULL CHECK(id IN ('super_admin','admin','editor'))\\n) STRICT\"],[\"table\",\"admin_role_permissions\",\"CREATE TABLE admin_role_permissions (\\n role_id TEXT NOT NULL REFERENCES admin_role_definitions(id),\\n permission TEXT NOT NULL CHECK(permission IN (\\n  'admin:read','drafts:write','translations:write','media:prepare','media:read-private',\\n  'services:publish','services:unpublish','services:archive','audit:read','admins:manage'\\n )), PRIMARY KEY(role_id,permission)\\n) STRICT\"],[\"table\",\"administrator_roles\",\"CREATE TABLE administrator_roles (\\n principal_id TEXT PRIMARY KEY NOT NULL REFERENCES principals(id),\\n role_id TEXT NOT NULL REFERENCES admin_role_definitions(id),\\n granted_by TEXT NOT NULL REFERENCES principals(id),\\n granted_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n CHECK(principal_id<>granted_by)\\n) STRICT\"],[\"table\",\"audit_events\",\"CREATE TABLE audit_events (\\n  id TEXT PRIMARY KEY NOT NULL, actor_id TEXT NOT NULL REFERENCES principals(id),\\n  action TEXT NOT NULL, entity_type TEXT NOT NULL, entity_id TEXT NOT NULL,\\n  revision_id TEXT REFERENCES service_revisions(id), request_id TEXT NOT NULL,\\n  outcome TEXT NOT NULL CHECK(outcome IN ('allowed','denied','failed')),\\n  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))\\n) STRICT\"],[\"table\",\"catalog_state\",\"CREATE TABLE catalog_state (\\n id INTEGER PRIMARY KEY CHECK(id=1), version INTEGER NOT NULL CHECK(version BETWEEN 0 AND 9007199254740991)\\n) STRICT\"],[\"table\",\"categories\",\"CREATE TABLE categories (\\n  id TEXT PRIMARY KEY NOT NULL, slug TEXT NOT NULL UNIQUE CHECK(length(slug) BETWEEN 1 AND 80),\\n  active INTEGER NOT NULL DEFAULT 0 CHECK(active IN (0,1)),\\n  row_version INTEGER NOT NULL DEFAULT 1 CHECK(row_version >= 1)\\n) STRICT\"],[\"table\",\"category_translations\",\"CREATE TABLE category_translations (\\n  category_id TEXT NOT NULL REFERENCES categories(id), locale TEXT NOT NULL CHECK(locale IN ('es','en')),\\n  name TEXT NOT NULL CHECK(length(trim(name)) BETWEEN 1 AND 100), PRIMARY KEY(category_id, locale)\\n) STRICT\"],[\"table\",\"commercial_approvals\",\"CREATE TABLE commercial_approvals (\\n  id TEXT PRIMARY KEY NOT NULL, revision_id TEXT NOT NULL, content_hash TEXT NOT NULL,\\n  approved_by TEXT NOT NULL REFERENCES principals(id),\\n  approved_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n  revoked_at TEXT, category_version INTEGER CHECK(category_version>=1),\\n  FOREIGN KEY(revision_id,content_hash) REFERENCES service_revisions(id,content_hash)\\n) STRICT\"],[\"table\",\"media_assets\",\"CREATE TABLE media_assets (\\n  id TEXT PRIMARY KEY NOT NULL,\\n  private_object_key TEXT NOT NULL UNIQUE CHECK(private_object_key GLOB 'development/quarantine/*' AND instr(private_object_key,'..')=0 AND instr(private_object_key,':')=0),\\n  derivative_object_key TEXT UNIQUE CHECK(derivative_object_key GLOB 'development/derived/*' AND instr(derivative_object_key,'..')=0 AND instr(derivative_object_key,':')=0),\\n  state TEXT NOT NULL DEFAULT 'quarantine' CHECK(state IN ('quarantine','validated','approved','rejected','retired','deleted')),\\n  provenance TEXT NOT NULL CHECK(provenance IN ('demo','stitch_reference','verified')),\\n  usage_approval TEXT NOT NULL DEFAULT 'pending' CHECK(usage_approval IN ('pending','approved')),\\n  sha256 TEXT CHECK(length(sha256)=64 AND sha256 NOT GLOB '*[^0-9a-f]*'),\\n  mime_type TEXT CHECK(mime_type IN ('image/jpeg','image/png','image/webp')),\\n  byte_size INTEGER CHECK(byte_size BETWEEN 1 AND 2097152),\\n  width INTEGER CHECK(width BETWEEN 1 AND 4096), height INTEGER CHECK(height BETWEEN 1 AND 4096),\\n  uploaded_by TEXT NOT NULL REFERENCES principals(id), reviewed_by TEXT REFERENCES principals(id),\\n  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n  reviewed_at TEXT, retired_at TEXT,\\n  CHECK(width IS NULL OR height IS NULL OR width*height<=8000000),\\n  CHECK(state NOT IN ('validated','approved') OR\\n    (sha256 IS NOT NULL AND mime_type IS NOT NULL AND byte_size IS NOT NULL AND width IS NOT NULL AND height IS NOT NULL AND derivative_object_key IS NOT NULL)),\\n  CHECK(usage_approval <> 'approved' OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL AND reviewed_by<>uploaded_by AND provenance='verified')),\\n  CHECK(state<>'approved' OR usage_approval='approved')\\n) STRICT\"],[\"table\",\"media_processing\",\"CREATE TABLE media_processing (\\r\\n  media_id TEXT PRIMARY KEY NOT NULL REFERENCES media_assets(id),\\r\\n  version INTEGER NOT NULL DEFAULT 1 CHECK(version>=1),\\r\\n  validation_code TEXT NOT NULL DEFAULT 'decoder_unavailable',\\r\\n  normalized_sha256 TEXT,\\r\\n  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\r\\n  deleted_at TEXT\\r\\n) STRICT\"],[\"table\",\"media_read_limits\",\"CREATE TABLE media_read_limits (\\r\\n principal_id TEXT NOT NULL REFERENCES principals(id),\\r\\n window_start INTEGER NOT NULL,\\r\\n attempts INTEGER NOT NULL CHECK(attempts BETWEEN 1 AND 300),\\r\\n PRIMARY KEY(principal_id,window_start)\\r\\n) STRICT\"],[\"table\",\"media_upload_limits\",\"CREATE TABLE media_upload_limits (\\r\\n  principal_id TEXT NOT NULL REFERENCES principals(id),\\r\\n  window_start INTEGER NOT NULL,\\r\\n  attempts INTEGER NOT NULL CHECK(attempts BETWEEN 1 AND 30),\\r\\n  PRIMARY KEY(principal_id,window_start)\\r\\n) STRICT\"],[\"table\",\"mutation_guards\",\"CREATE TABLE mutation_guards (\\n operation_id TEXT PRIMARY KEY NOT NULL,\\n permission_ok INTEGER NOT NULL CONSTRAINT kuwago_mutation_permission CHECK(permission_ok=1),\\n valid INTEGER NOT NULL CONSTRAINT kuwago_mutation_precondition CHECK(valid=1)\\n) STRICT\"],[\"table\",\"option_identities\",\"CREATE TABLE option_identities (\\n  id TEXT PRIMARY KEY NOT NULL, service_id TEXT NOT NULL REFERENCES services(id), UNIQUE(id,service_id)\\n) STRICT\"],[\"table\",\"option_prices\",\"CREATE TABLE option_prices (\\n  revision_id TEXT NOT NULL, option_id TEXT NOT NULL,\\n  kind TEXT NOT NULL CHECK(kind IN ('fixed','from','quote')),\\n  amount_minor INTEGER, currency TEXT CHECK(currency IN ('USD','CRC','EUR')),\\n  unit TEXT NOT NULL CHECK(unit IN ('person','group','service','dinner')),\\n  PRIMARY KEY(revision_id,option_id),\\n  FOREIGN KEY(revision_id,option_id) REFERENCES service_options(revision_id,option_id),\\n  CHECK((kind='quote' AND amount_minor IS NULL) OR\\n    (kind IN ('fixed','from') AND amount_minor IS NOT NULL AND amount_minor BETWEEN 0 AND 9007199254740991 AND currency IS NOT NULL))\\n) STRICT\"],[\"table\",\"option_translations\",\"CREATE TABLE option_translations (\\n  revision_id TEXT NOT NULL, option_id TEXT NOT NULL, locale TEXT NOT NULL CHECK(locale IN ('es','en')),\\n  name TEXT NOT NULL DEFAULT '' CHECK(length(name)<=100), PRIMARY KEY(revision_id,option_id,locale),\\n  FOREIGN KEY(revision_id,option_id) REFERENCES service_options(revision_id,option_id)\\n) STRICT\"],[\"table\",\"permissions\",\"CREATE TABLE permissions (id TEXT PRIMARY KEY NOT NULL) STRICT\"],[\"table\",\"principal_roles\",\"CREATE TABLE principal_roles (\\n  principal_id TEXT NOT NULL REFERENCES principals(id), role_id TEXT NOT NULL REFERENCES roles(id),\\n  granted_by TEXT NOT NULL REFERENCES principals(id),\\n  granted_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n  PRIMARY KEY(principal_id, role_id), CHECK(principal_id <> granted_by)\\n) STRICT\"],[\"table\",\"principals\",\"CREATE TABLE principals (\\n  id TEXT PRIMARY KEY NOT NULL,\\n  issuer TEXT NOT NULL,\\n  subject TEXT NOT NULL,\\n  enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN (0,1)),\\n  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n  UNIQUE(issuer, subject)\\n) STRICT\"],[\"table\",\"publication_alerts\",\"CREATE TABLE publication_alerts (\\n id TEXT PRIMARY KEY NOT NULL, epoch TEXT NOT NULL, generation INTEGER NOT NULL,\\n code TEXT NOT NULL CHECK(code IN ('withdrawal_overdue','retry_exhausted','delivery_error','recovery_required')),\\n first_seen_at INTEGER NOT NULL, last_seen_at INTEGER NOT NULL, occurrences INTEGER NOT NULL DEFAULT 1,\\n UNIQUE(epoch,generation,code)\\n) STRICT\"],[\"table\",\"publication_commands\",\"CREATE TABLE \\\"publication_commands\\\" (\\n id TEXT PRIMARY KEY NOT NULL, service_id TEXT NOT NULL REFERENCES services(id),\\n actor_id TEXT NOT NULL REFERENCES principals(id), idempotency_key TEXT NOT NULL,\\n action TEXT NOT NULL CHECK(action IN ('publish','unpublish','archive')),\\n expected_version INTEGER NOT NULL CHECK(expected_version BETWEEN 1 AND 9007199254740991),\\n state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','visible','failed')),\\n created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n UNIQUE(actor_id,idempotency_key)\\n) STRICT\"],[\"table\",\"publication_control\",\"CREATE TABLE publication_control (\\n id INTEGER PRIMARY KEY CHECK(id=1),\\n epoch TEXT NOT NULL CHECK(length(epoch)=32 AND epoch NOT GLOB '*[^0-9a-f]*'),\\n mode TEXT NOT NULL CHECK(mode IN ('ready','paused')),\\n generation INTEGER CHECK(generation BETWEEN 0 AND 9007199254740991),\\n payload_hash TEXT CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),\\n CHECK((generation IS NULL AND payload_hash IS NULL) OR (generation IS NOT NULL AND payload_hash IS NOT NULL))\\n) STRICT\"],[\"table\",\"publication_outbox\",\"CREATE TABLE publication_outbox (\\n generation INTEGER PRIMARY KEY NOT NULL CHECK(generation BETWEEN 1 AND 9007199254740991),\\n command_id TEXT NOT NULL UNIQUE REFERENCES publication_commands(id),\\n attempts INTEGER NOT NULL DEFAULT 0 CHECK(attempts>=0),\\n delivered_at TEXT, last_error_code TEXT,\\n created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n catalog_json TEXT CHECK(catalog_json IS NULL OR json_valid(catalog_json))\\n, epoch TEXT, payload_hash TEXT, delivery_state TEXT NOT NULL DEFAULT 'pending'\\n CHECK(delivery_state IN ('pending','delivered','superseded','escalated','quarantined')), retry_count INTEGER NOT NULL DEFAULT 0 CHECK(retry_count>=0), next_attempt_at INTEGER NOT NULL DEFAULT 0 CHECK(next_attempt_at>=0), lease_token TEXT, lease_until INTEGER NOT NULL DEFAULT 0 CHECK(lease_until>=0)) STRICT\"],[\"table\",\"publication_recovery_events\",\"CREATE TABLE publication_recovery_events (\\n id TEXT PRIMARY KEY NOT NULL, source_epoch TEXT NOT NULL, target_epoch TEXT NOT NULL,\\n action TEXT NOT NULL CHECK(action IN ('restore_quarantined','legacy_quarantined','resume_empty')),\\n created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))\\n) STRICT\"],[\"table\",\"revision_media\",\"CREATE TABLE revision_media (\\n  revision_id TEXT NOT NULL REFERENCES service_revisions(id), media_id TEXT NOT NULL REFERENCES media_assets(id),\\n  sort_order INTEGER NOT NULL CHECK(sort_order BETWEEN 0 AND 7),\\n  PRIMARY KEY(revision_id,media_id), UNIQUE(revision_id,sort_order)\\n) STRICT\"],[\"table\",\"revision_media_translations\",\"CREATE TABLE revision_media_translations (\\n  revision_id TEXT NOT NULL, media_id TEXT NOT NULL, locale TEXT NOT NULL CHECK(locale IN ('es','en')),\\n  alt_text TEXT NOT NULL DEFAULT '' CHECK(length(alt_text)<=250), PRIMARY KEY(revision_id,media_id,locale),\\n  FOREIGN KEY(revision_id,media_id) REFERENCES revision_media(revision_id,media_id)\\n) STRICT\"],[\"table\",\"role_permissions\",\"CREATE TABLE role_permissions (\\n  role_id TEXT NOT NULL REFERENCES roles(id), permission_id TEXT NOT NULL REFERENCES permissions(id),\\n  PRIMARY KEY(role_id, permission_id)\\n) STRICT\"],[\"table\",\"roles\",\"CREATE TABLE roles (id TEXT PRIMARY KEY NOT NULL CHECK(id IN ('viewer','editor','publisher','securityAdmin'))) STRICT\"],[\"table\",\"service_options\",\"CREATE TABLE service_options (\\n  revision_id TEXT NOT NULL, service_id TEXT NOT NULL, option_id TEXT NOT NULL,\\n  sort_order INTEGER NOT NULL CHECK(sort_order BETWEEN 0 AND 99),\\n  duration_minutes INTEGER CHECK(duration_minutes BETWEEN 1 AND 1440),\\n  experience_type TEXT CHECK(experience_type IN ('private','shared')),\\n  venue TEXT CHECK(venue IN ('in_property','off_property')),\\n  PRIMARY KEY(revision_id,option_id), UNIQUE(revision_id,sort_order),\\n  FOREIGN KEY(revision_id,service_id) REFERENCES service_revisions(id,service_id),\\n  FOREIGN KEY(option_id,service_id) REFERENCES option_identities(id,service_id)\\n) STRICT\"],[\"table\",\"service_revisions\",\"CREATE TABLE service_revisions (\\n  id TEXT PRIMARY KEY NOT NULL, service_id TEXT NOT NULL REFERENCES services(id) DEFERRABLE INITIALLY DEFERRED,\\n  number INTEGER NOT NULL CHECK(number BETWEEN 1 AND 9007199254740991),\\n  slug TEXT NOT NULL DEFAULT '' CHECK(length(slug) <= 80),\\n  category_id TEXT REFERENCES categories(id),\\n  content_hash TEXT, sealed_at TEXT,\\n  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n  created_by TEXT NOT NULL REFERENCES principals(id),\\n  UNIQUE(service_id,number), UNIQUE(id,service_id), UNIQUE(id,content_hash),\\n  CHECK((content_hash IS NULL AND sealed_at IS NULL) OR\\n    (content_hash IS NOT NULL AND length(content_hash)=64 AND content_hash NOT GLOB '*[^0-9a-f]*' AND sealed_at IS NOT NULL))\\n) STRICT\"],[\"table\",\"service_translations\",\"CREATE TABLE service_translations (\\n  revision_id TEXT NOT NULL REFERENCES service_revisions(id), locale TEXT NOT NULL CHECK(locale IN ('es','en')),\\n  title TEXT NOT NULL DEFAULT '' CHECK(length(title)<=100),\\n  description TEXT NOT NULL DEFAULT '' CHECK(length(description)<=2000), PRIMARY KEY(revision_id,locale)\\n) STRICT\"],[\"table\",\"services\",\"CREATE TABLE services (\\n  id TEXT PRIMARY KEY NOT NULL,\\n  provenance TEXT NOT NULL CHECK(provenance IN ('demo','stitch_reference','verified')),\\n  status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','published','archived')),\\n  working_revision_id TEXT NOT NULL, published_revision_id TEXT,\\n  internal_notes TEXT NOT NULL DEFAULT '' CHECK(length(internal_notes) <= 10000),\\n  row_version INTEGER NOT NULL DEFAULT 1 CHECK(row_version BETWEEN 1 AND 9007199254740991),\\n  modified_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\\n  CHECK(status <> 'published' OR published_revision_id IS NOT NULL),\\n  CHECK(status <> 'draft' OR published_revision_id IS NULL),\\n  FOREIGN KEY(working_revision_id,id) REFERENCES service_revisions(id,service_id) DEFERRABLE INITIALLY DEFERRED,\\n  FOREIGN KEY(published_revision_id,id) REFERENCES service_revisions(id,service_id) DEFERRABLE INITIALLY DEFERRED\\n) STRICT\"],[\"trigger\",\"approval_no_delete\",\"CREATE TRIGGER approval_no_delete BEFORE DELETE ON commercial_approvals\\nBEGIN SELECT RAISE(ABORT,'approval_history_preserved'); END\"],[\"trigger\",\"approval_requires_reviewer\",\"CREATE TRIGGER approval_requires_reviewer BEFORE INSERT ON commercial_approvals\\nWHEN NOT EXISTS (\\n SELECT 1 FROM service_revisions r JOIN principals p ON p.id=NEW.approved_by\\n JOIN administrator_roles ar ON ar.principal_id=p.id AND ar.role_id IN ('admin','super_admin')\\n WHERE r.id=NEW.revision_id AND r.content_hash=NEW.content_hash AND r.sealed_at IS NOT NULL\\n AND r.created_by<>p.id AND p.enabled=1\\n) BEGIN SELECT RAISE(ABORT,'approval_requires_enabled_independent_administrator'); END\"],[\"trigger\",\"approval_update_limited\",\"CREATE TRIGGER approval_update_limited BEFORE UPDATE ON commercial_approvals\\nWHEN NEW.id<>OLD.id OR NEW.revision_id<>OLD.revision_id OR NEW.content_hash<>OLD.content_hash\\n OR NEW.approved_by<>OLD.approved_by OR NEW.approved_at<>OLD.approved_at OR OLD.revoked_at IS NOT NULL OR NEW.revoked_at IS NULL\\nBEGIN SELECT RAISE(ABORT,'approval_only_revocable_once'); END\"],[\"trigger\",\"audit_no_delete\",\"CREATE TRIGGER audit_no_delete BEFORE DELETE ON audit_events\\nBEGIN SELECT RAISE(ABORT,'audit_append_only'); END\"],[\"trigger\",\"audit_no_update\",\"CREATE TRIGGER audit_no_update BEFORE UPDATE ON audit_events\\nBEGIN SELECT RAISE(ABORT,'audit_append_only'); END\"],[\"trigger\",\"media_not_attachable\",\"CREATE TRIGGER media_not_attachable BEFORE INSERT ON revision_media\\r\\nWHEN EXISTS(SELECT 1 FROM media_assets WHERE id=NEW.media_id AND state IN ('retired','rejected','deleted'))\\r\\nBEGIN SELECT RAISE(ABORT,'media_not_attachable'); END\"],[\"trigger\",\"media_published_immutable\",\"CREATE TRIGGER media_published_immutable BEFORE UPDATE ON media_assets\\r\\nWHEN EXISTS(SELECT 1 FROM revision_media rm JOIN services s ON s.published_revision_id=rm.revision_id WHERE rm.media_id=OLD.id AND s.status='published')\\r\\nAND (NEW.state<>OLD.state OR NEW.sha256 IS NOT OLD.sha256 OR NEW.derivative_object_key IS NOT OLD.derivative_object_key OR NEW.usage_approval<>OLD.usage_approval)\\r\\nBEGIN SELECT RAISE(ABORT,'published_media_immutable'); END\"],[\"trigger\",\"media_state_transition\",\"CREATE TRIGGER media_state_transition BEFORE UPDATE OF state ON media_assets\\nWHEN NEW.state<>OLD.state AND NOT (\\n (OLD.state='quarantine' AND NEW.state IN ('validated','rejected')) OR\\n (OLD.state='validated' AND NEW.state IN ('approved','rejected')) OR\\n (OLD.state='approved' AND NEW.state='retired') OR\\n (OLD.state IN ('rejected','retired') AND NEW.state='deleted')\\n) BEGIN SELECT RAISE(ABORT,'invalid_media_transition'); END\"],[\"trigger\",\"media_verified_bytes_immutable\",\"CREATE TRIGGER media_verified_bytes_immutable BEFORE UPDATE ON media_assets\\nWHEN OLD.state<>'quarantine' AND (\\n NEW.private_object_key IS NOT OLD.private_object_key OR NEW.derivative_object_key IS NOT OLD.derivative_object_key\\n OR NEW.sha256 IS NOT OLD.sha256 OR NEW.mime_type IS NOT OLD.mime_type OR NEW.byte_size IS NOT OLD.byte_size\\n OR NEW.width IS NOT OLD.width OR NEW.height IS NOT OLD.height OR NEW.uploaded_by IS NOT OLD.uploaded_by\\n) BEGIN SELECT RAISE(ABORT,'validated_media_bytes_immutable'); END\"],[\"trigger\",\"option_identity_immutable\",\"CREATE TRIGGER option_identity_immutable BEFORE UPDATE ON option_identities\\nBEGIN SELECT RAISE(ABORT,'option_identity_immutable'); END\"],[\"trigger\",\"option_prices_sealed_delete\",\"CREATE TRIGGER option_prices_sealed_delete BEFORE DELETE ON option_prices\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=OLD.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"option_prices_sealed_insert\",\"CREATE TRIGGER option_prices_sealed_insert BEFORE INSERT ON option_prices\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=NEW.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"option_prices_sealed_update\",\"CREATE TRIGGER option_prices_sealed_update BEFORE UPDATE ON option_prices\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id IN (OLD.revision_id,NEW.revision_id) AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"option_translations_sealed_delete\",\"CREATE TRIGGER option_translations_sealed_delete BEFORE DELETE ON option_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=OLD.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"option_translations_sealed_insert\",\"CREATE TRIGGER option_translations_sealed_insert BEFORE INSERT ON option_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=NEW.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"option_translations_sealed_update\",\"CREATE TRIGGER option_translations_sealed_update BEFORE UPDATE ON option_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id IN (OLD.revision_id,NEW.revision_id) AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"publication_guard_insert\",\"CREATE TRIGGER publication_guard_insert BEFORE INSERT ON services WHEN NEW.status='published'\\nBEGIN SELECT RAISE(ABORT,'create_as_draft'); END\"],[\"trigger\",\"publication_guard_update\",\"CREATE TRIGGER publication_guard_update BEFORE UPDATE OF status,published_revision_id,provenance ON services\\nWHEN NEW.status='published' AND (\\n NEW.provenance<>'verified' OR NOT EXISTS (\\n  SELECT 1 FROM service_revisions r JOIN categories c ON c.id=r.category_id AND c.active=1\\n  JOIN commercial_approvals a ON a.revision_id=r.id AND a.content_hash=r.content_hash AND a.revoked_at IS NULL\\n  WHERE r.id=NEW.published_revision_id AND r.service_id=NEW.id AND r.sealed_at IS NOT NULL AND trim(r.slug)<>''\\n ) OR EXISTS (\\n  SELECT 1 FROM services other JOIN service_revisions r ON r.id=other.published_revision_id\\n  WHERE other.status='published' AND other.id<>NEW.id AND r.slug=(SELECT slug FROM service_revisions WHERE id=NEW.published_revision_id)\\n )\\n) BEGIN SELECT RAISE(ABORT,'publication_requires_approved_sealed_revision_unique_slug'); END\"],[\"trigger\",\"revision_cannot_start_sealed\",\"CREATE TRIGGER revision_cannot_start_sealed BEFORE INSERT ON service_revisions\\nWHEN NEW.sealed_at IS NOT NULL BEGIN SELECT RAISE(ABORT,'create_revision_unsealed'); END\"],[\"trigger\",\"revision_media_sealed_delete\",\"CREATE TRIGGER revision_media_sealed_delete BEFORE DELETE ON revision_media\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=OLD.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"revision_media_sealed_insert\",\"CREATE TRIGGER revision_media_sealed_insert BEFORE INSERT ON revision_media\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=NEW.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"revision_media_sealed_update\",\"CREATE TRIGGER revision_media_sealed_update BEFORE UPDATE ON revision_media\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id IN (OLD.revision_id,NEW.revision_id) AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"revision_media_translations_sealed_delete\",\"CREATE TRIGGER revision_media_translations_sealed_delete BEFORE DELETE ON revision_media_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=OLD.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"revision_media_translations_sealed_insert\",\"CREATE TRIGGER revision_media_translations_sealed_insert BEFORE INSERT ON revision_media_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=NEW.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"revision_media_translations_sealed_update\",\"CREATE TRIGGER revision_media_translations_sealed_update BEFORE UPDATE ON revision_media_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id IN (OLD.revision_id,NEW.revision_id) AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"revision_owner_immutable\",\"CREATE TRIGGER revision_owner_immutable BEFORE UPDATE OF id,service_id,number,created_by ON service_revisions\\nBEGIN SELECT RAISE(ABORT,'revision_identity_immutable'); END\"],[\"trigger\",\"sealed_revision_delete\",\"CREATE TRIGGER sealed_revision_delete BEFORE DELETE ON service_revisions\\nWHEN OLD.sealed_at IS NOT NULL BEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"sealed_revision_update\",\"CREATE TRIGGER sealed_revision_update BEFORE UPDATE ON service_revisions\\nWHEN OLD.sealed_at IS NOT NULL BEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"service_options_sealed_delete\",\"CREATE TRIGGER service_options_sealed_delete BEFORE DELETE ON service_options\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=OLD.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"service_options_sealed_insert\",\"CREATE TRIGGER service_options_sealed_insert BEFORE INSERT ON service_options\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=NEW.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"service_options_sealed_update\",\"CREATE TRIGGER service_options_sealed_update BEFORE UPDATE ON service_options\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id IN (OLD.revision_id,NEW.revision_id) AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"service_translations_sealed_delete\",\"CREATE TRIGGER service_translations_sealed_delete BEFORE DELETE ON service_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=OLD.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"service_translations_sealed_insert\",\"CREATE TRIGGER service_translations_sealed_insert BEFORE INSERT ON service_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id=NEW.revision_id AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"],[\"trigger\",\"service_translations_sealed_update\",\"CREATE TRIGGER service_translations_sealed_update BEFORE UPDATE ON service_translations\\nWHEN EXISTS(SELECT 1 FROM service_revisions WHERE id IN (OLD.revision_id,NEW.revision_id) AND sealed_at IS NOT NULL)\\nBEGIN SELECT RAISE(ABORT,'sealed_revision_immutable'); END\"]]"]
+
+-- Statement 2
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(id,name)) FROM (SELECT id,name FROM d1_migrations ORDER BY id))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[1,\"0001_admin_catalog.sql\"],[2,\"0002_integrity_guards.sql\"],[3,\"0003_access_rbac.sql\"],[4,\"0004_catalog_operations.sql\"],[5,\"0005_publication_resilience.sql\"],[6,\"0006_media_lifecycle.sql\"]]"]
+
+-- Statement 3
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0 FROM "admin_role_definitions" ORDER BY c0 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"text:61646D696E\"],[\"text:656469746F72\"],[\"text:73757065725F61646D696E\"]]"]
+
+-- Statement 4
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1)) FROM (SELECT typeof("role_id")||':'||CASE WHEN typeof("role_id")='real' THEN printf('%!.17g',"role_id") ELSE hex(CAST("role_id" AS BLOB)) END AS c0,typeof("permission")||':'||CASE WHEN typeof("permission")='real' THEN printf('%!.17g',"permission") ELSE hex(CAST("permission" AS BLOB)) END AS c1 FROM "admin_role_permissions" ORDER BY c0,c1 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"text:61646D696E\",\"text:61646D696E3A72656164\"],[\"text:61646D696E\",\"text:61756469743A72656164\"],[\"text:61646D696E\",\"text:6472616674733A7772697465\"],[\"text:61646D696E\",\"text:6D656469613A70726570617265\"],[\"text:61646D696E\",\"text:6D656469613A726561642D70726976617465\"],[\"text:61646D696E\",\"text:73657276696365733A61726368697665\"],[\"text:61646D696E\",\"text:73657276696365733A7075626C697368\"],[\"text:61646D696E\",\"text:73657276696365733A756E7075626C697368\"],[\"text:61646D696E\",\"text:7472616E736C6174696F6E733A7772697465\"],[\"text:656469746F72\",\"text:61646D696E3A72656164\"],[\"text:656469746F72\",\"text:6472616674733A7772697465\"],[\"text:656469746F72\",\"text:6D656469613A70726570617265\"],[\"text:656469746F72\",\"text:6D656469613A726561642D70726976617465\"],[\"text:656469746F72\",\"text:7472616E736C6174696F6E733A7772697465\"],[\"text:73757065725F61646D696E\",\"text:61646D696E3A72656164\"],[\"text:73757065725F61646D696E\",\"text:61646D696E733A6D616E616765\"],[\"text:73757065725F61646D696E\",\"text:61756469743A72656164\"],[\"text:73757065725F61646D696E\",\"text:6472616674733A7772697465\"],[\"text:73757065725F61646D696E\",\"text:6D656469613A70726570617265\"],[\"text:73757065725F61646D696E\",\"text:6D656469613A726561642D70726976617465\"],[\"text:73757065725F61646D696E\",\"text:73657276696365733A61726368697665\"],[\"text:73757065725F61646D696E\",\"text:73657276696365733A7075626C697368\"],[\"text:73757065725F61646D696E\",\"text:73657276696365733A756E7075626C697368\"],[\"text:73757065725F61646D696E\",\"text:7472616E736C6174696F6E733A7772697465\"]]"]
+
+-- Statement 5
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3)) FROM (SELECT typeof("principal_id")||':'||CASE WHEN typeof("principal_id")='real' THEN printf('%!.17g',"principal_id") ELSE hex(CAST("principal_id" AS BLOB)) END AS c0,typeof("role_id")||':'||CASE WHEN typeof("role_id")='real' THEN printf('%!.17g',"role_id") ELSE hex(CAST("role_id" AS BLOB)) END AS c1,typeof("granted_by")||':'||CASE WHEN typeof("granted_by")='real' THEN printf('%!.17g',"granted_by") ELSE hex(CAST("granted_by" AS BLOB)) END AS c2,typeof("granted_at")||':'||CASE WHEN typeof("granted_at")='real' THEN printf('%!.17g',"granted_at") ELSE hex(CAST("granted_at" AS BLOB)) END AS c3 FROM "administrator_roles" ORDER BY c0,c1,c2,c3 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 6
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6,c7,c8)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("actor_id")||':'||CASE WHEN typeof("actor_id")='real' THEN printf('%!.17g',"actor_id") ELSE hex(CAST("actor_id" AS BLOB)) END AS c1,typeof("action")||':'||CASE WHEN typeof("action")='real' THEN printf('%!.17g',"action") ELSE hex(CAST("action" AS BLOB)) END AS c2,typeof("entity_type")||':'||CASE WHEN typeof("entity_type")='real' THEN printf('%!.17g',"entity_type") ELSE hex(CAST("entity_type" AS BLOB)) END AS c3,typeof("entity_id")||':'||CASE WHEN typeof("entity_id")='real' THEN printf('%!.17g',"entity_id") ELSE hex(CAST("entity_id" AS BLOB)) END AS c4,typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c5,typeof("request_id")||':'||CASE WHEN typeof("request_id")='real' THEN printf('%!.17g',"request_id") ELSE hex(CAST("request_id" AS BLOB)) END AS c6,typeof("outcome")||':'||CASE WHEN typeof("outcome")='real' THEN printf('%!.17g',"outcome") ELSE hex(CAST("outcome" AS BLOB)) END AS c7,typeof("created_at")||':'||CASE WHEN typeof("created_at")='real' THEN printf('%!.17g',"created_at") ELSE hex(CAST("created_at" AS BLOB)) END AS c8 FROM "audit_events" ORDER BY c0,c1,c2,c3,c4,c5,c6,c7,c8 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 7
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("version")||':'||CASE WHEN typeof("version")='real' THEN printf('%!.17g',"version") ELSE hex(CAST("version" AS BLOB)) END AS c1 FROM "catalog_state" ORDER BY c0,c1 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"integer:31\",\"integer:30\"]]"]
+
+-- Statement 8
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("slug")||':'||CASE WHEN typeof("slug")='real' THEN printf('%!.17g',"slug") ELSE hex(CAST("slug" AS BLOB)) END AS c1,typeof("active")||':'||CASE WHEN typeof("active")='real' THEN printf('%!.17g',"active") ELSE hex(CAST("active" AS BLOB)) END AS c2,typeof("row_version")||':'||CASE WHEN typeof("row_version")='real' THEN printf('%!.17g',"row_version") ELSE hex(CAST("row_version" AS BLOB)) END AS c3 FROM "categories" ORDER BY c0,c1,c2,c3 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 9
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2)) FROM (SELECT typeof("category_id")||':'||CASE WHEN typeof("category_id")='real' THEN printf('%!.17g',"category_id") ELSE hex(CAST("category_id" AS BLOB)) END AS c0,typeof("locale")||':'||CASE WHEN typeof("locale")='real' THEN printf('%!.17g',"locale") ELSE hex(CAST("locale" AS BLOB)) END AS c1,typeof("name")||':'||CASE WHEN typeof("name")='real' THEN printf('%!.17g',"name") ELSE hex(CAST("name" AS BLOB)) END AS c2 FROM "category_translations" ORDER BY c0,c1,c2 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 10
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c1,typeof("content_hash")||':'||CASE WHEN typeof("content_hash")='real' THEN printf('%!.17g',"content_hash") ELSE hex(CAST("content_hash" AS BLOB)) END AS c2,typeof("approved_by")||':'||CASE WHEN typeof("approved_by")='real' THEN printf('%!.17g',"approved_by") ELSE hex(CAST("approved_by" AS BLOB)) END AS c3,typeof("approved_at")||':'||CASE WHEN typeof("approved_at")='real' THEN printf('%!.17g',"approved_at") ELSE hex(CAST("approved_at" AS BLOB)) END AS c4,typeof("revoked_at")||':'||CASE WHEN typeof("revoked_at")='real' THEN printf('%!.17g',"revoked_at") ELSE hex(CAST("revoked_at" AS BLOB)) END AS c5,typeof("category_version")||':'||CASE WHEN typeof("category_version")='real' THEN printf('%!.17g',"category_version") ELSE hex(CAST("category_version" AS BLOB)) END AS c6 FROM "commercial_approvals" ORDER BY c0,c1,c2,c3,c4,c5,c6 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 11
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("name")||':'||CASE WHEN typeof("name")='real' THEN printf('%!.17g',"name") ELSE hex(CAST("name" AS BLOB)) END AS c1,typeof("applied_at")||':'||CASE WHEN typeof("applied_at")='real' THEN printf('%!.17g',"applied_at") ELSE hex(CAST("applied_at" AS BLOB)) END AS c2 FROM "d1_migrations" ORDER BY c0,c1,c2 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"integer:31\",\"text:303030315F61646D696E5F636174616C6F672E73716C\",\"text:323032362D31302D32352032313A31323A3232\"],[\"integer:32\",\"text:303030325F696E746567726974795F6775617264732E73716C\",\"text:323032362D31302D32362030313A31303A3237\"],[\"integer:33\",\"text:303030335F6163636573735F726261632E73716C\",\"text:323032362D31302D32362030313A31303A3530\"],[\"integer:34\",\"text:303030345F636174616C6F675F6F7065726174696F6E732E73716C\",\"text:323032362D31302D32362030313A33383A3135\"],[\"integer:35\",\"text:303030355F7075626C69636174696F6E5F726573696C69656E63652E73716C\",\"text:323032362D31302D32362030363A31313A3235\"],[\"integer:36\",\"text:303030365F6D656469615F6C6966656379636C652E73716C\",\"text:323032362D31302D32362030363A31323A3031\"]]"]
+
+-- Statement 12
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("private_object_key")||':'||CASE WHEN typeof("private_object_key")='real' THEN printf('%!.17g',"private_object_key") ELSE hex(CAST("private_object_key" AS BLOB)) END AS c1,typeof("derivative_object_key")||':'||CASE WHEN typeof("derivative_object_key")='real' THEN printf('%!.17g',"derivative_object_key") ELSE hex(CAST("derivative_object_key" AS BLOB)) END AS c2,typeof("state")||':'||CASE WHEN typeof("state")='real' THEN printf('%!.17g',"state") ELSE hex(CAST("state" AS BLOB)) END AS c3,typeof("provenance")||':'||CASE WHEN typeof("provenance")='real' THEN printf('%!.17g',"provenance") ELSE hex(CAST("provenance" AS BLOB)) END AS c4,typeof("usage_approval")||':'||CASE WHEN typeof("usage_approval")='real' THEN printf('%!.17g',"usage_approval") ELSE hex(CAST("usage_approval" AS BLOB)) END AS c5,typeof("sha256")||':'||CASE WHEN typeof("sha256")='real' THEN printf('%!.17g',"sha256") ELSE hex(CAST("sha256" AS BLOB)) END AS c6,typeof("mime_type")||':'||CASE WHEN typeof("mime_type")='real' THEN printf('%!.17g',"mime_type") ELSE hex(CAST("mime_type" AS BLOB)) END AS c7,typeof("byte_size")||':'||CASE WHEN typeof("byte_size")='real' THEN printf('%!.17g',"byte_size") ELSE hex(CAST("byte_size" AS BLOB)) END AS c8,typeof("width")||':'||CASE WHEN typeof("width")='real' THEN printf('%!.17g',"width") ELSE hex(CAST("width" AS BLOB)) END AS c9,typeof("height")||':'||CASE WHEN typeof("height")='real' THEN printf('%!.17g',"height") ELSE hex(CAST("height" AS BLOB)) END AS c10,typeof("uploaded_by")||':'||CASE WHEN typeof("uploaded_by")='real' THEN printf('%!.17g',"uploaded_by") ELSE hex(CAST("uploaded_by" AS BLOB)) END AS c11,typeof("reviewed_by")||':'||CASE WHEN typeof("reviewed_by")='real' THEN printf('%!.17g',"reviewed_by") ELSE hex(CAST("reviewed_by" AS BLOB)) END AS c12,typeof("created_at")||':'||CASE WHEN typeof("created_at")='real' THEN printf('%!.17g',"created_at") ELSE hex(CAST("created_at" AS BLOB)) END AS c13,typeof("reviewed_at")||':'||CASE WHEN typeof("reviewed_at")='real' THEN printf('%!.17g',"reviewed_at") ELSE hex(CAST("reviewed_at" AS BLOB)) END AS c14,typeof("retired_at")||':'||CASE WHEN typeof("retired_at")='real' THEN printf('%!.17g',"retired_at") ELSE hex(CAST("retired_at" AS BLOB)) END AS c15 FROM "media_assets" ORDER BY c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 13
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5)) FROM (SELECT typeof("media_id")||':'||CASE WHEN typeof("media_id")='real' THEN printf('%!.17g',"media_id") ELSE hex(CAST("media_id" AS BLOB)) END AS c0,typeof("version")||':'||CASE WHEN typeof("version")='real' THEN printf('%!.17g',"version") ELSE hex(CAST("version" AS BLOB)) END AS c1,typeof("validation_code")||':'||CASE WHEN typeof("validation_code")='real' THEN printf('%!.17g',"validation_code") ELSE hex(CAST("validation_code" AS BLOB)) END AS c2,typeof("normalized_sha256")||':'||CASE WHEN typeof("normalized_sha256")='real' THEN printf('%!.17g',"normalized_sha256") ELSE hex(CAST("normalized_sha256" AS BLOB)) END AS c3,typeof("updated_at")||':'||CASE WHEN typeof("updated_at")='real' THEN printf('%!.17g',"updated_at") ELSE hex(CAST("updated_at" AS BLOB)) END AS c4,typeof("deleted_at")||':'||CASE WHEN typeof("deleted_at")='real' THEN printf('%!.17g',"deleted_at") ELSE hex(CAST("deleted_at" AS BLOB)) END AS c5 FROM "media_processing" ORDER BY c0,c1,c2,c3,c4,c5 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 14
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2)) FROM (SELECT typeof("principal_id")||':'||CASE WHEN typeof("principal_id")='real' THEN printf('%!.17g',"principal_id") ELSE hex(CAST("principal_id" AS BLOB)) END AS c0,typeof("window_start")||':'||CASE WHEN typeof("window_start")='real' THEN printf('%!.17g',"window_start") ELSE hex(CAST("window_start" AS BLOB)) END AS c1,typeof("attempts")||':'||CASE WHEN typeof("attempts")='real' THEN printf('%!.17g',"attempts") ELSE hex(CAST("attempts" AS BLOB)) END AS c2 FROM "media_read_limits" ORDER BY c0,c1,c2 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 15
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2)) FROM (SELECT typeof("principal_id")||':'||CASE WHEN typeof("principal_id")='real' THEN printf('%!.17g',"principal_id") ELSE hex(CAST("principal_id" AS BLOB)) END AS c0,typeof("window_start")||':'||CASE WHEN typeof("window_start")='real' THEN printf('%!.17g',"window_start") ELSE hex(CAST("window_start" AS BLOB)) END AS c1,typeof("attempts")||':'||CASE WHEN typeof("attempts")='real' THEN printf('%!.17g',"attempts") ELSE hex(CAST("attempts" AS BLOB)) END AS c2 FROM "media_upload_limits" ORDER BY c0,c1,c2 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 16
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2)) FROM (SELECT typeof("operation_id")||':'||CASE WHEN typeof("operation_id")='real' THEN printf('%!.17g',"operation_id") ELSE hex(CAST("operation_id" AS BLOB)) END AS c0,typeof("permission_ok")||':'||CASE WHEN typeof("permission_ok")='real' THEN printf('%!.17g',"permission_ok") ELSE hex(CAST("permission_ok" AS BLOB)) END AS c1,typeof("valid")||':'||CASE WHEN typeof("valid")='real' THEN printf('%!.17g',"valid") ELSE hex(CAST("valid" AS BLOB)) END AS c2 FROM "mutation_guards" ORDER BY c0,c1,c2 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 17
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("service_id")||':'||CASE WHEN typeof("service_id")='real' THEN printf('%!.17g',"service_id") ELSE hex(CAST("service_id" AS BLOB)) END AS c1 FROM "option_identities" ORDER BY c0,c1 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 18
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5)) FROM (SELECT typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c0,typeof("option_id")||':'||CASE WHEN typeof("option_id")='real' THEN printf('%!.17g',"option_id") ELSE hex(CAST("option_id" AS BLOB)) END AS c1,typeof("kind")||':'||CASE WHEN typeof("kind")='real' THEN printf('%!.17g',"kind") ELSE hex(CAST("kind" AS BLOB)) END AS c2,typeof("amount_minor")||':'||CASE WHEN typeof("amount_minor")='real' THEN printf('%!.17g',"amount_minor") ELSE hex(CAST("amount_minor" AS BLOB)) END AS c3,typeof("currency")||':'||CASE WHEN typeof("currency")='real' THEN printf('%!.17g',"currency") ELSE hex(CAST("currency" AS BLOB)) END AS c4,typeof("unit")||':'||CASE WHEN typeof("unit")='real' THEN printf('%!.17g',"unit") ELSE hex(CAST("unit" AS BLOB)) END AS c5 FROM "option_prices" ORDER BY c0,c1,c2,c3,c4,c5 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 19
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3)) FROM (SELECT typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c0,typeof("option_id")||':'||CASE WHEN typeof("option_id")='real' THEN printf('%!.17g',"option_id") ELSE hex(CAST("option_id" AS BLOB)) END AS c1,typeof("locale")||':'||CASE WHEN typeof("locale")='real' THEN printf('%!.17g',"locale") ELSE hex(CAST("locale" AS BLOB)) END AS c2,typeof("name")||':'||CASE WHEN typeof("name")='real' THEN printf('%!.17g',"name") ELSE hex(CAST("name" AS BLOB)) END AS c3 FROM "option_translations" ORDER BY c0,c1,c2,c3 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 20
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0 FROM "permissions" ORDER BY c0 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"text:636F6D6D65726369616C3A617070726F7665\"],[\"text:6472616674733A7772697465\"],[\"text:6D656469613A75706C6F6164\"],[\"text:6D656D626572733A6D616E616765\"],[\"text:73657276696365733A61726368697665\"],[\"text:73657276696365733A7075626C697368\"],[\"text:73657276696365733A72656164\"]]"]
+
+-- Statement 21
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3)) FROM (SELECT typeof("principal_id")||':'||CASE WHEN typeof("principal_id")='real' THEN printf('%!.17g',"principal_id") ELSE hex(CAST("principal_id" AS BLOB)) END AS c0,typeof("role_id")||':'||CASE WHEN typeof("role_id")='real' THEN printf('%!.17g',"role_id") ELSE hex(CAST("role_id" AS BLOB)) END AS c1,typeof("granted_by")||':'||CASE WHEN typeof("granted_by")='real' THEN printf('%!.17g',"granted_by") ELSE hex(CAST("granted_by" AS BLOB)) END AS c2,typeof("granted_at")||':'||CASE WHEN typeof("granted_at")='real' THEN printf('%!.17g',"granted_at") ELSE hex(CAST("granted_at" AS BLOB)) END AS c3 FROM "principal_roles" ORDER BY c0,c1,c2,c3 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 22
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("issuer")||':'||CASE WHEN typeof("issuer")='real' THEN printf('%!.17g',"issuer") ELSE hex(CAST("issuer" AS BLOB)) END AS c1,typeof("subject")||':'||CASE WHEN typeof("subject")='real' THEN printf('%!.17g',"subject") ELSE hex(CAST("subject" AS BLOB)) END AS c2,typeof("enabled")||':'||CASE WHEN typeof("enabled")='real' THEN printf('%!.17g',"enabled") ELSE hex(CAST("enabled" AS BLOB)) END AS c3,typeof("created_at")||':'||CASE WHEN typeof("created_at")='real' THEN printf('%!.17g',"created_at") ELSE hex(CAST("created_at" AS BLOB)) END AS c4 FROM "principals" ORDER BY c0,c1,c2,c3,c4 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 23
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("epoch")||':'||CASE WHEN typeof("epoch")='real' THEN printf('%!.17g',"epoch") ELSE hex(CAST("epoch" AS BLOB)) END AS c1,typeof("generation")||':'||CASE WHEN typeof("generation")='real' THEN printf('%!.17g',"generation") ELSE hex(CAST("generation" AS BLOB)) END AS c2,typeof("code")||':'||CASE WHEN typeof("code")='real' THEN printf('%!.17g',"code") ELSE hex(CAST("code" AS BLOB)) END AS c3,typeof("first_seen_at")||':'||CASE WHEN typeof("first_seen_at")='real' THEN printf('%!.17g',"first_seen_at") ELSE hex(CAST("first_seen_at" AS BLOB)) END AS c4,typeof("last_seen_at")||':'||CASE WHEN typeof("last_seen_at")='real' THEN printf('%!.17g',"last_seen_at") ELSE hex(CAST("last_seen_at" AS BLOB)) END AS c5,typeof("occurrences")||':'||CASE WHEN typeof("occurrences")='real' THEN printf('%!.17g',"occurrences") ELSE hex(CAST("occurrences" AS BLOB)) END AS c6 FROM "publication_alerts" ORDER BY c0,c1,c2,c3,c4,c5,c6 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 24
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6,c7)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("service_id")||':'||CASE WHEN typeof("service_id")='real' THEN printf('%!.17g',"service_id") ELSE hex(CAST("service_id" AS BLOB)) END AS c1,typeof("actor_id")||':'||CASE WHEN typeof("actor_id")='real' THEN printf('%!.17g',"actor_id") ELSE hex(CAST("actor_id" AS BLOB)) END AS c2,typeof("idempotency_key")||':'||CASE WHEN typeof("idempotency_key")='real' THEN printf('%!.17g',"idempotency_key") ELSE hex(CAST("idempotency_key" AS BLOB)) END AS c3,typeof("action")||':'||CASE WHEN typeof("action")='real' THEN printf('%!.17g',"action") ELSE hex(CAST("action" AS BLOB)) END AS c4,typeof("expected_version")||':'||CASE WHEN typeof("expected_version")='real' THEN printf('%!.17g',"expected_version") ELSE hex(CAST("expected_version" AS BLOB)) END AS c5,typeof("state")||':'||CASE WHEN typeof("state")='real' THEN printf('%!.17g',"state") ELSE hex(CAST("state" AS BLOB)) END AS c6,typeof("created_at")||':'||CASE WHEN typeof("created_at")='real' THEN printf('%!.17g',"created_at") ELSE hex(CAST("created_at" AS BLOB)) END AS c7 FROM "publication_commands" ORDER BY c0,c1,c2,c3,c4,c5,c6,c7 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 25
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("epoch")||':'||CASE WHEN typeof("epoch")='real' THEN printf('%!.17g',"epoch") ELSE hex(CAST("epoch" AS BLOB)) END AS c1,typeof("mode")||':'||CASE WHEN typeof("mode")='real' THEN printf('%!.17g',"mode") ELSE hex(CAST("mode" AS BLOB)) END AS c2,typeof("generation")||':'||CASE WHEN typeof("generation")='real' THEN printf('%!.17g',"generation") ELSE hex(CAST("generation" AS BLOB)) END AS c3,typeof("payload_hash")||':'||CASE WHEN typeof("payload_hash")='real' THEN printf('%!.17g',"payload_hash") ELSE hex(CAST("payload_hash" AS BLOB)) END AS c4 FROM "publication_control" ORDER BY c0,c1,c2,c3,c4 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"integer:31\",\"text:3733663031373761386431616338346437616339373265333534313961623362\",\"text:7265616479\",\"null:\",\"null:\"]]"]
+
+-- Statement 26
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13)) FROM (SELECT typeof("generation")||':'||CASE WHEN typeof("generation")='real' THEN printf('%!.17g',"generation") ELSE hex(CAST("generation" AS BLOB)) END AS c0,typeof("command_id")||':'||CASE WHEN typeof("command_id")='real' THEN printf('%!.17g',"command_id") ELSE hex(CAST("command_id" AS BLOB)) END AS c1,typeof("attempts")||':'||CASE WHEN typeof("attempts")='real' THEN printf('%!.17g',"attempts") ELSE hex(CAST("attempts" AS BLOB)) END AS c2,typeof("delivered_at")||':'||CASE WHEN typeof("delivered_at")='real' THEN printf('%!.17g',"delivered_at") ELSE hex(CAST("delivered_at" AS BLOB)) END AS c3,typeof("last_error_code")||':'||CASE WHEN typeof("last_error_code")='real' THEN printf('%!.17g',"last_error_code") ELSE hex(CAST("last_error_code" AS BLOB)) END AS c4,typeof("created_at")||':'||CASE WHEN typeof("created_at")='real' THEN printf('%!.17g',"created_at") ELSE hex(CAST("created_at" AS BLOB)) END AS c5,typeof("catalog_json")||':'||CASE WHEN typeof("catalog_json")='real' THEN printf('%!.17g',"catalog_json") ELSE hex(CAST("catalog_json" AS BLOB)) END AS c6,typeof("epoch")||':'||CASE WHEN typeof("epoch")='real' THEN printf('%!.17g',"epoch") ELSE hex(CAST("epoch" AS BLOB)) END AS c7,typeof("payload_hash")||':'||CASE WHEN typeof("payload_hash")='real' THEN printf('%!.17g',"payload_hash") ELSE hex(CAST("payload_hash" AS BLOB)) END AS c8,typeof("delivery_state")||':'||CASE WHEN typeof("delivery_state")='real' THEN printf('%!.17g',"delivery_state") ELSE hex(CAST("delivery_state" AS BLOB)) END AS c9,typeof("retry_count")||':'||CASE WHEN typeof("retry_count")='real' THEN printf('%!.17g',"retry_count") ELSE hex(CAST("retry_count" AS BLOB)) END AS c10,typeof("next_attempt_at")||':'||CASE WHEN typeof("next_attempt_at")='real' THEN printf('%!.17g',"next_attempt_at") ELSE hex(CAST("next_attempt_at" AS BLOB)) END AS c11,typeof("lease_token")||':'||CASE WHEN typeof("lease_token")='real' THEN printf('%!.17g',"lease_token") ELSE hex(CAST("lease_token" AS BLOB)) END AS c12,typeof("lease_until")||':'||CASE WHEN typeof("lease_until")='real' THEN printf('%!.17g',"lease_until") ELSE hex(CAST("lease_until" AS BLOB)) END AS c13 FROM "publication_outbox" ORDER BY c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 27
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("source_epoch")||':'||CASE WHEN typeof("source_epoch")='real' THEN printf('%!.17g',"source_epoch") ELSE hex(CAST("source_epoch" AS BLOB)) END AS c1,typeof("target_epoch")||':'||CASE WHEN typeof("target_epoch")='real' THEN printf('%!.17g',"target_epoch") ELSE hex(CAST("target_epoch" AS BLOB)) END AS c2,typeof("action")||':'||CASE WHEN typeof("action")='real' THEN printf('%!.17g',"action") ELSE hex(CAST("action" AS BLOB)) END AS c3,typeof("created_at")||':'||CASE WHEN typeof("created_at")='real' THEN printf('%!.17g',"created_at") ELSE hex(CAST("created_at" AS BLOB)) END AS c4 FROM "publication_recovery_events" ORDER BY c0,c1,c2,c3,c4 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 28
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2)) FROM (SELECT typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c0,typeof("media_id")||':'||CASE WHEN typeof("media_id")='real' THEN printf('%!.17g',"media_id") ELSE hex(CAST("media_id" AS BLOB)) END AS c1,typeof("sort_order")||':'||CASE WHEN typeof("sort_order")='real' THEN printf('%!.17g',"sort_order") ELSE hex(CAST("sort_order" AS BLOB)) END AS c2 FROM "revision_media" ORDER BY c0,c1,c2 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 29
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3)) FROM (SELECT typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c0,typeof("media_id")||':'||CASE WHEN typeof("media_id")='real' THEN printf('%!.17g',"media_id") ELSE hex(CAST("media_id" AS BLOB)) END AS c1,typeof("locale")||':'||CASE WHEN typeof("locale")='real' THEN printf('%!.17g',"locale") ELSE hex(CAST("locale" AS BLOB)) END AS c2,typeof("alt_text")||':'||CASE WHEN typeof("alt_text")='real' THEN printf('%!.17g',"alt_text") ELSE hex(CAST("alt_text" AS BLOB)) END AS c3 FROM "revision_media_translations" ORDER BY c0,c1,c2,c3 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 30
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1)) FROM (SELECT typeof("role_id")||':'||CASE WHEN typeof("role_id")='real' THEN printf('%!.17g',"role_id") ELSE hex(CAST("role_id" AS BLOB)) END AS c0,typeof("permission_id")||':'||CASE WHEN typeof("permission_id")='real' THEN printf('%!.17g',"permission_id") ELSE hex(CAST("permission_id" AS BLOB)) END AS c1 FROM "role_permissions" ORDER BY c0,c1 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"text:656469746F72\",\"text:6472616674733A7772697465\"],[\"text:656469746F72\",\"text:6D656469613A75706C6F6164\"],[\"text:656469746F72\",\"text:73657276696365733A72656164\"],[\"text:7075626C6973686572\",\"text:636F6D6D65726369616C3A617070726F7665\"],[\"text:7075626C6973686572\",\"text:73657276696365733A61726368697665\"],[\"text:7075626C6973686572\",\"text:73657276696365733A7075626C697368\"],[\"text:7075626C6973686572\",\"text:73657276696365733A72656164\"],[\"text:736563757269747941646D696E\",\"text:6D656D626572733A6D616E616765\"],[\"text:766965776572\",\"text:73657276696365733A72656164\"]]"]
+
+-- Statement 31
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0 FROM "roles" ORDER BY c0 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"text:656469746F72\"],[\"text:7075626C6973686572\"],[\"text:736563757269747941646D696E\"],[\"text:766965776572\"]]"]
+
+-- Statement 32
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6)) FROM (SELECT typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c0,typeof("service_id")||':'||CASE WHEN typeof("service_id")='real' THEN printf('%!.17g',"service_id") ELSE hex(CAST("service_id" AS BLOB)) END AS c1,typeof("option_id")||':'||CASE WHEN typeof("option_id")='real' THEN printf('%!.17g',"option_id") ELSE hex(CAST("option_id" AS BLOB)) END AS c2,typeof("sort_order")||':'||CASE WHEN typeof("sort_order")='real' THEN printf('%!.17g',"sort_order") ELSE hex(CAST("sort_order" AS BLOB)) END AS c3,typeof("duration_minutes")||':'||CASE WHEN typeof("duration_minutes")='real' THEN printf('%!.17g',"duration_minutes") ELSE hex(CAST("duration_minutes" AS BLOB)) END AS c4,typeof("experience_type")||':'||CASE WHEN typeof("experience_type")='real' THEN printf('%!.17g',"experience_type") ELSE hex(CAST("experience_type" AS BLOB)) END AS c5,typeof("venue")||':'||CASE WHEN typeof("venue")='real' THEN printf('%!.17g',"venue") ELSE hex(CAST("venue" AS BLOB)) END AS c6 FROM "service_options" ORDER BY c0,c1,c2,c3,c4,c5,c6 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 33
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6,c7,c8)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("service_id")||':'||CASE WHEN typeof("service_id")='real' THEN printf('%!.17g',"service_id") ELSE hex(CAST("service_id" AS BLOB)) END AS c1,typeof("number")||':'||CASE WHEN typeof("number")='real' THEN printf('%!.17g',"number") ELSE hex(CAST("number" AS BLOB)) END AS c2,typeof("slug")||':'||CASE WHEN typeof("slug")='real' THEN printf('%!.17g',"slug") ELSE hex(CAST("slug" AS BLOB)) END AS c3,typeof("category_id")||':'||CASE WHEN typeof("category_id")='real' THEN printf('%!.17g',"category_id") ELSE hex(CAST("category_id" AS BLOB)) END AS c4,typeof("content_hash")||':'||CASE WHEN typeof("content_hash")='real' THEN printf('%!.17g',"content_hash") ELSE hex(CAST("content_hash" AS BLOB)) END AS c5,typeof("sealed_at")||':'||CASE WHEN typeof("sealed_at")='real' THEN printf('%!.17g',"sealed_at") ELSE hex(CAST("sealed_at" AS BLOB)) END AS c6,typeof("created_at")||':'||CASE WHEN typeof("created_at")='real' THEN printf('%!.17g',"created_at") ELSE hex(CAST("created_at" AS BLOB)) END AS c7,typeof("created_by")||':'||CASE WHEN typeof("created_by")='real' THEN printf('%!.17g',"created_by") ELSE hex(CAST("created_by" AS BLOB)) END AS c8 FROM "service_revisions" ORDER BY c0,c1,c2,c3,c4,c5,c6,c7,c8 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 34
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3)) FROM (SELECT typeof("revision_id")||':'||CASE WHEN typeof("revision_id")='real' THEN printf('%!.17g',"revision_id") ELSE hex(CAST("revision_id" AS BLOB)) END AS c0,typeof("locale")||':'||CASE WHEN typeof("locale")='real' THEN printf('%!.17g',"locale") ELSE hex(CAST("locale" AS BLOB)) END AS c1,typeof("title")||':'||CASE WHEN typeof("title")='real' THEN printf('%!.17g',"title") ELSE hex(CAST("title" AS BLOB)) END AS c2,typeof("description")||':'||CASE WHEN typeof("description")='real' THEN printf('%!.17g',"description") ELSE hex(CAST("description" AS BLOB)) END AS c3 FROM "service_translations" ORDER BY c0,c1,c2,c3 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 35
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1,c2,c3,c4,c5,c6,c7)) FROM (SELECT typeof("id")||':'||CASE WHEN typeof("id")='real' THEN printf('%!.17g',"id") ELSE hex(CAST("id" AS BLOB)) END AS c0,typeof("provenance")||':'||CASE WHEN typeof("provenance")='real' THEN printf('%!.17g',"provenance") ELSE hex(CAST("provenance" AS BLOB)) END AS c1,typeof("status")||':'||CASE WHEN typeof("status")='real' THEN printf('%!.17g',"status") ELSE hex(CAST("status" AS BLOB)) END AS c2,typeof("working_revision_id")||':'||CASE WHEN typeof("working_revision_id")='real' THEN printf('%!.17g',"working_revision_id") ELSE hex(CAST("working_revision_id" AS BLOB)) END AS c3,typeof("published_revision_id")||':'||CASE WHEN typeof("published_revision_id")='real' THEN printf('%!.17g',"published_revision_id") ELSE hex(CAST("published_revision_id" AS BLOB)) END AS c4,typeof("internal_notes")||':'||CASE WHEN typeof("internal_notes")='real' THEN printf('%!.17g',"internal_notes") ELSE hex(CAST("internal_notes" AS BLOB)) END AS c5,typeof("row_version")||':'||CASE WHEN typeof("row_version")='real' THEN printf('%!.17g',"row_version") ELSE hex(CAST("row_version" AS BLOB)) END AS c6,typeof("modified_at")||':'||CASE WHEN typeof("modified_at")='real' THEN printf('%!.17g',"modified_at") ELSE hex(CAST("modified_at" AS BLOB)) END AS c7 FROM "services" ORDER BY c0,c1,c2,c3,c4,c5,c6,c7 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[]"]
+
+-- Statement 36
+INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE(((SELECT json_group_array(json_array(c0,c1)) FROM (SELECT typeof("name")||':'||CASE WHEN typeof("name")='real' THEN printf('%!.17g',"name") ELSE hex(CAST("name" AS BLOB)) END AS c0,typeof("seq")||':'||CASE WHEN typeof("seq")='real' THEN printf('%!.17g',"seq") ELSE hex(CAST("seq" AS BLOB)) END AS c1 FROM "sqlite_sequence" ORDER BY c0,c1 LIMIT 10001))=?),0)=0;
+-- params (orden exacto de bind): ["urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>","[[\"text:64315F6D6967726174696F6E73\",\"integer:36\"]]"]
+
+-- Statement 37
+INSERT INTO principals(id,issuer,subject,enabled) VALUES (?,?,?,0);
+-- params (orden exacto de bind): ["bootstrap:<EXECUTION_ID_POR_AUTORIZAR>","urn:kuwago:technical:bootstrap:development","<EXECUTION_ID_POR_AUTORIZAR>"]
+
+-- Statement 38
+INSERT INTO principals(id,issuer,subject,enabled) VALUES (?,?,?,1);
+-- params (orden exacto de bind): ["access:b329a52cf0fdf888743364ca9b3ff5a753aceb6fdd1d2937951e6c43c6e0dcfd","https://blue-bread-0e64.cloudflareaccess.com","57fd05c6-e0f3-5838-8e16-4ab77d8dff41"]
+
+-- Statement 39
+INSERT INTO administrator_roles(principal_id,role_id,granted_by) VALUES (?,'super_admin',?);
+-- params (orden exacto de bind): ["access:b329a52cf0fdf888743364ca9b3ff5a753aceb6fdd1d2937951e6c43c6e0dcfd","bootstrap:<EXECUTION_ID_POR_AUTORIZAR>"]
+
+-- Statement 40
+INSERT INTO audit_events(id,actor_id,action,entity_type,entity_id,request_id,outcome) VALUES (?,?,?,'administrator_role',?,?,'allowed');
+-- params (orden exacto de bind): ["bootstrap-audit:<EXECUTION_ID_POR_AUTORIZAR>","bootstrap:<EXECUTION_ID_POR_AUTORIZAR>","administrators.bootstrap.single_operator.v1.approval.<AUTORIZACION_REAL_SHA256_PENDIENTE>","access:b329a52cf0fdf888743364ca9b3ff5a753aceb6fdd1d2937951e6c43c6e0dcfd","<EXECUTION_ID_POR_AUTORIZAR>"]
+
+-- Statement 41
+SELECT id,issuer,subject,enabled,created_at FROM principals ORDER BY id;
+-- params (orden exacto de bind): []
+
+-- Statement 42
+SELECT principal_id,role_id,granted_by,granted_at FROM administrator_roles;
+-- params (orden exacto de bind): []
+
+-- Statement 43
+SELECT id,actor_id,action,entity_type,entity_id,request_id,outcome,revision_id,created_at FROM audit_events;
+-- params (orden exacto de bind): []
+
+
+8. MANIFIESTO DE ARCHIVOS DEL CAMBIO
+
+c3394fc686af6ce9c085259a654b49cc29088b1d07fd108d5d1a10b45848d4bb  infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
+35851c2b42e4dc1f7dde0a6c8711a034698d649db32f5fb3999e1c5146d3f5bb  infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+10e1cdbbb7c040584498168a072336c476e5ee9af2458e7c922c01755a4702ca  infra/cloudflare/dev/scripts/safe-d1/backup-only.mjs
+5b395005decf21847d9f56249133b9316eb50c4af6ae240fc9a0bf5a2c508b25  infra/cloudflare/dev/scripts/safe-d1/backup-transport.mjs
+cf899f5725d9916d54f17a4ac099a98a6652aeea53abab15d9e6e8945742fba6  infra/cloudflare/dev/scripts/backup-once-private.ps1
+e996f0f0440cffb7eda07b55bfb9142b31172ad1eda8ae83a006128d1137cdb2  infra/cloudflare/dev/scripts/next-stage-readiness.mjs
+67eb69ab25bb4be6b055a8950abf99e108f3891aa4f188ae8f10c45ac3eb2d8a  infra/cloudflare/dev/next-stage/development-plan.json
+e691973bb67c86371f845c6120aa75a8b086c00903b8675add6a3e99f02c1aa3  infra/cloudflare/dev/scripts/safe-d1/bootstrap-permit.mjs
+d9e469dcb17246b0d38ae0c452d07b12e5b898549e728f5eb993599938db30a2  infra/cloudflare/dev/scripts/safe-d1/bootstrap-journal.mjs
+665741b13eaf6e363ba8fb36d46fabb18d1233e08039f99358142c4f00715d06  infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs
+27585ea8e161b08d58cd901e4fef8a9b5b3086d6a107a0158ad83d80746f43bc  infra/cloudflare/dev/scripts/safe-d1/bootstrap-recovery.mjs
+f9c6d9fc0a6645a844f1a1a2a11118f945d12ada9e6fa7bd67523ba97cbdd22f  infra/cloudflare/dev/scripts/safe-d1/bootstrap-oracle.mjs
+3efc62b57ec25ded4b75d088392811e455bbbe74b514da3dac928f6be76f84ed  infra/cloudflare/dev/scripts/safe-d1/backup-stage-six.mjs
+faa3576e824a2e0167a4bb10ed48411dc2f93df4b030a9bff6de08fe2e61f437  infra/cloudflare/dev/scripts/safe-d1/backup-six-permit.mjs
+9aa02a3c55fcc44e6e42b4c6bce1a7742dac24df3b45960a9abe4e31a353a9dc  infra/cloudflare/dev/scripts/d1-bootstrap-private.mjs
+f46ad980744d6353de261e4d30f4eae029a8aa6a3318b3e6f5a12584ffd7e259  infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.mjs
+b4410665427f9cad6d0d92ca5fa23272322489a2e2ccfa9c2aedab17da30716f  infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.ps1
+71b5fb8fa9affea8ff7cd62027cbf30d1cf42b1817bc95556afa2e5060e4bdf7  infra/cloudflare/dev/scripts/d1-backup-six-private.mjs
+85553d3a3e6ea166267b3bd935027ec176cf11423c287d77884e326d93f305c6  infra/cloudflare/dev/scripts/d1-backup-six-status.mjs
+1f2747f5c005ea5b96028b59d3a17c251c4f61161acfc667a9b5aacf7b7c5e49  infra/cloudflare/dev/next-stage/bootstrap-authorization.json
+fe37d7d029d0e8d23b423dfcab0d54da5f6f51aafa8bcd1cfdcff951fd2a5918  infra/cloudflare/dev/next-stage/stage-six-backup-proposal.json
+274b0523dcbd29f37bd6946160a9f6df846d1bba9cbd9d9906c9e21f5927a2b3  infra/cloudflare/dev/test/bootstrap-durable.test.mjs
+b9f957fe995cfdfa5abff29224735dbaac074f91f7cc2206fa1337dae737f91b  infra/cloudflare/dev/test/backup-stage-six-directed.test.mjs
+
+Migraciones originales (sin modificar):
+33bd2451b568acf1c316fcc5355bca1e1cd87deacace72d3819233a00e670abd  0001_admin_catalog.sql
+47abe773445a464a7a25b412a11d35799aa1a704e14d6b7846885dff35d41ed4  0002_integrity_guards.sql
+19ba25557c88f509927cd1fea912da3d3d4a815b56733e310be51dd155719336  0003_access_rbac.sql
+dfa41753ca3e91628077ceec2557ec8d77a02ef59062439e8adaf7780a19550b  0004_catalog_operations.sql
+464b69f3df0a5e85ff960a95aa937c718a69578aaf1235b877e6130381354d3a  0005_publication_resilience.sql
+ed8fcd76c51fc8050c5b5bd676e4eb98323b62e81fc312e99589bcdb9314ac4c  0006_media_lifecycle.sql
+
+9. DIFF EXACTO RESPECTO A LA BASE PREVIA DE ESTA PREPARACION
+
+
+BASE SHA256 30363c2c4725ef4917a2ddf507815cfb6e34125f1a108339504b624642883555
+FINAL SHA256 c3394fc686af6ce9c085259a654b49cc29088b1d07fd108d5d1a10b45848d4bb
+diff --git a/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs b/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
+index 532a543..f5b75d0 100644
+--- a/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
++++ b/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
+@@ -1,4 +1,4 @@
+-// LOCAL PREPARATION ONLY. No remote transport, CLI, credential capture or writer.
++// Reviewed batch preparation. Remote permission remains release-locked separately.
+ import {decodeJwt} from 'jose';
+ import {createAccessVerifier} from '../.wrangler/build/security.js';
+ import {approvedSources,digest,migrations,requireSafe,target,schemaDigest} from './safe-d1/policy.mjs';
+@@ -14,7 +14,18 @@ export const devAccess=Object.freeze({
+  issuer:'https://blue-bread-0e64.cloudflareaccess.com',
+  audience:'dd73f3792def5ce94841273f79026f08e326c98d6fd98925ba0551196bb16adc',
+ });
+-const identities=new WeakSet(),plans=new WeakSet(),used=new WeakSet();
++const identities=new WeakSet(),plans=new WeakSet(),used=new WeakSet(),batchPlans=new WeakMap();
++const freeze=value=>{if(value&&typeof value==='object'&&!Object.isFrozen(value)){for(const v of Object.values(value))freeze(v);Object.freeze(value);}return value;};
++export const isBootstrapPlan=plan=>plans.has(plan);
++export const bootstrapBatchPlan=batch=>batchPlans.get(batch);
++export const identityEvidenceHash=identity=>digest(JSON.stringify({issuer:identity.issuer,subject:identity.subject,audience:identity.audience,email:identity.email}));
++export const bootstrapPostflightQueries=Object.freeze([
++ schemaGuardQuery,'SELECT id,issuer,subject,enabled,created_at FROM principals ORDER BY id',
++ 'SELECT principal_id,role_id,granted_by,granted_at FROM administrator_roles',
++ 'SELECT id,actor_id,action,entity_type,entity_id,request_id,outcome,revision_id,created_at FROM audit_events',
++ 'SELECT * FROM principal_roles','PRAGMA foreign_key_check',
++]);
++export function isBootstrapRead(plan,sql,params=[]){return plans.has(plan)&&params.length===0&&(bootstrapPostflightQueries.includes(sql)||plan.unchangedTables.some(t=>sql===cellsQuery(t.name,t.columns)));}
+ // Reuse the real verifier; decoding is used ONLY after signature/iss/aud/time verification.
+ export async function verifyBootstrapRecipient(request,{fetcher=fetch}={}){
+  const identity=await createAccessVerifier(devAccess,fetcher)(request);
+@@ -64,11 +75,14 @@ export function prepareSingleOperatorBootstrap({preflight,snapshot,expectedFinge
+  // Actor is the technical executor, NOT a fictional independent human approver.
+  add("INSERT INTO audit_events(id,actor_id,action,entity_type,entity_id,request_id,outcome) VALUES (?,?,?,'administrator_role',?,?,'allowed')",
+   ['bootstrap-audit:'+executionId,actorId,action,recipientId,executionId]);
+- const plan=Object.freeze({environment:'development',target,executionId,recipientId,actorId,action,
++ const readbackStart=statements.length;
++ for(const sql of bootstrapPostflightQueries.slice(1,4))add(sql);
++ const plan=freeze({environment:'development',target,executionId,recipientId,actorId,action,
+   authorizationReference,baselineFingerprint:expectedFingerprint,statements:Object.freeze(statements),
+   batchSha256:digest(JSON.stringify(statements)),remoteEnabled:false,preparedAt:Date.now(),identity,
+-  expectedSchema:preflight.guardSchema,unchangedTables:structuredClone(tables.filter(t=>!['principals','administrator_roles','audit_events'].includes(t.name)))});
+- plans.add(plan);return plan;
++  expectedSchema:preflight.guardSchema,baselineSnapshot:structuredClone(snapshot),readbackStart,
++  unchangedTables:structuredClone(tables.filter(t=>!['principals','administrator_roles','audit_events'].includes(t.name)))});
++ plans.add(plan);batchPlans.set(plan.statements,plan);return plan;
+ }
+ // Local rehearsal adapter only. This module has no route into the existing remote
+ // transport and cannot enable its capabilities. Future wiring requires review.
+@@ -87,12 +101,12 @@ export async function verifyBootstrapPostflight(plan,db){
+   const result=await rows(cellsQuery(table.name,table.columns));
+   requireSafe(JSON.stringify(result.map(r=>table.columns.map((_,i)=>r['c'+i])))===JSON.stringify(table.rows),'bootstrap_unrelated_data_postflight_mismatch');
+  }
+- const principals=await rows('SELECT id,issuer,subject,enabled FROM principals ORDER BY id');
++ const principals=await rows(bootstrapPostflightQueries[1]);
+  requireSafe(principals.length===2&&principals.some(p=>p.id===plan.actorId&&p.issuer===technicalIssuer&&p.subject===plan.executionId&&p.enabled===0)&&principals.some(p=>p.id===plan.recipientId&&p.issuer===plan.identity.issuer&&p.subject===plan.identity.subject&&p.enabled===1),'bootstrap_principal_postflight_mismatch');
+- const roles=await rows('SELECT principal_id,role_id,granted_by FROM administrator_roles');
++ const roles=await rows(bootstrapPostflightQueries[2]);
+  requireSafe(roles.length===1&&roles[0].principal_id===plan.recipientId&&roles[0].role_id==='super_admin'&&roles[0].granted_by===plan.actorId,'bootstrap_role_postflight_mismatch');
+- const audit=await rows('SELECT id,actor_id,action,entity_type,entity_id,request_id,outcome FROM audit_events');
+- requireSafe(audit.length===1&&audit[0].id==='bootstrap-audit:'+plan.executionId&&audit[0].actor_id===plan.actorId&&audit[0].action===plan.action&&audit[0].entity_type==='administrator_role'&&audit[0].entity_id===plan.recipientId&&audit[0].request_id===plan.executionId&&audit[0].outcome==='allowed','bootstrap_audit_postflight_mismatch');
++ const audit=await rows(bootstrapPostflightQueries[3]);
++ requireSafe(audit.length===1&&audit[0].id==='bootstrap-audit:'+plan.executionId&&audit[0].actor_id===plan.actorId&&audit[0].action===plan.action&&audit[0].entity_type==='administrator_role'&&audit[0].entity_id===plan.recipientId&&audit[0].request_id===plan.executionId&&audit[0].outcome==='allowed'&&audit[0].revision_id===null,'bootstrap_audit_postflight_mismatch');
+  requireSafe((await rows('SELECT * FROM principal_roles')).length===0,'bootstrap_legacy_role_unexpected');
+  requireSafe((await rows('PRAGMA foreign_key_check')).length===0,'bootstrap_integrity_failed');
+  return {status:'local_rehearsal_pass',remoteExecuted:false,technicalActorDisabled:true,independentHumanApproval:false};
+
+
+BASE SHA256 9b59e5a92494b806e36ff6ad2567f68ce4da5df7a2fc2feea159437ad91f1279
+FINAL SHA256 35851c2b42e4dc1f7dde0a6c8711a034698d649db32f5fb3999e1c5146d3f5bb
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/transport.mjs b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+index 05f4ef9..ddd852f 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+@@ -7,29 +7,41 @@ import {takeFinalPermit} from './migration-final-permit.mjs';
+ import {takeFirstMigrationPermit} from './migration-0001-permit.mjs';
+ import {isBackupRead} from './snapshot.mjs';
+ import {createExporter} from './export.mjs';
++import {takeBootstrapPermit,takeBootstrapPreflightPermit} from './bootstrap-permit.mjs';
++import {bootstrapBatchPlan,isBootstrapRead,identityEvidenceHash} from '../single-operator-bootstrap.mjs';
++import {isBootstrapJournal} from './bootstrap-journal.mjs';
+ const writeAcknowledgements=new WeakMap();
+ export function ownWriteMetadata(receipt){const m=writeAcknowledgements.get(receipt);requireSafe(m,'own_write_acknowledgement_required');return Object.freeze({stage:m.stage,acknowledgedAt:m.acknowledgedAt,source:m.source});}
+ export function consumeCompletionAcknowledgement(receipt,{transport,environment,executionId,stage,migrationSha256,batchSha256}){
+  const m=writeAcknowledgements.get(receipt);requireSafe(m&&m.owner===transport&&m.environment===environment&&m.executionId===executionId&&m.stage===stage&&m.migrationSha256===migrationSha256&&m.batchSha256===batchSha256&&m.completionOutput,'completion_ack_binding_mismatch');
+  writeAcknowledgements.delete(receipt);const {owner,...value}=m;requireSafe(owner===transport,'completion_ack_owner_invalid');return Object.freeze(value);
+ }
++export function consumeBootstrapAcknowledgement(receipt,{transport,scope}){
++ const m=writeAcknowledgements.get(receipt);
++ requireSafe(m?.owner===transport&&m.bootstrapOutput&&m.scope==='bootstrap'&&m.environment===scope.environment&&m.executionId===scope.executionId&&m.stage===6&&m.batchSha256===scope.batchSha256&&m.sourceSetSha256===scope.sourceSetSha256,'bootstrap_ack_binding_mismatch');
++ writeAcknowledgements.delete(receipt);const {owner,...ack}=m;requireSafe(owner===transport,'bootstrap_ack_owner_invalid');return Object.freeze(ack);
++}
+ // Remote transport is release-locked. Tests inject fetch into a simulation-only instance.
+-export function createTransport(token,{simulationFetch,migration0001Permit,onlyFirstMigration=false,migrationBatchPermit,onlyRemainingMigrations=false,migrationFinalPermit,onlyFinalMigrations=false,migrationCompletionPermit,onlyCompletionMigrations=false,simulationExecutionId}={}){
++export function createTransport(token,{simulationFetch,migration0001Permit,onlyFirstMigration=false,migrationBatchPermit,onlyRemainingMigrations=false,migrationFinalPermit,onlyFinalMigrations=false,migrationCompletionPermit,onlyCompletionMigrations=false,simulationExecutionId,bootstrapPermit,simulationBootstrapScope,bootstrapJournal,bootstrapPreflightPermit}={}){
+  const scopedPermit=takeFirstMigrationPermit(migration0001Permit);const firstOnly=scopedPermit||onlyFirstMigration;
+  const batchPermit=takeBatchPermit(migrationBatchPermit),remainingOnly=batchPermit||onlyRemainingMigrations;
+  const finalPermit=takeFinalPermit(migrationFinalPermit),finalOnly=finalPermit||onlyFinalMigrations;
+  const completionScope=takeCompletionPermit(migrationCompletionPermit),completionOnly=Boolean(completionScope)||onlyCompletionMigrations;
+- requireSafe(Number(remainingOnly)+Number(firstOnly)+Number(finalOnly)+Number(completionOnly)<=1,'conflicting_migration_scope');
+- requireSafe(remoteExecutionEnabled||typeof simulationFetch==='function'||scopedPermit||batchPermit||finalPermit||completionScope,'remote_execution_not_authorized');
+- const context=Object.freeze({environment:typeof simulationFetch==='function'?'local-simulation':'development',executionId:completionScope?.executionId??simulationExecutionId??'legacy-unbound',scope:completionOnly?'0005-0006':'legacy',target});
++ const bootstrapScope=takeBootstrapPermit(bootstrapPermit)??(typeof simulationFetch==='function'?simulationBootstrapScope:undefined),bootstrapOnly=Boolean(bootstrapScope);
++ const bootstrapReadScope=takeBootstrapPreflightPermit(bootstrapPreflightPermit);
++ requireSafe(!simulationBootstrapScope||typeof simulationFetch==='function','bootstrap_simulation_transport_required');
++ requireSafe(Number(remainingOnly)+Number(firstOnly)+Number(finalOnly)+Number(completionOnly)+Number(bootstrapOnly)+Number(Boolean(bootstrapReadScope))<=1,'conflicting_migration_scope');
++ requireSafe(remoteExecutionEnabled||typeof simulationFetch==='function'||scopedPermit||batchPermit||finalPermit||completionScope||bootstrapScope||bootstrapReadScope,'remote_execution_not_authorized');
++ const context=Object.freeze({environment:typeof simulationFetch==='function'?'local-simulation':'development',executionId:bootstrapScope?.executionId??bootstrapReadScope?.executionId??completionScope?.executionId??simulationExecutionId??'legacy-unbound',scope:bootstrapOnly?'bootstrap':bootstrapReadScope?'bootstrap-preflight':completionOnly?'0005-0006':'legacy',target});
++ if(bootstrapOnly)requireSafe(bootstrapScope.environment===context.environment&&JSON.stringify(bootstrapScope.target)===JSON.stringify(target)&&bootstrapScope.stage===6&&bootstrapScope.maximumBatches===1&&isBootstrapJournal(bootstrapJournal)&&bootstrapJournal.environment===context.environment&&bootstrapJournal.executionId===context.executionId,'bootstrap_transport_scope_invalid');
+  if(completionOnly)requireSafe(/^[a-f0-9-]{36}$/.test(context.executionId),'completion_execution_id_required');
+  requireSafe(typeof token==='string'&&/^[-_A-Za-z0-9]{20,256}$/.test(token),'credential_invalid');
+  const fetcher=simulationFetch??fetch,base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
+  const submitted=new WeakSet();
+- let secret=token,writeAttempted=false,nextBatchStage=completionOnly?4:finalOnly?3:1,batchFailed=false,lastAcknowledgement;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
++ let secret=token,writeAttempted=false,nextBatchStage=completionOnly?4:finalOnly?3:1,batchFailed=false,lastAcknowledgement,bootstrapInvocationRecorded=false;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
+  async function request(suffix,body){
+   requireSafe(secret!==undefined,'credential_disposed');
+-  const item={operation:suffix===''?'metadata':suffix==='/time_travel/bookmark'?'bookmark':body?.batch?'migration_batch':'read_query',httpStatus:null,codes:[]};diagnostics.push(item);
++  const item={operation:suffix===''?'metadata':suffix==='/time_travel/bookmark'?'bookmark':body?.batch?(bootstrapOnly?'bootstrap_batch':'migration_batch'):'read_query',httpStatus:null,codes:[]};diagnostics.push(item);
+   let response;try{response=await fetcher(base+suffix,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/json'},redirect:'manual',signal:AbortSignal.timeout(20000),...(body?{body:JSON.stringify(body)}:{})});item.httpStatus=response.status;}catch{throw Error('request_outcome_unknown');}
+   // Never persist upstream errors, bodies, headers or the request object.
+   const reader=response.body?.getReader();requireSafe(reader,'response_invalid');let total=0;const chunks=[];
+@@ -40,9 +52,29 @@ export function createTransport(token,{simulationFetch,migration0001Permit,onlyF
+  }
+  async function query(body){const result=await request('/query',body);requireSafe(Array.isArray(result)&&result.length>0&&result.every(r=>r.success===true),'query_failed');return result;}
+  const exporter=createExporter(request,fetcher);
+- const client=Object.freeze({metadata:()=>request(''),bookmark:async()=>{const result=await request('/time_travel/bookmark');return result?.bookmark;},fullExport:bookmark=>{requireSafe(!firstOnly&&!remainingOnly&&!finalOnly&&!completionOnly,'export_not_authorized_for_migration_0001');return exporter.fullExport(bookmark);},
++ const client=Object.freeze({metadata:()=>request(''),bookmark:async()=>{const result=await request('/time_travel/bookmark');return result?.bookmark;},fullExport:bookmark=>{requireSafe(!firstOnly&&!remainingOnly&&!finalOnly&&!completionOnly&&!bootstrapOnly&&!bootstrapReadScope,'export_not_authorized_for_migration_0001');return exporter.fullExport(bookmark);},
+   select:async sql=>{requireSafe(allowedReadSql.includes(sql)||isBackupRead(sql),'read_sql_forbidden');const result=await query({sql,params:[]});requireSafe(result.length===1&&Array.isArray(result[0].results),'read_response_invalid');return result[0].results;},
++  bootstrapSelect:async(plan,sql,params=[])=>{
++   requireSafe(bootstrapOnly&&plan.executionId===context.executionId&&plan.batchSha256===bootstrapScope.batchSha256&&isBootstrapRead(plan,sql,params),'bootstrap_read_forbidden');
++   const result=await query({sql,params});requireSafe(result.length===1&&Array.isArray(result[0].results),'bootstrap_read_response_invalid');return result[0].results;
++  },
+   applyBatch:async batch=>{
++   requireSafe(!bootstrapReadScope,'bootstrap_preflight_read_only');
++   if(bootstrapOnly){
++    const plan=bootstrapBatchPlan(batch);
++    requireSafe(plan&&!writeAttempted&&!submitted.has(batch)&&!batchFailed&&plan.executionId===context.executionId&&plan.batchSha256===bootstrapScope.batchSha256&&digest(JSON.stringify(batch))===bootstrapScope.batchSha256&&identityEvidenceHash(plan.identity)===bootstrapScope.identitySha256&&plan.baselineFingerprint===bootstrapScope.baselineFingerprint&&plan.authorizationReference===bootstrapScope.authorizationReference,'bootstrap_arbitrary_duplicate_or_scope_mismatch');
++    submitted.add(batch);writeAttempted=true;lastAcknowledgement=undefined;
++    const requestStartedAt=new Date().toISOString();
++    try{
++     bootstrapJournal.write('request-invocation',{executionId:context.executionId,batchSha256:plan.batchSha256,requestStartedAt,meaning:'about-to-invoke-fetch; not confirmation of server receipt'});
++     bootstrapInvocationRecorded=true;
++     const results=await query({batch}),responseCompletedAt=new Date().toISOString();
++     requireSafe(results.length===batch.length&&results.slice(plan.readbackStart).length===3&&results.slice(plan.readbackStart).every(r=>Array.isArray(r.results)),'bootstrap_response_incomplete');
++     lastAcknowledgement=Object.freeze({});
++     writeAcknowledgements.set(lastAcknowledgement,{owner:client,...context,stage:6,sourceSetSha256:bootstrapScope.sourceSetSha256,batchSha256:plan.batchSha256,requestStartedAt,responseCompletedAt,
++      bootstrapOutput:results.slice(plan.readbackStart).map(r=>r.results)});
++    }catch(error){batchFailed=true;throw error;}return;
++   }
+    requireSafe(isApprovedBatch(batch)&&!submitted.has(batch),'arbitrary_or_duplicate_write_forbidden');const index=approvedBatchStage(batch),readbacks=approvedCompletionReadbacks(batch);
+    if(firstOnly)requireSafe(index===0&&!writeAttempted,'only_0001_once_authorized');
+    if(remainingOnly||finalOnly||completionOnly){requireSafe(!batchFailed&&nextBatchStage<=5&&index===nextBatchStage&&hasFullSnapshotGuard(batch),completionOnly?'only_0005_0006_in_order_authorized':finalOnly?'only_0004_0006_in_order_authorized':'only_0002_0006_in_order_authorized');if(completionOnly)requireSafe(readbacks,'completion_readbacks_required');nextBatchStage++;}
+@@ -57,6 +89,8 @@ export function createTransport(token,{simulationFetch,migration0001Permit,onlyF
+   },
+   writeAcknowledgement:()=>lastAcknowledgement,
+   executionContext:()=>context,
++  bootstrapContext:()=>bootstrapScope,
++  bootstrapWriteObservation:()=>({invocationRecorded:bootstrapInvocationRecorded}),
+   diagnostics:()=>diagnostics.map(item=>({...item,codes:[...item.codes]})),dispose(){secret=undefined;},
+  });
+  return client;
+
+
+BASE SHA256 fdc823afe805531e70450b59bae6944bad88e45f17d351980a365ab96b60054b
+FINAL SHA256 10e1cdbbb7c040584498168a072336c476e5ee9af2458e7c922c01755a4702ca
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/backup-only.mjs b/infra/cloudflare/dev/scripts/safe-d1/backup-only.mjs
+index 979118f..96cef6f 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/backup-only.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/backup-only.mjs
+@@ -8,25 +8,27 @@ import {target,digest,requireSafe} from './policy.mjs';
+ import {validateStageOneSnapshot} from './backup-stage-one.mjs';
+ import {validateStageThreeSnapshot} from './backup-stage-three.mjs';
+ import {validateStageFourSnapshot} from './backup-stage-four.mjs';
++import {validateStageSixSnapshot,verifyStageSixClosure} from './backup-stage-six.mjs';
+ // No migration writer, migration runner or legacy plaintext backup helper is reachable here.
+ export async function runBackupOnly({transport,store,protector,recoverySecret,environment=process.env,mode='simulation',expectedStage}){
+  const result={operationId:randomUUID(),target,mode,status:'failed',verified:false,cleanupComplete:false,credentialDisposed:false};
+  let handle,sql,payload,decoded,encrypted,viaDpapi,viaRecovery;
+  try{
+   requireSafe(Buffer.isBuffer(recoverySecret)&&recoverySecret.length===32,'recovery_secret_required');
++  if(expectedStage===6)verifyStageSixClosure();
+   result.step='custody';handle=await store.begin(result.operationId);
+   result.preflight={custodyVerified:true,identityAndSchemaVerified:false,bookmarkVerified:false};
+   result.step='preflight';
+   const reader=createReader(transport);
+-  const validateStage=expectedStage===1?validateStageOneSnapshot:expectedStage===3?validateStageThreeSnapshot:expectedStage===4?validateStageFourSnapshot:null;
++  const validateStage=expectedStage===1?validateStageOneSnapshot:expectedStage===3?validateStageThreeSnapshot:expectedStage===4?validateStageFourSnapshot:expectedStage===6?validateStageSixSnapshot:null;
+   if(validateStage)await reader.inspect(expectedStage);
+-  let anchor,anchorObservedAt;if(expectedStage===3||expectedStage===4){anchor=await reader.bookmark();anchorObservedAt=new Date().toISOString();requireSafe(isBookmark(anchor),'bookmark_missing');}
++  let anchor,anchorObservedAt;if([3,4,6].includes(expectedStage)){anchor=await reader.bookmark();anchorObservedAt=new Date().toISOString();requireSafe(isBookmark(anchor),'bookmark_missing');}
+   const before=await reader.snapshot();
+   if(expectedStage!==undefined)requireSafe(before.stage===expectedStage,'baseline_stage_mismatch');
+   const stageMeta=validateStage?validateStage(before):null;
+   result.preflight.identityAndSchemaVerified=true;
+   const bookmark=await reader.bookmark(),middleObservedAt=new Date().toISOString();requireSafe(isBookmark(bookmark),'bookmark_missing');result.preflight.bookmarkVerified=true;
+-  if(expectedStage===3||expectedStage===4){const check=await reader.snapshot();validateStage(check);const last=await reader.bookmark();result.preflight.bookmarkChecks={firstObservedAt:anchorObservedAt,middleObservedAt,lastObservedAt:new Date().toISOString(),firstEqualsMiddle:anchor===bookmark,middleEqualsLast:bookmark===last,fullSnapshotsEqual:snapshotFingerprint(before.snapshot)===snapshotFingerprint(check.snapshot)};requireSafe(result.preflight.bookmarkChecks.fullSnapshotsEqual,'source_changed');requireSafe(anchor===bookmark&&bookmark===last,'pre_export_bookmark_changed');}
++  if([3,4,6].includes(expectedStage)){const check=await reader.snapshot();validateStage(check);const last=await reader.bookmark();result.preflight.bookmarkChecks={firstObservedAt:anchorObservedAt,middleObservedAt,lastObservedAt:new Date().toISOString(),firstEqualsMiddle:anchor===bookmark,middleEqualsLast:bookmark===last,fullSnapshotsEqual:snapshotFingerprint(before.snapshot)===snapshotFingerprint(check.snapshot)};requireSafe(result.preflight.bookmarkChecks.fullSnapshotsEqual,'source_changed');requireSafe(anchor===bookmark&&bookmark===last,'pre_export_bookmark_changed');}
+   result.step='export';const exported=await reader.fullExport(bookmark);sql=exported.bytes;
+   requireSafe(exported.bookmark===bookmark&&Buffer.isBuffer(sql),'export_invalid');
+   if(validateStage)await reader.inspect(expectedStage);
+
+
+BASE SHA256 51c9b90d3fb5bb2750c7401e5a5c832f926b49f002f294074fb07589cc774d05
+FINAL SHA256 5b395005decf21847d9f56249133b9316eb50c4af6ae240fc9a0bf5a2c508b25
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/backup-transport.mjs b/infra/cloudflare/dev/scripts/safe-d1/backup-transport.mjs
+index 3527a9e..788370e 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/backup-transport.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/backup-transport.mjs
+@@ -4,9 +4,10 @@ import {allowedReadSql} from './read.mjs';
+ import {isBackupRead} from './snapshot.mjs';
+ import {createExporter} from './export.mjs';
+ import {takeBackupOncePermit} from './backup-once-permit.mjs';
++import {takeStageSixBackupPermit} from './backup-six-permit.mjs';
+ export const backupRemoteEnabled=false;
+-export function createBackupTransport(token,{simulationFetch,oneShotPermit}={}){
+- requireSafe(backupRemoteEnabled||typeof simulationFetch==='function'||takeBackupOncePermit(oneShotPermit),'remote_backup_not_authorized');
++export function createBackupTransport(token,{simulationFetch,oneShotPermit,stageSixPermit}={}){
++ requireSafe(backupRemoteEnabled||typeof simulationFetch==='function'||takeBackupOncePermit(oneShotPermit)||takeStageSixBackupPermit(stageSixPermit),'remote_backup_not_authorized');
+  requireSafe(typeof token==='string'&&/^[-_A-Za-z0-9]{20,256}$/.test(token),'credential_invalid');
+  const fetcher=simulationFetch??fetch,base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`,shutdown=new AbortController();
+  let secret=token,exportUsed=false;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
+
+
+BASE SHA256 0c872c39e9d5169f4aceac0bdb266d89ccc9ee1b27b108a9740b7e19d0009e05
+FINAL SHA256 cf899f5725d9916d54f17a4ac099a98a6652aeea53abab15d9e6e8945742fba6
+diff --git a/infra/cloudflare/dev/scripts/backup-once-private.ps1 b/infra/cloudflare/dev/scripts/backup-once-private.ps1
+index 21087d9..1fe7135 100644
+--- a/infra/cloudflare/dev/scripts/backup-once-private.ps1
++++ b/infra/cloudflare/dev/scripts/backup-once-private.ps1
+@@ -1,6 +1,6 @@
+ #Requires -Version 7.0
+ # Existing masked Windows Forms/private stdin pattern. No secrets in arguments.
+-param()
++param([ValidateSet('stage-four','stage-six')][string]$BackupProfile = 'stage-four')
+ Set-StrictMode -Version Latest
+ $ErrorActionPreference = 'Stop'
+ $authorizationId = $null
+@@ -14,7 +14,9 @@ try {
+     # Read the same non-secret plan as the CLI; no duplicated approval flag/ID.
+     $planStart = [Diagnostics.ProcessStartInfo]::new()
+     $planStart.FileName = @(Get-Command node.exe -CommandType Application -ErrorAction Stop)[0].Source
+-    $planStart.ArgumentList.Add((Join-Path $PSScriptRoot 'd1-backup-once-status.mjs'))
++    $planScript = if ($BackupProfile -eq 'stage-six') { 'd1-backup-six-status.mjs' } else { 'd1-backup-once-status.mjs' }
++    $runnerScript = if ($BackupProfile -eq 'stage-six') { 'd1-backup-six-private.mjs' } else { 'd1-backup-once.mjs' }
++    $planStart.ArgumentList.Add((Join-Path $PSScriptRoot $planScript))
+     $planStart.UseShellExecute = $false
+     $planStart.CreateNoWindow = $true
+     $planStart.RedirectStandardOutput = $true
+@@ -29,14 +31,18 @@ try {
+     } finally { if (-not $planChild.HasExited) { $planChild.Kill($true) }; $planChild.Dispose() }
+     if ($plan.authorizationId -cnotmatch '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$' -or $plan.intendedPermission -cne 'D1 Read + D1 Write' -or $plan.target.name -cne 'kuwago-admin-db-development' -or $plan.target.id -cne 'c5cfbe44-4fd0-4c2a-83c1-b833935534ba' -or $plan.target.account -cne '7a8bcd7992a3de359d2aff87df2fb693') { throw 'local_plan_invalid' }
+     if ($plan.alreadyUsed) { throw 'authorization_used' }
+-    if ($plan.expectedStage -ne 4 -or $plan.applicationTables -ne 26 -or (@($plan.expectedHistory) -join '|') -cne '0001_admin_catalog.sql|0002_integrity_guards.sql|0003_access_rbac.sql|0004_catalog_operations.sql') { throw 'stage_four_plan_invalid' }
++    $expectedStage = if ($BackupProfile -eq 'stage-six') { 6 } else { 4 }
++    $expectedTables = if ($BackupProfile -eq 'stage-six') { 32 } else { 26 }
++    $expectedHistory = '0001_admin_catalog.sql|0002_integrity_guards.sql|0003_access_rbac.sql|0004_catalog_operations.sql'
++    if ($BackupProfile -eq 'stage-six') { $expectedHistory += '|0005_publication_resilience.sql|0006_media_lifecycle.sql' }
++    if ($plan.expectedStage -ne $expectedStage -or $plan.applicationTables -ne $expectedTables -or (@($plan.expectedHistory) -join '|') -cne $expectedHistory) { throw 'backup_profile_invalid' }
+     $authorizationId = $plan.authorizationId
+     $executionApproved = ($plan.executionApproved -eq $true)
+     Import-Module (Join-Path $PSScriptRoot 'recovery-key-core.psm1') -Force -DisableNameChecking
+     Add-Type -AssemblyName System.Windows.Forms
+     Add-Type -AssemblyName System.Drawing
+     $form = [Windows.Forms.Form]::new()
+-    $form.Text = 'Kuwago - Respaldo posterior a 0004 (etapa 4)'
++    $form.Text = "Kuwago - Respaldo posterior a etapa $expectedStage"
+     $form.ClientSize = [Drawing.Size]::new(770, 460)
+     $form.StartPosition = 'CenterScreen'
+     $form.FormBorderStyle = 'FixedDialog'
+@@ -60,7 +66,7 @@ try {
+     $form.Controls.Add($tokenBox)
+     $keyLabel = [Windows.Forms.Label]::new()
+     $keyLabel.SetBounds(22, 230, 726, 24)
+-    $keyLabel.Text = 'Etapa 4: 26 tablas + historial 0001-0004. Clave EXISTENTE (Base64, entrada oculta)'
++    $keyLabel.Text = "Etapa ${expectedStage}: $expectedTables tablas + historial exacto. Clave EXISTENTE (entrada oculta)"
+     $form.Controls.Add($keyLabel)
+     $keyBox = [Windows.Forms.TextBox]::new()
+     $keyBox.SetBounds(22, 256, 726, 28)
+@@ -106,7 +112,7 @@ try {
+             $keyBox.Clear()
+             $start = [Diagnostics.ProcessStartInfo]::new()
+             $start.FileName = @(Get-Command node.exe -CommandType Application -ErrorAction Stop)[0].Source
+-            $start.ArgumentList.Add((Join-Path $PSScriptRoot 'd1-backup-once.mjs'))
++            $start.ArgumentList.Add((Join-Path $PSScriptRoot $runnerScript))
+             $start.UseShellExecute = $false
+             $start.CreateNoWindow = $true
+             $start.RedirectStandardInput = $true
+
+
+BASE SHA256 a86790263f2d40119ee6d5b8d72f2953569f9c6096b9c642e7f34c0fa656e04a
+FINAL SHA256 e996f0f0440cffb7eda07b55bfb9142b31172ad1eda8ae83a006128d1137cdb2
+diff --git a/infra/cloudflare/dev/scripts/next-stage-readiness.mjs b/infra/cloudflare/dev/scripts/next-stage-readiness.mjs
+index 8d9fbbe..6c55aa5 100644
+--- a/infra/cloudflare/dev/scripts/next-stage-readiness.mjs
++++ b/infra/cloudflare/dev/scripts/next-stage-readiness.mjs
+@@ -12,4 +12,4 @@ const r=JSON.parse(bytes),c=JSON.parse(closureBytes);
+ requireSafe(digest(bytes)===e.resultSha256&&digest(closureBytes)===e.closureSha256&&digest(checkpoint)===e.checkpointSha256&&c.resultSha256===e.resultSha256&&c.checkpointSha256===e.checkpointSha256&&c.stage===6&&r.status==='completed_0005_0006_only'&&r.finalCheckpoint.fingerprint===e.fingerprint&&r.verifiedStages[1].schemaHash===schemaHashes[6]&&JSON.stringify(r.verifiedStages[1].history)===JSON.stringify(migrations.map((m,i)=>({id:i+1,name:m.name}))),'next_stage_migration_evidence_invalid');
+ for(const file of [plan.integration.gatewaySource,plan.integration.apiSource,plan.integration.accessVerifier,plan.integration.rbacSource])requireSafe(existsSync(resolve(root,file)),'next_stage_existing_component_missing');
+ requireSafe(existsSync(resolve(root,'../../../',plan.integration.adminClient)),'next_stage_admin_client_missing');
+-console.log(JSON.stringify({inspection:'local-evidence-only',migrationClosureVerified:true,lastKnownRemoteStage:6,lastKnownRemoteVerificationAt:r.finishedAt,bootstrapReady:false,deployReady:false,remoteGatesBlocked:true,pending:['fresh cryptographic Access identity evidence for named recipient; no second human exists','review single-operator technical actor proposal and separately authorize remote wiring','gateway origin/app/AUD and private API topology','fresh bootstrap-specific preflight and recovery approval','durable one-shot remote bootstrap transport/closure not implemented','explicit remote creation/deployment approvals'],reusedComponentsLocated:true}));
++console.log(JSON.stringify({inspection:'local-evidence-only',migrationClosureVerified:true,lastKnownRemoteStage:6,lastKnownRemoteVerificationAt:r.finishedAt,bootstrapReady:false,deployReady:false,remoteGatesBlocked:true,pending:['JWT verification receipt exists; reverify privately at actual bootstrap execution','review durable single-operator bootstrap and explicit one-batch authorization','gateway origin/app/AUD and private API topology','stage-6 full encrypted backup and isolated restore; separately authorize export','fresh bootstrap-specific preflight and recovery bookmark','explicit remote creation/deployment approvals'],reusedComponentsLocated:true}));
+
+
+BASE SHA256 707eaaa53e801b2a14b18efb88efa31279102d5d5b0a741bcb49781c3497aa09
+FINAL SHA256 67eb69ab25bb4be6b055a8950abf99e108f3891aa4f188ae8f10c45ac3eb2d8a
+diff --git a/infra/cloudflare/dev/next-stage/development-plan.json b/infra/cloudflare/dev/next-stage/development-plan.json
+index 7ad287a..c8e628a 100644
+--- a/infra/cloudflare/dev/next-stage/development-plan.json
++++ b/infra/cloudflare/dev/next-stage/development-plan.json
+@@ -34,7 +34,12 @@
+       "source": "authorized Cloudflare Access Dashboard user detail and last-seen user_uuid",
+       "observedOn": "2026-10-26",
+       "freshApplicationSessionObserved": true,
+-      "liveJwtCryptographicallyVerified": false
++      "liveJwtCryptographicallyVerified": true,
++      "jwtVerificationAt": "2026-10-26T07:01:11.521Z",
++      "jwtExpiresAt": "2026-10-26T12:42:19.000Z",
++      "jwtVerificationReceiptId": "8e34c507-9d31-4b72-99e7-271a6a01a5ad",
++      "jwtVerificationReceiptSha256": "c80a18a77447612f9ebe0b419f2fcce88d2445ccdeabc3034386d2839e399f06",
++      "rawJwtPersisted": false
+     },
+     "grantorEvidence": null,
+     "distinctVerifiedHumanGrantorRequired": false,
+@@ -43,7 +48,7 @@
+     "rawTokensPersisted": false
+   },
+   "bootstrap": {
+-    "remoteExecutorImplemented": false,
++    "remoteExecutorImplemented": true,
+     "remoteWriteEnabled": false,
+     "automaticProvisioning": false,
+     "requiresExplicitHumanApproval": true,
+
+
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/bootstrap-permit.mjs b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-permit.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-permit.mjs
+@@ -0,0 +1,37 @@
++import {readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {root,target,requireSafe,digest} from './policy.mjs';
++import {isBootstrapPlan,identityEvidenceHash} from '../single-operator-bootstrap.mjs';
++export const bootstrapExecutionApproved=false; // Preparation is not write authorization.
++const permits=new WeakMap(),readPermits=new WeakMap();
++export const bootstrapSourceFiles=Object.freeze([
++ 'scripts/single-operator-bootstrap.mjs','scripts/safe-d1/bootstrap-permit.mjs',
++ 'scripts/safe-d1/bootstrap-runner.mjs','scripts/safe-d1/bootstrap-journal.mjs',
++ 'scripts/safe-d1/bootstrap-recovery.mjs','scripts/safe-d1/bootstrap-oracle.mjs',
++ 'scripts/safe-d1/transport.mjs','scripts/safe-d1/policy.mjs',
++ 'scripts/d1-bootstrap-private.mjs',
++ 'src/auth/access.ts','.wrangler/build/security.js',
++]);
++export const bootstrapSourceHash=()=>digest(JSON.stringify(bootstrapSourceFiles.map(file=>({file,sha256:digest(readFileSync(resolve(root,file)))}))));
++export function scopeForBootstrap(plan,recoverySha256){
++ requireSafe(isBootstrapPlan(plan)&&/^[a-f0-9]{64}$/.test(recoverySha256),'bootstrap_scope_invalid');
++ return Object.freeze({environment:'development',target,executionId:plan.executionId,stage:6,
++  batchSha256:plan.batchSha256,identitySha256:identityEvidenceHash(plan.identity),
++  baselineFingerprint:plan.baselineFingerprint,authorizationReference:plan.authorizationReference,
++  sourceSetSha256:bootstrapSourceHash(),stageSixBackupEvidenceSha256:recoverySha256,maximumBatches:1});
++}
++export function issueBootstrapPermit(plan,recoverySha256){
++ requireSafe(bootstrapExecutionApproved,'bootstrap_not_authorized');
++ const a=JSON.parse(readFileSync(resolve(root,'next-stage/bootstrap-authorization.json'))),scope=scopeForBootstrap(plan,recoverySha256);
++ requireSafe(a.approved===true&&a.purpose==='single-operator-first-super-admin-only'&&a.migrationsAllowed===false&&a.exportsAllowed===false&&a.deploymentsAllowed===false,'bootstrap_scope_not_authorized');
++ for(const [key,value] of Object.entries(scope))requireSafe(JSON.stringify(a[key])===JSON.stringify(value),'bootstrap_authorization_binding_mismatch');
++ const permit=Object.freeze({});permits.set(permit,scope);return permit;
++}
++export function takeBootstrapPermit(permit){const scope=permits.get(permit);permits.delete(permit);return scope;}
++export function issueBootstrapPreflightPermit(identity,recoverySha256){
++ requireSafe(bootstrapExecutionApproved,'bootstrap_not_authorized');
++ const a=JSON.parse(readFileSync(resolve(root,'next-stage/bootstrap-authorization.json')));
++ requireSafe(a.approved===true&&JSON.stringify(a.target)===JSON.stringify(target)&&a.environment==='development'&&a.stage===6&&a.maximumBatches===1&&a.sourceSetSha256===bootstrapSourceHash()&&a.identitySha256===identityEvidenceHash(identity)&&a.stageSixBackupEvidenceSha256===recoverySha256&&/^[a-f0-9-]{36}$/.test(a.executionId),'bootstrap_preflight_not_authorized');
++ const permit=Object.freeze({});readPermits.set(permit,Object.freeze({environment:'development',executionId:a.executionId,target,scope:'bootstrap-preflight'}));return permit;
++}
++export function takeBootstrapPreflightPermit(permit){const scope=readPermits.get(permit);readPermits.delete(permit);return scope;}
+
+
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/bootstrap-journal.mjs b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-journal.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-journal.mjs
+@@ -0,0 +1,42 @@
++import {openSync,writeFileSync,fsyncSync,closeSync,readFileSync,lstatSync,existsSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {custodyRoot,verifyWindowsCustody,dpapi} from './windows-custody.mjs';
++import {target,digest,requireSafe} from './policy.mjs';
++import {isBookmark} from './export.mjs';
++const journals=new WeakSet();
++export const isBootstrapJournal=j=>journals.has(j);
++export function createBootstrapJournal({root=custodyRoot,environment,executionId}={}){
++ requireSafe(['development','local-simulation'].includes(environment)&&/^[a-f0-9-]{36}$/.test(executionId),'bootstrap_journal_scope_invalid');
++ if(environment==='development')requireSafe(resolve(root)===resolve(custodyRoot),'bootstrap_journal_root_override');
++ const prefix=resolve(root,'bootstrap-'+executionId),receipts=new WeakMap();
++ function verifyRoot(){if(environment==='development')verifyWindowsCustody();requireSafe(lstatSync(root).isDirectory()&&!lstatSync(root).isSymbolicLink(),'bootstrap_custody_invalid');}
++ function exclusive(suffix,value){
++  verifyRoot();const file=prefix+'.'+suffix+'.json',bytes=Buffer.from(JSON.stringify({...value,target,environment,executionId},null,2));
++  const fd=openSync(file,'wx',0o600);try{writeFileSync(fd,bytes);fsyncSync(fd);}finally{closeSync(fd);}
++  requireSafe(digest(readFileSync(file))===digest(bytes),'bootstrap_durable_readback_failed');return {file,sha256:digest(bytes)};
++ }
++ const journal=Object.freeze({environment,executionId,
++  begin(scope){requireSafe(scope.executionId===executionId&&scope.environment===environment&&!existsSync(prefix+'.closed.json'),'bootstrap_journal_scope_changed');return exclusive('attempt',{scope,startedAt:new Date().toISOString(),maximumBatches:1});},
++  write(kind,value){requireSafe(['intent','request-invocation','ack','result'].includes(kind),'bootstrap_journal_kind_invalid');return exclusive(kind,value);},
++  async checkpoint(stage,{fingerprint,points,phase}){
++   requireSafe(stage===6&&/^[a-f0-9]{64}$/.test(fingerprint)&&['baseline','before_write','postflight','observation'].includes(phase),'bootstrap_checkpoint_scope_invalid');
++   const sealed=[];
++   // Reuse the existing 32-byte bookmark envelope required by backup-dpapi.ps1.
++   for(const point of points){requireSafe(isBookmark(point.value),'bootstrap_bookmark_invalid');const bytes=Buffer.concat([Buffer.from(point.value.replaceAll('-',''),'hex'),Buffer.from('BKM1')]);try{sealed.push({label:point.label,observedAt:point.observedAt,ciphertext:(await dpapi.protect(bytes)).toString('base64')});}finally{bytes.fill(0);}}
++   const record=exclusive(phase+'.private',{stage,fingerprint,points:sealed,createdAt:new Date().toISOString()});
++   const receipt=Object.freeze({});receipts.set(receipt,{...record,fingerprint,points:points.map(p=>({...p}))});await journal.verifyCheckpoint(receipt);return receipt;
++  },
++  async verifyCheckpoint(receipt){
++   verifyRoot();const r=receipts.get(receipt);requireSafe(r&&digest(readFileSync(r.file))===r.sha256,'bootstrap_checkpoint_readback_failed');
++   const stored=JSON.parse(readFileSync(r.file));requireSafe(stored.fingerprint===r.fingerprint&&stored.executionId===executionId&&stored.environment===environment&&stored.points.length===r.points.length,'bootstrap_checkpoint_scope_changed');
++   for(let i=0;i<stored.points.length;i++){const plain=await dpapi.unprotect(Buffer.from(stored.points[i].ciphertext,'base64'));try{requireSafe(plain.length===32&&plain.subarray(28).toString('ascii')==='BKM1'&&plain.subarray(0,28).toString('hex')===r.points[i].value.replaceAll('-','')&&stored.points[i].label===r.points[i].label,'bootstrap_checkpoint_decryption_failed');}finally{plain.fill(0);}}
++   return {stage:6,fingerprint:r.fingerprint,recordSha256:r.sha256};
++  },
++  async close(result,checkpoint){
++   const verified=await journal.verifyCheckpoint(checkpoint);requireSafe(result.status==='PASS'&&result.postflightFingerprint===verified.fingerprint,'bootstrap_closure_invalid');
++   const saved=journal.write('result',result),closed=exclusive('closed',{resultSha256:saved.sha256,checkpointSha256:verified.recordSha256,closedAt:new Date().toISOString()});
++   const stored=JSON.parse(readFileSync(closed.file));requireSafe(stored.resultSha256===digest(readFileSync(saved.file))&&stored.checkpointSha256===verified.recordSha256,'bootstrap_closure_readback_failed');
++   return {durablyClosed:true,closureSha256:closed.sha256};
++  },
++ });journals.add(journal);return journal;
++}
+
+
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs
+@@ -0,0 +1,45 @@
++import {target,requireSafe} from './policy.mjs';
++import {isBootstrapPlan,identityEvidenceHash,verifyBootstrapPostflight} from '../single-operator-bootstrap.mjs';
++import {bootstrapRecoveryState} from './bootstrap-recovery.mjs';
++import {bootstrapSourceHash} from './bootstrap-permit.mjs';
++import {isBootstrapJournal} from './bootstrap-journal.mjs';
++import {completionCheckpoint} from './completion-checkpoint.mjs';
++import {consumeBootstrapAcknowledgement} from './transport.mjs';
++import {projectBootstrap} from './bootstrap-oracle.mjs';
++import {snapshotFingerprint} from './snapshot.mjs';
++const used=new WeakSet();
++export async function runBootstrap({transport,plan,recovery,journal,scope}){
++ const result={status:'STOPPED',intentionRecorded:false,requestInvocationRecorded:false,writeAccepted:false,writeVerified:false,durablyClosed:false};
++ let attempted=false;
++ try{
++  requireSafe(isBootstrapPlan(plan)&&!used.has(plan),'bootstrap_plan_consumed_or_invalid');used.add(plan);
++  const c=transport.executionContext();
++  requireSafe(c.scope==='bootstrap'&&c.executionId===plan.executionId&&JSON.stringify(c.target)===JSON.stringify(target)&&scope.environment===c.environment&&JSON.stringify(transport.bootstrapContext())===JSON.stringify(scope),'bootstrap_context_mismatch');
++  requireSafe(isBootstrapJournal(journal)&&journal.environment===c.environment&&journal.executionId===plan.executionId,'bootstrap_journal_mismatch');
++  const r=bootstrapRecoveryState(recovery,c.environment);
++  requireSafe(r.fingerprint===plan.baselineFingerprint&&r.evidenceSha256===scope.stageSixBackupEvidenceSha256&&scope.sourceSetSha256===bootstrapSourceHash()&&scope.batchSha256===plan.batchSha256&&scope.identitySha256===identityEvidenceHash(plan.identity)&&scope.authorizationReference===plan.authorizationReference,'bootstrap_evidence_binding_mismatch');
++  result.phase='durable-begin';journal.begin(scope);
++  result.phase='baseline';
++  const baseline=await completionCheckpoint(transport,{expected:plan.baselineSnapshot,journal,phase:'baseline'});
++  requireSafe(Date.now()<plan.identity.expiresAt&&Date.now()-plan.identity.verifiedAt<300000&&scope.sourceSetSha256===bootstrapSourceHash(),'bootstrap_identity_or_sources_stale');
++  await journal.verifyCheckpoint(baseline.receipt);
++  result.phase='intent';journal.write('intent',{scope,baselineCheckpointSha256:baseline.evidence.recordSha256,recordedAt:new Date().toISOString()});result.intentionRecorded=true;
++  requireSafe(await transport.bookmark()===baseline.point.value,'bootstrap_concurrent_bookmark_change');
++  result.phase='batch';attempted=true;await transport.applyBatch(plan.statements);result.requestInvocationRecorded=true;
++  const ack=consumeBootstrapAcknowledgement(transport.writeAcknowledgement(),{transport,scope});
++  result.writeAccepted=true;journal.write('ack',{stage:6,batchSha256:ack.batchSha256,sourceSetSha256:ack.sourceSetSha256,requestStartedAt:ack.requestStartedAt,responseCompletedAt:ack.responseCompletedAt});
++  result.phase='oracle';const expected=projectBootstrap(plan,ack); // Does not adopt arbitrary postflight data.
++  const db={prepare(sql){let params=[];return {bind(...p){params=p;return this;},async all(){return {success:true,results:await transport.bootstrapSelect(plan,sql,params)};}};}};
++  result.phase='postflight';await verifyBootstrapPostflight(plan,db);
++  const postflight=await completionCheckpoint(transport,{expected,journal,phase:'postflight'});
++  result.writeVerified=true;result.status='PASS';result.postflightFingerprint=snapshotFingerprint(expected.snapshot);
++  result.phase='closure';result.closure=await journal.close(result,postflight.receipt);result.durablyClosed=result.closure.durablyClosed;
++ }catch{
++  result.requestInvocationRecorded=transport.bootstrapWriteObservation?.().invocationRecorded===true;
++  result.status=attempted?'UNCERTAIN_OR_POSTFLIGHT_FAILED':'STOPPED_BEFORE_SEND';
++  // A failed response is never evidence that no write occurred. No retry.
++  result.requiresReadOnlyReconciliation=attempted;
++  try{journal.write('result',{...result,failedAt:new Date().toISOString()});}catch{/* Existing durable evidence is never overwritten. */}
++ }finally{transport.dispose();result.credentialDisposed=true;}
++ return result;
++}
+
+
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/bootstrap-recovery.mjs b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-recovery.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-recovery.mjs
+@@ -0,0 +1,44 @@
++import {readFileSync,lstatSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {root,target,requireSafe,digest} from './policy.mjs';
++import {custodyRoot,verifyWindowsCustody,dpapi} from './windows-custody.mjs';
++import {decryptEnvelope} from './encryption.mjs';
++import {verifyRestorable} from './restore.mjs';
++import {isBookmark} from './export.mjs';
++import {stageSixFingerprint} from './backup-stage-six.mjs';
++import {Miniflare,convertV4MiniflareOptions} from 'miniflare';
++import {splitMigration} from './sql.mjs';
++import {captureDatabase,snapshotFingerprint} from './snapshot.mjs';
++const receipts=new WeakMap();
++// Production evidence can only be loaded from an approved, pinned encrypted
++// stage-6 backup outside Git. The old stage-4 backup cannot satisfy this loader.
++export async function loadBootstrapRecovery(){
++ verifyWindowsCustody();const a=JSON.parse(readFileSync(resolve(root,'next-stage/bootstrap-authorization.json')));
++ requireSafe(/^[a-f0-9-]{36}$/.test(a.stageSixBackupOperationId)&&/^[a-f0-9]{64}$/.test(a.stageSixBackupEvidenceSha256)&&/^[a-f0-9]{64}$/.test(a.stageSixBackupCipherSha256),'bootstrap_stage_six_backup_missing');
++ const folder=resolve(custodyRoot,a.stageSixBackupOperationId);
++ requireSafe(lstatSync(folder).isDirectory()&&!lstatSync(folder).isSymbolicLink(),'bootstrap_backup_directory_invalid');
++ const checked=(name,hash)=>{const f=resolve(folder,name);requireSafe(lstatSync(f).isFile()&&!lstatSync(f).isSymbolicLink(),'bootstrap_backup_file_invalid');const bytes=readFileSync(f);requireSafe(digest(bytes)===hash,'bootstrap_backup_hash_mismatch');return bytes;};
++ const evidence=JSON.parse(checked('evidence.json',a.stageSixBackupEvidenceSha256));
++ requireSafe(evidence.operationId===a.stageSixBackupOperationId&&JSON.stringify(evidence.target)===JSON.stringify(target)&&evidence.sourceStage===6&&evidence.restoreVerified===true&&evidence.exactSnapshotComparison===true,'bootstrap_backup_evidence_invalid');
++ let clear,sql;
++ try{
++  clear=await decryptEnvelope(checked('backup.kwgbak',a.stageSixBackupCipherSha256),{protector:dpapi});
++  const payload=JSON.parse(clear.toString('utf8'));sql=Buffer.from(payload.sqlBase64,'base64');payload.sqlBase64=undefined;
++  requireSafe(payload.sourceStage===6&&payload.operationId===evidence.operationId&&JSON.stringify(payload.target)===JSON.stringify(target)&&payload.sourceFingerprint===stageSixFingerprint&&digest(sql)===payload.sqlSha256&&isBookmark(payload.bookmark),'bootstrap_backup_payload_invalid');
++  await verifyRestorable(sql,stageSixFingerprint);
++  let mf,snapshot;
++  try{
++   mf=new Miniflare(convertV4MiniflareOptions({name:'bootstrap-recovery-isolated',host:'127.0.0.1',modules:true,script:'export default {fetch(){return new Response(null,{status:503})}}',compatibilityDate:'2026-07-30',telemetry:{enabled:false},cf:false,d1Databases:{DB:'bootstrap-backup-proof-only'}}));
++   const db=await mf.getD1Database('DB');await db.batch(splitMigration(sql.toString('utf8')).map(q=>db.prepare(q)));
++   snapshot=await captureDatabase({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async q=>(await db.prepare(q).all()).results});
++   requireSafe(snapshot.stage===6&&snapshotFingerprint(snapshot.snapshot)===stageSixFingerprint,'bootstrap_recovery_projection_mismatch');
++  }finally{await mf?.dispose();}
++  const receipt=Object.freeze({});receipts.set(receipt,{environment:'development',fingerprint:stageSixFingerprint,evidenceSha256:a.stageSixBackupEvidenceSha256,snapshot});return receipt;
++ }finally{clear?.fill(0);sql?.fill(0);}
++}
++// Test-only evidence is produced by actual isolated restoration and is marked
++// local-simulation. A production runner rejects it even if its SQL is valid.
++export async function verifySimulationRecovery(sql,fingerprint){
++ await verifyRestorable(sql,fingerprint);const receipt=Object.freeze({});receipts.set(receipt,{environment:'local-simulation',fingerprint,evidenceSha256:digest(sql)});return receipt;
++}
++export function bootstrapRecoveryState(receipt,environment){const r=receipts.get(receipt);requireSafe(r&&r.environment===environment,'bootstrap_recovery_receipt_invalid');return Object.freeze({...r});}
+
+
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/bootstrap-oracle.mjs b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-oracle.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-oracle.mjs
+@@ -0,0 +1,27 @@
++import {requireSafe} from './policy.mjs';
++import {isBootstrapPlan,technicalIssuer} from '../single-operator-bootstrap.mjs';
++// Only generated timestamps come from readbacks of this same accepted batch.
++// All identities, roles, action fields, schema and unrelated rows are projected
++// independently from the verified baseline and fixed plan.
++export function projectBootstrap(plan,ack){
++ requireSafe(isBootstrapPlan(plan)&&ack.stage===6&&ack.executionId===plan.executionId&&ack.batchSha256===plan.batchSha256,'bootstrap_oracle_scope_mismatch');
++ const output=ack.bootstrapOutput;requireSafe(Array.isArray(output)&&output.length===3&&output[0].length===2&&output[1].length===1&&output[2].length===1,'bootstrap_oracle_readbacks_invalid');
++ const start=Date.parse(ack.requestStartedAt)-5000,end=Date.parse(ack.responseCompletedAt)+5000;
++ const time=value=>{const n=Date.parse(value);requireSafe(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)&&new Date(n).toISOString()===value&&n>=start&&n<=end,'bootstrap_generated_time_invalid');return value;};
++ const actor=output[0].find(p=>p.id===plan.actorId),person=output[0].find(p=>p.id===plan.recipientId);
++ requireSafe(actor&&person,'bootstrap_oracle_principals_invalid');
++ const expected={
++  principals:[{id:plan.actorId,issuer:technicalIssuer,subject:plan.executionId,enabled:0,created_at:time(actor.created_at)},{id:plan.recipientId,issuer:plan.identity.issuer,subject:plan.identity.subject,enabled:1,created_at:time(person.created_at)}],
++  administrator_roles:[{principal_id:plan.recipientId,role_id:'super_admin',granted_by:plan.actorId,granted_at:time(output[1][0].granted_at)}],
++  audit_events:[{id:'bootstrap-audit:'+plan.executionId,actor_id:plan.actorId,action:plan.action,entity_type:'administrator_role',entity_id:plan.recipientId,request_id:plan.executionId,outcome:'allowed',revision_id:null,created_at:time(output[2][0].created_at)}],
++ };
++ const actual={principals:output[0],administrator_roles:output[1],audit_events:output[2]};
++ for(const name of Object.keys(expected))for(const row of expected[name]){
++  const key=name==='administrator_roles'?'principal_id':'id',found=actual[name].find(r=>r[key]===row[key]);
++  requireSafe(found&&Object.keys(found).sort().join('|')===Object.keys(row).sort().join('|')&&Object.keys(row).every(k=>found[k]===row[k]),'bootstrap_same_batch_readback_mismatch');
++ }
++ const capture=structuredClone(plan.baselineSnapshot);
++ const cell=value=>value===null?'null:':(typeof value==='number'?'integer:':'text:')+Buffer.from(String(value)).toString('hex').toUpperCase();
++ for(const table of capture.snapshot.tables)if(expected[table.name])table.rows=expected[table.name].map(row=>table.columns.map(c=>{requireSafe(Object.hasOwn(row,c),'bootstrap_oracle_column_invalid');return cell(row[c]);})).sort((a,b)=>JSON.stringify(a)<JSON.stringify(b)?-1:1);
++ return capture;
++}
+
+
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/backup-stage-six.mjs b/infra/cloudflare/dev/scripts/safe-d1/backup-stage-six.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/backup-stage-six.mjs
+@@ -0,0 +1,24 @@
++import {readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {root,target,migrations,schemaHashes,schemaDigest,digest,requireSafe,approvedSources} from './policy.mjs';
++import {custodyRoot,verifyWindowsCustody} from './windows-custody.mjs';
++import {snapshotFingerprint} from './snapshot.mjs';
++export const stageSixFingerprint='1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5';
++export function verifyStageSixClosure(){
++ verifyWindowsCustody();approvedSources();
++ const e=JSON.parse(readFileSync(resolve(root,'next-stage/development-plan.json'))).migrationEvidence;
++ const prefix=resolve(custodyRoot,'migration-0005-0006-'+e.executionId);
++ const resultBytes=readFileSync(prefix+'.result.json'),closureBytes=readFileSync(prefix+'.closed.json'),checkpoint=readFileSync(prefix+'.stage-6.postflight.private.json');
++ requireSafe(digest(resultBytes)===e.resultSha256&&digest(closureBytes)===e.closureSha256&&digest(checkpoint)===e.checkpointSha256,'stage_six_closure_hash_mismatch');
++ const r=JSON.parse(resultBytes),c=JSON.parse(closureBytes);
++ requireSafe(r.status==='completed_0005_0006_only'&&c.stage===6&&c.resultSha256===e.resultSha256&&c.checkpointSha256===e.checkpointSha256&&e.fingerprint===stageSixFingerprint&&r.finalCheckpoint.fingerprint===stageSixFingerprint,'stage_six_closure_invalid');
++ return {stage:6,fingerprint:stageSixFingerprint,target,fullBackup:false};
++}
++export function validateStageSixSnapshot(capture){
++ requireSafe(capture.stage===6&&schemaDigest(capture.snapshot.schema.filter(s=>s.name!=='d1_migrations'))===schemaHashes[6],'stage_six_schema_mismatch');
++ requireSafe(snapshotFingerprint(capture.snapshot)===stageSixFingerprint,'stage_six_fingerprint_mismatch');
++ const app=capture.snapshot.tables.filter(t=>!['d1_migrations','sqlite_sequence'].includes(t.name));
++ const history=capture.snapshot.tables.find(t=>t.name==='d1_migrations');
++ requireSafe(history?.rows.length===6&&history.rows.every((row,i)=>row[1]==='text:'+Buffer.from(migrations[i].name).toString('hex').toUpperCase()),'stage_six_history_mismatch');
++ return {stage:6,applicationTables:app.length,historyEntries:6,sourceFingerprint:stageSixFingerprint};
++}
+
+
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/backup-six-permit.mjs b/infra/cloudflare/dev/scripts/safe-d1/backup-six-permit.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/backup-six-permit.mjs
+@@ -0,0 +1,18 @@
++import {readFileSync,existsSync,openSync,writeFileSync,fsyncSync,closeSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {root,target,requireSafe} from './policy.mjs';
++import {custodyRoot,verifyWindowsCustody} from './windows-custody.mjs';
++import {verifyStageSixClosure,stageSixFingerprint} from './backup-stage-six.mjs';
++export const stageSixBackupApproved=false;
++export const stageSixBackupId='17fe22b3-a7bf-4a86-954b-f4d7c35a7db6';
++export const stageSixBackupPrefix=resolve(custodyRoot,'backup-once-'+stageSixBackupId);
++const permits=new WeakSet();
++export function issueStageSixBackupPermit(){
++ requireSafe(stageSixBackupApproved,'stage_six_export_not_authorized');verifyWindowsCustody();verifyStageSixClosure();
++ const p=JSON.parse(readFileSync(resolve(root,'next-stage/stage-six-backup-proposal.json')));
++ requireSafe(p.approved===true&&p.executionId===stageSixBackupId&&p.expectedStage===6&&p.expectedFingerprint===stageSixFingerprint&&JSON.stringify(p.target)===JSON.stringify(target)&&p.maximumExportStarts===1&&!p.migrationsAllowed&&!p.bootstrapAllowed&&!existsSync(stageSixBackupPrefix+'.result.json'),'stage_six_backup_scope_mismatch');
++ const fd=openSync(stageSixBackupPrefix+'.attempt.json','wx',0o600);
++ try{writeFileSync(fd,JSON.stringify({target,authorizationId:stageSixBackupId,maximumExportStarts:1,startedAt:new Date().toISOString()}));fsyncSync(fd);}finally{closeSync(fd);}
++ const permit=Object.freeze({});permits.add(permit);return permit;
++}
++export const takeStageSixBackupPermit=permit=>permits.delete(permit);
+
+
+diff --git a/infra/cloudflare/dev/scripts/d1-bootstrap-private.mjs b/infra/cloudflare/dev/scripts/d1-bootstrap-private.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/d1-bootstrap-private.mjs
+@@ -0,0 +1,40 @@
++// Future private stdin entry point. Current release exits BLOCKED before reading
++// credentials, requesting JWKS, consulting D1 or writing an attempt marker.
++import {readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {bootstrapExecutionApproved,issueBootstrapPreflightPermit,issueBootstrapPermit,scopeForBootstrap} from './safe-d1/bootstrap-permit.mjs';
++import {root,assertEnvironment,assertRuntime,approvedSources,requireSafe} from './safe-d1/policy.mjs';
++import {verifyBootstrapRecipient,prepareSingleOperatorBootstrap} from './single-operator-bootstrap.mjs';
++import {loadBootstrapRecovery,bootstrapRecoveryState} from './safe-d1/bootstrap-recovery.mjs';
++import {createReader} from './safe-d1/read.mjs';
++import {createTransport} from './safe-d1/transport.mjs';
++import {createBootstrapJournal} from './safe-d1/bootstrap-journal.mjs';
++import {runBootstrap} from './safe-d1/bootstrap-runner.mjs';
++const chunks=[];let bytes,input,token,request,readTransport,transport;
++try{
++ requireSafe(bootstrapExecutionApproved,'bootstrap_not_authorized');
++ requireSafe(process.argv.length===2&&!process.stdin.isTTY,'private_pipe_required');assertEnvironment(process.env);assertRuntime();approvedSources();
++ let size=0;for await(const p of process.stdin){size+=p.length;requireSafe(size<=24000,'private_input_limit');chunks.push(p);}
++ bytes=Buffer.concat(chunks);input=JSON.parse(bytes.toString('utf8'));requireSafe(Object.keys(input).sort().join(',')==='jwt,token','private_input_invalid');
++ token=input.token;request=new Request('https://kuwago-admin-api-development.ch-jesus-99.workers.dev/',{headers:{'Cf-Access-Jwt-Assertion':input.jwt}});input.jwt=undefined;input.token=undefined;input=undefined;
++ const identity=await verifyBootstrapRecipient(request);request=undefined;
++ const recovery=await loadBootstrapRecovery(),r=bootstrapRecoveryState(recovery,'development');
++ const a=JSON.parse(readFileSync(resolve(root,'next-stage/bootstrap-authorization.json')));
++ readTransport=createTransport(token,{bootstrapPreflightPermit:issueBootstrapPreflightPermit(identity,r.evidenceSha256)});
++ const preflight=await createReader(readTransport).inspect(6);readTransport.dispose();readTransport=undefined;
++ const plan=prepareSingleOperatorBootstrap({preflight,snapshot:r.snapshot,expectedFingerprint:r.fingerprint,identity,executionId:a.executionId,authorizationReference:a.authorizationReference});
++ const permit=issueBootstrapPermit(plan,r.evidenceSha256),scope=scopeForBootstrap(plan,r.evidenceSha256),journal=createBootstrapJournal({environment:'development',executionId:plan.executionId});
++ transport=createTransport(token,{bootstrapPermit:permit,bootstrapJournal:journal});token=undefined;
++ const result=await runBootstrap({transport,plan,recovery,journal,scope});
++ console.log(JSON.stringify({status:result.status,executionId:plan.executionId,durablyClosed:result.durablyClosed}));process.exitCode=result.status==='PASS'&&result.durablyClosed?0:2;
++}catch{console.log(JSON.stringify({status:bootstrapExecutionApproved?'STOPPED':'BLOCKED'}));process.exitCode=2;}
++finally{
++ transport?.dispose();readTransport?.dispose();
++ // eslint-disable-next-line no-useless-assignment
++ token=undefined;
++ // eslint-disable-next-line no-useless-assignment
++ input=undefined;
++ // eslint-disable-next-line no-useless-assignment
++ request=undefined;
++ bytes?.fill(0);for(const p of chunks)p.fill(0);delete process.env.CLOUDFLARE_API_TOKEN;
++}
+
+
+diff --git a/infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.mjs b/infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.mjs
+@@ -0,0 +1,36 @@
++// Invoked only by the private Windows form. No D1, cookies, browser scraping or writer.
++import {openSync,writeFileSync,readFileSync,fsyncSync,closeSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {randomUUID} from 'node:crypto';
++import {verifyBootstrapRecipient,devAccess,expectedSubject} from './single-operator-bootstrap.mjs';
++import {custodyRoot,verifyWindowsCustody} from './safe-d1/windows-custody.mjs';
++import {assertEnvironment,assertRuntime,requireSafe,digest} from './safe-d1/policy.mjs';
++const chunks=[];let bytes,input,request;
++try{
++ requireSafe(process.argv.length===2&&!process.stdin.isTTY,'private_pipe_required');
++ assertEnvironment(process.env);assertRuntime();verifyWindowsCustody();
++ let size=0;for await(const part of process.stdin){size+=part.length;requireSafe(size<=20000,'private_input_limit');chunks.push(part);}
++ bytes=Buffer.concat(chunks);input=JSON.parse(bytes.toString('utf8'));
++ requireSafe(Object.keys(input).join(',')==='jwt'&&typeof input.jwt==='string','private_input_invalid');
++ request=new Request('https://kuwago-admin-api-development.ch-jesus-99.workers.dev/',{headers:{'Cf-Access-Jwt-Assertion':input.jwt}});
++ input.jwt=undefined;input=undefined;
++ const identity=await verifyBootstrapRecipient(request);request=undefined;
++ const receipt={kind:'bootstrap-identity-verification',verificationId:randomUUID(),status:'PASS',
++  verifiedAt:new Date(identity.verifiedAt).toISOString(),expiresAt:new Date(identity.expiresAt).toISOString(),
++  issuer:devAccess.issuer,audience:devAccess.audience,subject:expectedSubject,emailMatchesDesignatedRecipient:true,
++  signature:'RS256/JWKS',signatureVerified:true,issuerVerified:true,audienceVerified:true,timeVerified:true,
++  identityVerified:true,rawTokenPersisted:false,remoteD1Requests:0,bootstrapAuthorized:false};
++ const file=resolve(custodyRoot,'bootstrap-identity-'+receipt.verificationId+'.json');
++ const encoded=Buffer.from(JSON.stringify(receipt,null,2)),fd=openSync(file,'wx',0o600);
++ try{writeFileSync(fd,encoded);fsyncSync(fd);}finally{closeSync(fd);}
++ requireSafe(digest(readFileSync(file))===digest(encoded),'receipt_persistence_failed');
++ console.log(JSON.stringify({status:'PASS',verificationId:receipt.verificationId,receiptSha256:digest(encoded)}));
++}catch{console.log(JSON.stringify({status:'FAIL',reason:'private_identity_verification_not_confirmed'}));process.exitCode=2;}
++finally{
++ // Release the credential-bearing objects; JS does not guarantee physical erasure.
++ // eslint-disable-next-line no-useless-assignment
++ input=undefined;
++ // eslint-disable-next-line no-useless-assignment
++ request=undefined;
++ bytes?.fill(0);for(const part of chunks)part.fill(0);delete process.env.CLOUDFLARE_API_TOKEN;
++}
+
+
+diff --git a/infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.ps1 b/infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.ps1
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/verify-bootstrap-jwt-private.ps1
+@@ -0,0 +1,102 @@
++#Requires -Version 7.0
++# Reuses the hidden WinForms + redirected stdin + owned clipboard cleanup pattern.
++param()
++Set-StrictMode -Version Latest
++$ErrorActionPreference = 'Stop'
++$form = $null
++$jwtBox = $null
++$state = @{ Busy = $false; ExitCode = 2 }
++try {
++    if (-not $IsWindows -or [Threading.Thread]::CurrentThread.ApartmentState -ne 'STA' -or $args.Count) { throw 'windows_sta_required' }
++    Import-Module (Join-Path $PSScriptRoot 'recovery-key-core.psm1') -Force -DisableNameChecking
++    Add-Type -AssemblyName System.Windows.Forms
++    Add-Type -AssemblyName System.Drawing
++    $form = [Windows.Forms.Form]::new()
++    $form.Text = 'Kuwago - Verificar identidad Access (sin escrituras)'
++    $form.ClientSize = [Drawing.Size]::new(780, 350)
++    $form.StartPosition = 'CenterScreen'
++    $form.FormBorderStyle = 'FixedDialog'
++    $form.MaximizeBox = $false
++    $form.TopMost = $true
++    $form.ShowInTaskbar = $true
++    $intro = [Windows.Forms.Label]::new()
++    $intro.SetBounds(20, 15, 740, 105)
++    $intro.Text = "Solo JWT de la aplicacion Kuwago DEV ya autenticada.`nVerifica firma, issuer, AUD, fechas, subject y correo designados.`nUnicamente consulta JWKS publico del equipo. No consulta ni escribe D1.`nNo acepta tokens API D1. Nunca pegues JWT/cookies/codigos en Codex.`nEl portapapeles puede ser observado o sincronizado por otras aplicaciones."
++    $form.Controls.Add($intro)
++    $jwtBox = [Windows.Forms.TextBox]::new()
++    $jwtBox.SetBounds(20, 135, 740, 28)
++    $jwtBox.UseSystemPasswordChar = $true
++    $jwtBox.MaxLength = 16384
++    $jwtBox.AccessibleName = 'JWT vigente de Kuwago DEV, campo oculto local'
++    $form.Controls.Add($jwtBox)
++    $run = [Windows.Forms.Button]::new()
++    $run.SetBounds(20, 190, 370, 38)
++    $run.Text = 'Verificar identidad sin escrituras'
++    $form.Controls.Add($run)
++    $cancel = [Windows.Forms.Button]::new()
++    $cancel.SetBounds(425, 190, 250, 38)
++    $cancel.Text = 'Cancelar y cerrar'
++    $cancel.Add_Click({ $form.Close() })
++    $form.Controls.Add($cancel)
++    $status = [Windows.Forms.Label]::new()
++    $status.SetBounds(20, 255, 740, 65)
++    $status.Text = 'Nada se verifica hasta pulsar el boton. Al terminar se conserva solo evidencia depurada.'
++    $form.Controls.Add($status)
++    $form.Add_Shown({ $form.Activate(); $form.BringToFront() })
++    $form.Add_FormClosing({ param($sender, $eventArgs) if ($state.Busy) { $eventArgs.Cancel = $true } })
++    $run.Add_Click({
++        if ($jwtBox.Text -cnotmatch '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$') { $status.Text = 'Formato no valido. Revisa privadamente, sin enviar el contenido al chat.'; return }
++        $state.Busy = $true
++        $run.Enabled = $false
++        $cancel.Enabled = $false
++        $status.Text = 'Verificando JWT con JWKS del equipo. Sin D1 ni bootstrap.'
++        $form.Refresh()
++        $jwt = $null
++        $request = $null
++        $child = $null
++        $started = $false
++        $ok = $false
++        try {
++            $jwt = $jwtBox.Text
++            $jwtBox.Clear()
++            $start = [Diagnostics.ProcessStartInfo]::new()
++            $start.FileName = @(Get-Command node.exe -CommandType Application -ErrorAction Stop)[0].Source
++            $start.ArgumentList.Add((Join-Path $PSScriptRoot 'verify-bootstrap-jwt-private.mjs'))
++            $start.UseShellExecute = $false
++            $start.CreateNoWindow = $true
++            $start.RedirectStandardInput = $true
++            $start.RedirectStandardOutput = $true
++            $start.RedirectStandardError = $true
++            $start.Environment.Clear()
++            $start.Environment['SystemRoot'] = $env:SystemRoot
++            $start.Environment['PATH'] = $env:PATH
++            $child = [Diagnostics.Process]::new()
++            $child.StartInfo = $start
++            [void]$child.Start()
++            $started = $true
++            $request = @{ jwt = $jwt } | ConvertTo-Json -Compress
++            $child.StandardInput.Write($request)
++            $child.StandardInput.Close()
++            $null = Clear-KuwagoOwnedClipboard -ExpectedText $jwt -ReadText { [Windows.Forms.Clipboard]::GetText() } -Clear { [Windows.Forms.Clipboard]::Clear() }
++            $request = $null
++            $jwt = $null
++            if (-not $child.WaitForExit(45000)) { $child.Kill($true); throw 'identity_not_confirmed' }
++            $summary = $child.StandardOutput.ReadToEnd() | ConvertFrom-Json
++            $ok = ($child.ExitCode -eq 0 -and $summary.status -ceq 'PASS')
++        } catch { $ok = $false }
++        finally {
++            $jwt = $null
++            $request = $null
++            $jwtBox.Clear()
++            if ($null -ne $child) { if ($started -and -not $child.HasExited) { $child.Kill($true) }; $child.Dispose() }
++            $state.Busy = $false
++        }
++        $state.ExitCode = if ($ok) { 0 } else { 2 }
++        $message = if ($ok) { 'PASS: firma e identidad verificadas. Evidencia sin token; ninguna escritura habilitada.' } else { 'FAIL: identidad no confirmada. No repetir automaticamente ni enviar el JWT al chat.' }
++        [void][Windows.Forms.MessageBox]::Show($form, $message, 'Kuwago - Resultado sin secretos', [Windows.Forms.MessageBoxButtons]::OK, [Windows.Forms.MessageBoxIcon]::Information)
++        $form.Close()
++    })
++    [void]$form.ShowDialog()
++} catch { $state.ExitCode = 2 }
++finally { if ($null -ne $jwtBox) { $jwtBox.Clear() }; if ($null -ne $form) { $form.Dispose() } }
++exit $state.ExitCode
+
+
+diff --git a/infra/cloudflare/dev/scripts/d1-backup-six-private.mjs b/infra/cloudflare/dev/scripts/d1-backup-six-private.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/d1-backup-six-private.mjs
+@@ -0,0 +1,32 @@
++import {writeFileSync} from 'node:fs';
++import {stageSixBackupApproved,stageSixBackupId,stageSixBackupPrefix,issueStageSixBackupPermit} from './safe-d1/backup-six-permit.mjs';
++import {assertEnvironment,assertRuntime,requireSafe} from './safe-d1/policy.mjs';
++import {decodeRecoverySecret} from './safe-d1/recovery-format.mjs';
++import {createBackupTransport} from './safe-d1/backup-transport.mjs';
++import {runBackupOnly} from './safe-d1/backup-only.mjs';
++import {createEncryptedStore} from './safe-d1/encrypted-store.mjs';
++import {custodyRoot,verifyWindowsCustody,dpapi} from './safe-d1/windows-custody.mjs';
++import {verifyStageSixClosure} from './safe-d1/backup-stage-six.mjs';
++const chunks=[];let bytes,token,key,input,transport,consumed=false;
++try{
++ requireSafe(stageSixBackupApproved,'stage_six_export_not_authorized');
++ requireSafe(process.argv.length===2&&!process.stdin.isTTY,'private_pipe_required');assertEnvironment(process.env);assertRuntime();verifyStageSixClosure();
++ let size=0;for await(const p of process.stdin){size+=p.length;requireSafe(size<=8192,'private_input_limit');chunks.push(p);}
++ bytes=Buffer.concat(chunks);input=JSON.parse(bytes.toString('utf8'));requireSafe(Object.keys(input).sort().join(',')==='recoverySecretBase64,token','private_input_invalid');
++ token=input.token;key=decodeRecoverySecret(input.recoverySecretBase64);input.token=undefined;input.recoverySecretBase64=undefined;input=undefined;
++ const permit=issueStageSixBackupPermit();consumed=true;transport=createBackupTransport(token,{stageSixPermit:permit});token=undefined;
++ const result=await runBackupOnly({transport,store:createEncryptedStore(custodyRoot,verifyWindowsCustody),protector:dpapi,recoverySecret:key,expectedStage:6,mode:'remote-single-authorized-stage-six-backup'});
++ result.authorizationId=stageSixBackupId;
++ writeFileSync(stageSixBackupPrefix+'.result.json',JSON.stringify(result,null,2),{flag:'wx',mode:0o600});
++ console.log(JSON.stringify({status:result.verified&&result.cleanupComplete?'PASS':'FAIL',authorizationId:stageSixBackupId}));process.exitCode=result.verified&&result.cleanupComplete?0:2;
++}catch{
++ if(consumed)try{writeFileSync(stageSixBackupPrefix+'.result.json',JSON.stringify({status:'FAIL',authorizationId:stageSixBackupId}),{flag:'wx',mode:0o600});}catch{/* Preserve evidence; do not repeat. */}
++ console.log(JSON.stringify({status:stageSixBackupApproved?'FAIL':'BLOCKED',authorizationId:stageSixBackupId}));process.exitCode=2;
++}finally{
++ transport?.dispose();key?.fill(0);bytes?.fill(0);for(const p of chunks)p.fill(0);
++ // eslint-disable-next-line no-useless-assignment
++ token=undefined;
++ // eslint-disable-next-line no-useless-assignment
++ input=undefined;
++ delete process.env.CLOUDFLARE_API_TOKEN;
++}
+
+
+diff --git a/infra/cloudflare/dev/scripts/d1-backup-six-status.mjs b/infra/cloudflare/dev/scripts/d1-backup-six-status.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/d1-backup-six-status.mjs
+@@ -0,0 +1,5 @@
++import {existsSync} from 'node:fs';
++import {stageSixBackupApproved,stageSixBackupId,stageSixBackupPrefix} from './safe-d1/backup-six-permit.mjs';
++import {target,migrations} from './safe-d1/policy.mjs';
++import {stageSixFingerprint} from './safe-d1/backup-stage-six.mjs';
++console.log(JSON.stringify({authorizationId:stageSixBackupId,executionApproved:stageSixBackupApproved,intendedPermission:'D1 Read + D1 Write',target,expectedStage:6,applicationTables:32,expectedHistory:migrations.map(m=>m.name),expectedFingerprint:stageSixFingerprint,alreadyUsed:existsSync(stageSixBackupPrefix+'.attempt.json')||existsSync(stageSixBackupPrefix+'.result.json')}));
+
+
+diff --git a/infra/cloudflare/dev/next-stage/bootstrap-authorization.json b/infra/cloudflare/dev/next-stage/bootstrap-authorization.json
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/next-stage/bootstrap-authorization.json
+@@ -0,0 +1,20 @@
++{
++  "purpose": "single-operator-first-super-admin-only",
++  "environment": "development",
++  "executionId": null,
++  "approved": false,
++  "target": {"account":"7a8bcd7992a3de359d2aff87df2fb693","id":"c5cfbe44-4fd0-4c2a-83c1-b833935534ba","name":"kuwago-admin-db-development"},
++  "authorizationReference": null,
++  "sourceSetSha256": null,
++  "batchSha256": null,
++  "identitySha256": null,
++  "baselineFingerprint": "1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5",
++  "stageSixBackupEvidenceSha256": null,
++  "stageSixBackupOperationId": null,
++  "stageSixBackupCipherSha256": null,
++  "stage": 6,
++  "maximumBatches": 1,
++  "migrationsAllowed": false,
++  "exportsAllowed": false,
++  "deploymentsAllowed": false
++}
+
+
+diff --git a/infra/cloudflare/dev/next-stage/stage-six-backup-proposal.json b/infra/cloudflare/dev/next-stage/stage-six-backup-proposal.json
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/next-stage/stage-six-backup-proposal.json
+@@ -0,0 +1,19 @@
++{
++  "purpose": "backup-only-post-0006-before-first-super-admin",
++  "executionId": "17fe22b3-a7bf-4a86-954b-f4d7c35a7db6",
++  "approved": false,
++  "expectedStage": 6,
++  "expectedApplicationTables": 32,
++  "expectedFingerprint": "1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5",
++  "expectedHistory": ["0001_admin_catalog.sql","0002_integrity_guards.sql","0003_access_rbac.sql","0004_catalog_operations.sql","0005_publication_resilience.sql","0006_media_lifecycle.sql"],
++  "target": {"account":"7a8bcd7992a3de359d2aff87df2fb693","id":"c5cfbe44-4fd0-4c2a-83c1-b833935534ba","name":"kuwago-admin-db-development"},
++  "maximumExportStarts": 1,
++  "intendedPermission": "D1 Read + D1 Write (export-only tool scope; no SQL writes)",
++  "custody": "C:\\Users\\JV\\AppData\\Local\\Kuwago\\D1Backups\\development",
++  "encryption": "existing AES-256-GCM with DPAPI and existing recovery material",
++  "requireBookmark": true,
++  "requireExactIsolatedRestore": true,
++  "preserveAllPriorBackups": true,
++  "migrationsAllowed": false,
++  "bootstrapAllowed": false
++}
+
+
+diff --git a/infra/cloudflare/dev/test/bootstrap-durable.test.mjs b/infra/cloudflare/dev/test/bootstrap-durable.test.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/test/bootstrap-durable.test.mjs
+@@ -0,0 +1,131 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {readFileSync,mkdirSync,mkdtempSync,existsSync,writeFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {randomUUID} from 'node:crypto';
++import {spawnSync} from 'node:child_process';
++import {generateKeyPair,exportJWK,SignJWT} from 'jose';
++import {localDatabase} from './auth-fixtures.mjs';
++import {ledgerSql,migrations,target,root,schemaQuery} from '../scripts/safe-d1/policy.mjs';
++import {createReader} from '../scripts/safe-d1/read.mjs';
++import {snapshotFingerprint,identifier} from '../scripts/safe-d1/snapshot.mjs';
++import {devAccess,expectedSubject,recipientEmail,verifyBootstrapRecipient,prepareSingleOperatorBootstrap} from '../scripts/single-operator-bootstrap.mjs';
++import {createBootstrapJournal} from '../scripts/safe-d1/bootstrap-journal.mjs';
++import {scopeForBootstrap,issueBootstrapPermit,bootstrapExecutionApproved} from '../scripts/safe-d1/bootstrap-permit.mjs';
++import {createTransport,consumeBootstrapAcknowledgement} from '../scripts/safe-d1/transport.mjs';
++import {verifySimulationRecovery,bootstrapRecoveryState,loadBootstrapRecovery} from '../scripts/safe-d1/bootstrap-recovery.mjs';
++import {runBootstrap} from '../scripts/safe-d1/bootstrap-runner.mjs';
++import {projectBootstrap} from '../scripts/safe-d1/bootstrap-oracle.mjs';
++import {validateStageSixSnapshot,verifyStageSixClosure} from '../scripts/safe-d1/backup-stage-six.mjs';
++import {projectCompletion} from '../scripts/safe-d1/completion-oracle.mjs';
++import {custodyRoot} from '../scripts/safe-d1/windows-custody.mjs';
++import {stageSixBackupApproved,issueStageSixBackupPermit} from '../scripts/safe-d1/backup-six-permit.mjs';
++
++const parent=resolve(root,'.wrangler/bootstrap-directed-tests');mkdirSync(parent,{recursive:true});
++const keys=await generateKeyPair('RS256'),jwk={...await exportJWK(keys.publicKey),kid:'synthetic-bootstrap-directed',alg:'RS256'};
++async function fixture(options={}){
++ const f=await localDatabase(),executionId=randomUUID(),directory=mkdtempSync(resolve(parent,'run-'));
++ try{
++  await f.db.batch([f.db.prepare(ledgerSql),...migrations.map(m=>f.db.prepare('INSERT INTO d1_migrations(name) VALUES (?)').bind(m.name))]);
++  const reader=createReader({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async q=>(await f.db.prepare(q).all()).results}),preflight=await reader.inspect(6),snapshot=await reader.snapshot();
++  const now=Math.floor(Date.now()/1000),token=await new SignJWT({iss:devAccess.issuer,aud:devAccess.audience,sub:expectedSubject,email:recipientEmail,iat:now,exp:now+600}).setProtectedHeader({alg:'RS256',kid:jwk.kid}).sign(keys.privateKey);
++  const identity=await verifyBootstrapRecipient(new Request('https://synthetic.invalid',{headers:{'Cf-Access-Jwt-Assertion':token}}),{fetcher:async()=>Response.json({keys:[jwk]})});
++  const plan=prepareSingleOperatorBootstrap({preflight,snapshot,expectedFingerprint:snapshotFingerprint(snapshot.snapshot),identity,executionId,authorizationReference:'a'.repeat(64)});
++  // Export a synthetic local D1 snapshot into SQL only in memory, then use the
++  // existing isolated SQLite restorer to establish the simulation recovery proof.
++  const raw=(await f.db.prepare(schemaQuery).all()).results.filter(r=>!['_cf_KV','_cf_METADATA'].includes(r.name));
++  const statements=['PRAGMA defer_foreign_keys=TRUE',...raw.filter(r=>r.type==='table').map(r=>r.sql)];
++  const literal=cell=>{const [type,hex]=cell.split(':');return type==='null'?'NULL':type==='text'?`CAST(X'${hex}' AS TEXT)`:type==='blob'?`X'${hex}'`:Buffer.from(hex,'hex').toString('utf8');};
++  for(const table of snapshot.snapshot.tables){if(table.name==='sqlite_sequence')statements.push('DELETE FROM sqlite_sequence');for(const row of table.rows)statements.push(`INSERT INTO ${identifier(table.name)} (${table.columns.map(identifier).join(',')}) VALUES (${row.map(literal).join(',')})`);}
++  statements.push(...raw.filter(r=>r.type!=='table').map(r=>r.sql));
++  const sql=Buffer.from(statements.join(';\n')+';'),recovery=await verifySimulationRecovery(sql,plan.baselineFingerprint);sql.fill(0);
++  const recoveryState=bootstrapRecoveryState(recovery,'local-simulation'),scope={...scopeForBootstrap(plan,recoveryState.evidenceSha256),environment:'local-simulation'};
++  const journal=createBootstrapJournal({root:directory,environment:'local-simulation',executionId});
++  let writes=0,books=0,disposed=false;
++  const base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
++  const transport=createTransport('synthetic_test_credential_not_real_12345',{simulationBootstrapScope:scope,bootstrapJournal:journal,simulationFetch:async(url,opts)=>{
++   assert.ok(url===base||url===base+'/query'||url===base+'/time_travel/bookmark');const ok=result=>Response.json({success:true,result});
++   if(url===base)return ok({uuid:options.wrongTarget?'incorrect':target.id,name:target.name,version:'production'});
++   if(url.endsWith('/time_travel/bookmark')){books++;const n=options.bookmarkRace&&books>=5?2:writes?3:1;return ok({bookmark:`00000001-00000002-0000000${n}-00000000000000000000000000000000`});}
++   const body=JSON.parse(opts.body);
++   if(body.batch){
++    writes++;const intent=resolve(directory,'bootstrap-'+executionId+'.intent.json');assert.equal(existsSync(intent),true);
++    const durable=JSON.parse(readFileSync(intent));assert.equal(durable.scope.batchSha256,plan.batchSha256);
++    if(options.atomicRace)await f.db.prepare("INSERT INTO categories(id,slug) VALUES ('concurrent','concurrent')").run();
++    const result=await f.db.batch(body.batch.map(s=>f.db.prepare(s.sql).bind(...s.params)));
++    if(options.ambiguous)throw Error('synthetic ambiguous response after commit');
++    if(options.corruptCheckpoint)writeFileSync(resolve(directory,'bootstrap-'+executionId+'.postflight.private.json'),'occupied');
++    if(options.badIdentity)result[plan.readbackStart].results[0].subject='wrong';
++    return ok(result);
++   }
++   return ok([await f.db.prepare(body.sql).bind(...body.params).all()]);
++  }});
++  const wrapped=new Proxy(transport,{get(t,k){if(k==='dispose')return ()=>{disposed=true;t.dispose();};return t[k];}});
++  // ACK ownership is tied to the real transport object; runner uses it directly.
++  return {...f,plan,recovery,scope,journal,transport,directory,executionId,wrapped,get writes(){return writes;},get disposed(){return disposed;},run:()=>runBootstrap({transport,plan,recovery,journal,scope})};
++ }catch(error){await f.mf.dispose();throw error;}
++}
++test('durable bootstrap: fixed target, single request, verified independent oracle and durable closure',async()=>{
++ const f=await fixture();try{
++  const r=await f.run();assert.equal(r.status,'PASS',JSON.stringify(r));assert.equal(r.durablyClosed,true);assert.equal(f.writes,1);
++  const prefix=resolve(f.directory,'bootstrap-'+f.executionId);assert.equal(JSON.parse(readFileSync(prefix+'.closed.json')).executionId,f.executionId);
++  assert.equal(JSON.parse(readFileSync(prefix+'.request-invocation.json')).meaning,'about-to-invoke-fetch; not confirmation of server receipt');
++  await assert.rejects(f.transport.applyBatch(f.plan.statements));assert.equal(f.writes,1);
++  assert.notEqual((await f.run()).status,'PASS');assert.equal(f.writes,1);
++ }finally{await f.mf.dispose();}
++});
++test('durable bootstrap: target mismatch, bookmark race and SQL concurrent change stop without retries',async()=>{
++ for(const options of [{wrongTarget:true},{bookmarkRace:true},{atomicRace:true}]){const f=await fixture(options);try{
++  const r=await f.run();assert.notEqual(r.status,'PASS');assert.equal(r.durablyClosed,false);assert.equal(f.writes,options.atomicRace?1:0);
++  assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM administrator_roles').first()).n,0);
++ }finally{await f.mf.dispose();}}
++});
++test('durable bootstrap: commit with ambiguous response, bad readback or checkpoint collision never claims PASS or retries',async()=>{
++ for(const options of [{ambiguous:true},{badIdentity:true},{corruptCheckpoint:true}]){const f=await fixture(options);try{
++  const r=await f.run();assert.equal(r.status,'UNCERTAIN_OR_POSTFLIGHT_FAILED');assert.equal(r.requiresReadOnlyReconciliation,true);assert.equal(f.writes,1);
++  assert.equal(r.intentionRecorded,true);assert.equal(r.requestInvocationRecorded,true);
++  assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM administrator_roles').first()).n,1);
++  assert.equal(existsSync(resolve(f.directory,'bootstrap-'+f.executionId+'.closed.json')),false);
++  assert.notEqual((await f.run()).status,'PASS');assert.equal(f.writes,1);
++ }finally{await f.mf.dispose();}}
++});
++test('capabilities: remote gate/backup missing; no exports, arbitrary SQL, forged recovery or changed scope',async()=>{
++ assert.equal(bootstrapExecutionApproved,false);assert.throws(()=>issueBootstrapPermit({},'a'.repeat(64)),/not_authorized/);
++ await assert.rejects(loadBootstrapRecovery(),/stage_six_backup_missing/);
++ const child=spawnSync(process.execPath,[resolve(root,'scripts/d1-bootstrap-private.mjs')],{input:'not a credential',encoding:'utf8',env:{SystemRoot:process.env.SystemRoot,PATH:process.env.PATH}});
++ assert.equal(child.status,2);assert.equal(JSON.parse(child.stdout).status,'BLOCKED');
++ assert.equal(stageSixBackupApproved,false);assert.throws(()=>issueStageSixBackupPermit(),/not_authorized/);
++ const backupChild=spawnSync(process.execPath,[resolve(root,'scripts/d1-backup-six-private.mjs')],{input:'not a credential',encoding:'utf8',env:{SystemRoot:process.env.SystemRoot,PATH:process.env.PATH}});
++ assert.equal(backupChild.status,2);assert.equal(JSON.parse(backupChild.stdout).status,'BLOCKED');
++ assert.throws(()=>createTransport('synthetic_test_credential_not_real_12345',{simulationBootstrapScope:{}}),/simulation_transport_required/);
++ const f=await fixture();try{
++  await assert.rejects(async()=>f.transport.fullExport('unused'));
++  await assert.rejects(f.transport.applyBatch([{sql:'DELETE FROM principals',params:[]}]));
++  await assert.rejects(f.transport.bootstrapSelect(f.plan,'SELECT * FROM principals',[]));
++  assert.throws(()=>bootstrapRecoveryState(f.recovery,'development'));
++  assert.throws(()=>consumeBootstrapAcknowledgement({}, {transport:f.transport,scope:f.scope}));
++  assert.throws(()=>projectBootstrap(f.plan,{stage:6,executionId:'wrong',batchSha256:f.plan.batchSha256}));
++  const r=await runBootstrap({transport:f.transport,plan:f.plan,recovery:{},journal:f.journal,scope:f.scope});assert.equal(r.status,'STOPPED_BEFORE_SEND');assert.equal(f.writes,0);
++ }finally{await f.mf.dispose();}
++});
++test('bootstrap ACK binds transport, environment, execution, stage, batch and source hash, and is consumed once',async()=>{
++ const f=await fixture();try{
++  f.journal.begin(f.scope);f.journal.write('intent',{scope:f.scope});await f.transport.applyBatch(f.plan.statements);
++  const receipt=f.transport.writeAcknowledgement();
++  for(const changed of [{environment:'development'},{executionId:randomUUID()},{batchSha256:'f'.repeat(64)},{sourceSetSha256:'f'.repeat(64)}])assert.throws(()=>consumeBootstrapAcknowledgement(receipt,{transport:f.transport,scope:{...f.scope,...changed}}));
++  assert.throws(()=>consumeBootstrapAcknowledgement(receipt,{transport:{},scope:f.scope}));
++  const ack=consumeBootstrapAcknowledgement(receipt,{transport:f.transport,scope:f.scope});assert.equal(ack.stage,6);
++  assert.throws(()=>consumeBootstrapAcknowledgement(receipt,{transport:f.transport,scope:f.scope}));
++  const expected=projectBootstrap(f.plan,ack),snapshot=await createReader(f.transport).snapshot();assert.equal(snapshotFingerprint(expected.snapshot),snapshotFingerprint(snapshot.snapshot));
++ }finally{f.transport.dispose();await f.mf.dispose();}
++});
++test('stage-six recovery profile validates real closure locally, does not call remote, rejects stage-four/fingerprint mismatch',async()=>{
++ const proof=verifyStageSixClosure();assert.equal(proof.stage,6);assert.equal(proof.fullBackup,false);
++ assert.throws(()=>validateStageSixSnapshot({stage:4,snapshot:{schema:[],tables:[]}}));
++ const f=await fixture();try{assert.throws(()=>validateStageSixSnapshot(f.plan.baselineSnapshot),/fingerprint_mismatch/);}finally{await f.mf.dispose();}
++ const plan=JSON.parse(readFileSync(resolve(root,'next-stage/development-plan.json'))),prefix=resolve(custodyRoot,'migration-0005-0006-'+plan.migrationEvidence.executionId);
++ const ack5=JSON.parse(readFileSync(prefix+'.stage-5.ack.json')),ack6=JSON.parse(readFileSync(prefix+'.stage-6.ack.json'));
++ const p5=await projectCompletion(ack5),p6=await projectCompletion(ack6,p5.generated);
++ assert.equal(validateStageSixSnapshot(p6.expected).applicationTables,32);
++ assert.equal(snapshotFingerprint(p6.expected.snapshot),plan.migrationEvidence.fingerprint);
++});
+
+
+diff --git a/infra/cloudflare/dev/test/backup-stage-six-directed.test.mjs b/infra/cloudflare/dev/test/backup-stage-six-directed.test.mjs
+new file mode 100644
+--- /dev/null
++++ b/infra/cloudflare/dev/test/backup-stage-six-directed.test.mjs
+@@ -0,0 +1,65 @@
++// One missing integration proof: exact stage-6 profile through the existing
++// backup-only encryption/isolated-restore pipeline. All HTTP is simulated.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {readFileSync,mkdirSync,mkdtempSync} from 'node:fs';
++import {resolve,dirname} from 'node:path';
++import {randomBytes} from 'node:crypto';
++import {localDatabase} from './auth-fixtures.mjs';
++import {withCompletionSql} from '../scripts/safe-d1/completion-backup.mjs';
++import {approvedSources,migrations,root,target,schemaQuery} from '../scripts/safe-d1/policy.mjs';
++import {splitMigration} from '../scripts/safe-d1/sql.mjs';
++import {custodyRoot,dpapi} from '../scripts/safe-d1/windows-custody.mjs';
++import {createBackupTransport} from '../scripts/safe-d1/backup-transport.mjs';
++import {createEncryptedStore} from '../scripts/safe-d1/encrypted-store.mjs';
++import {runBackupOnly} from '../scripts/safe-d1/backup-only.mjs';
++import {stageSixFingerprint} from '../scripts/safe-d1/backup-stage-six.mjs';
++import {snapshotFingerprint,captureDatabase,identifier} from '../scripts/safe-d1/snapshot.mjs';
++
++test('stage-six backup-only: simulated export, exact pinned baseline, encryption and isolated restoration; no remote writes',async()=>{
++ const f=await localDatabase({},0),sources=approvedSources(),e=JSON.parse(readFileSync(resolve(root,'next-stage/development-plan.json'))).migrationEvidence;
++ const ack=JSON.parse(readFileSync(resolve(custodyRoot,'migration-0005-0006-'+e.executionId+'.stage-6.ack.json')));
++ let clearSql,exportStarts=0,remoteWrites=0;const recoverySecret=randomBytes(32);
++ try{
++  await withCompletionSql(async bytes=>{
++   const parts=[bytes.toString('utf8')];
++   for(const stage of [5,6]){
++    parts.push(sources[stage-1]);
++    const history=ack.completionOutput.history[stage-1];
++    assert.match(history.applied_at,/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
++    parts.push(`INSERT INTO d1_migrations(id,name,applied_at) VALUES (${stage},'${migrations[stage-1].name}','${history.applied_at}');`);
++    if(stage===5){const epoch=ack.completionOutput.control[0].epoch;assert.match(epoch,/^[a-f0-9]{32}$/);parts.push(`UPDATE publication_control SET epoch='${epoch}' WHERE id=1;`);}
++   }
++   clearSql=Buffer.from(parts.join('\n'));
++   await f.db.batch(splitMigration(clearSql.toString('utf8')).map(sql=>f.db.prepare(sql)));
++  });
++  const expected=await captureDatabase({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async sql=>(await f.db.prepare(sql).all()).results});
++  assert.equal(snapshotFingerprint(expected.snapshot),stageSixFingerprint);
++  // Model an official full dump of the final schema, NOT a migration script.
++  // The isolated restorer correctly forbids ALTER/UPDATE and SELECT statements.
++  const schema=(await f.db.prepare(schemaQuery).all()).results.filter(r=>!['_cf_KV','_cf_METADATA'].includes(r.name));
++  const dump=['PRAGMA defer_foreign_keys=TRUE',...schema.filter(r=>r.type==='table').map(r=>r.sql)];
++  const literal=cell=>{const [type,hex]=cell.split(':');return type==='null'?'NULL':type==='text'?`CAST(X'${hex}' AS TEXT)`:type==='blob'?`X'${hex}'`:Buffer.from(hex,'hex').toString('utf8');};
++  for(const table of expected.snapshot.tables){if(table.name==='sqlite_sequence')dump.push('DELETE FROM sqlite_sequence');for(const row of table.rows)dump.push(`INSERT INTO ${identifier(table.name)} (${table.columns.map(identifier).join(',')}) VALUES (${row.map(literal).join(',')})`);}
++  dump.push(...schema.filter(r=>r.type!=='table').map(r=>r.sql));
++  clearSql.fill(0);clearSql=Buffer.from(dump.join(';\n')+';');
++  const base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`,bookmark='00000001-00000002-00000003-00000000000000000000000000000000';
++  const transport=createBackupTransport('synthetic_test_credential_not_real_12345',{simulationFetch:async(url,options)=>{
++   const ok=result=>Response.json({success:true,result});
++   if(url===base)return ok({uuid:target.id,name:target.name,version:'production'});
++   if(url===base+'/time_travel/bookmark')return ok({bookmark});
++   if(url===base+'/query'){const body=JSON.parse(options.body);assert.equal(body.batch,undefined);if(!/^(SELECT|PRAGMA)\b/.test(body.sql))remoteWrites++;return ok([await f.db.prepare(body.sql).all()]);}
++   if(url===base+'/export'){exportStarts++;return ok({success:true,type:'export',status:'complete',at_bookmark:bookmark,result:{signed_url:'https://synthetic-stage-six.r2.cloudflarestorage.com/proof.sql?X-Amz-Signature=synthetic'}});}
++   if(url.startsWith('https://synthetic-stage-six.r2.cloudflarestorage.com/'))return new Response(clearSql);
++   throw Error('unexpected_simulated_request');
++  }});
++  const parent=resolve(root,'.wrangler/stage-six-backup-directed');mkdirSync(parent,{recursive:true});
++  const store=createEncryptedStore(mkdtempSync(resolve(parent,'run-')),async()=>{});
++  const result=await runBackupOnly({transport,store,protector:dpapi,recoverySecret,mode:'local-simulation-stage-six-only',expectedStage:6,environment:{}});
++  assert.equal(result.status,'verified',JSON.stringify({status:result.status,step:result.step,errorCode:result.errorCode}));
++  assert.equal(result.sourceStage,6);assert.equal(result.applicationTables,32);assert.equal(result.historyEntries,6);assert.equal(result.exactSnapshotComparison,true);
++  assert.equal(result.cleanupComplete,true);assert.equal(result.credentialDisposed,true);assert.equal(exportStarts,1);assert.equal(remoteWrites,0);
++  const evidence=JSON.parse(readFileSync(resolve(dirname(result.artifact),'evidence.json')));assert.equal(evidence.restoreVerified,true);assert.equal(evidence.sourceStage,6);
++  assert.ok(recoverySecret.every(n=>n===0));
++ }finally{clearSql?.fill(0);recoverySecret.fill(0);await f.mf.dispose();}
++});
+
+
+FIN. Toda operacion remota continua bloqueada.

@@ -1,0 +1,5 @@
+# Preserve reviewed source bytes and migration hashes across platforms.
+/apps/** -text
+/infra/** -text
+/packages/** -text
+/docs/** -text

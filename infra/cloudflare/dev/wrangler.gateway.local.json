@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kuwago-admin-gateway-local-only",
+  "main": "src/gateway.ts",
+  "compatibility_date": "2026-07-30",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "send_metrics": false,
+  "observability": {"enabled": false},
+  "dev": {"ip": "127.0.0.1", "port": 8795, "local_protocol": "http"},
+  "assets": {"directory": "../../../apps/admin/dist", "binding": "ASSETS", "run_worker_first": true, "html_handling": "none", "not_found_handling": "none"},
+  "env": {
+    "development": {
+      "name": "kuwago-admin-gateway-local-only-development",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "vars": {"APP_ENV": "development", "ACCESS_ISSUER": "", "ACCESS_AUD": "", "ADMIN_ORIGIN": ""},
+      "services": [{"binding": "ADMIN_API", "service": "kuwago-admin-api-local-only-development", "remote": false}]
+    }
+  }
+}

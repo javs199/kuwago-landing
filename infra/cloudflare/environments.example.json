@@ -1,0 +1,100 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_PROVISIONED",
+  "reviewDate": "2026-10-23",
+  "unresolved": [
+    "verified Cloudflare account and subscription",
+    "production account isolation decision",
+    "DNS and mail inventory including DKIM/CAA/DNSSEC",
+    "distinct Access audiences and identity provider",
+    "approval of costs and retention"
+  ],
+  "environments": {
+    "development": {
+      "accountId": null,
+      "d1DatabaseId": null,
+      "accessIssuer": null,
+      "proposedHosts": {
+        "admin": "admin-dev.grupokuwago.com",
+        "api": "api-dev.grupokuwago.com"
+      },
+      "workers": {
+        "catalog": "kuwago-catalog-development",
+        "adminWeb": "kuwago-admin-web-development",
+        "adminApi": "kuwago-admin-api-development"
+      },
+      "d1": "kuwago-admin-db-development",
+      "buckets": {
+        "privateMedia": "kuwago-media-private-development",
+        "publication": "kuwago-publication-development",
+        "backups": "kuwago-backups-development"
+      },
+      "accessApplication": "kuwago-admin-access-development",
+      "ciCredentialReference": "CLOUDFLARE_API_TOKEN_DEVELOPMENT",
+      "localStateDirectory": ".wrangler/state/development",
+      "remoteApproved": false,
+      "accessAudiences": {
+        "admin": null,
+        "catalog": null
+      },
+      "catalogAccessApplication": "kuwago-catalog-access-development"
+    },
+    "staging": {
+      "accountId": null,
+      "d1DatabaseId": null,
+      "accessIssuer": null,
+      "proposedHosts": {
+        "admin": "admin-staging.grupokuwago.com",
+        "api": "api-staging.grupokuwago.com"
+      },
+      "workers": {
+        "catalog": "kuwago-catalog-staging",
+        "adminWeb": "kuwago-admin-web-staging",
+        "adminApi": "kuwago-admin-api-staging"
+      },
+      "d1": "kuwago-admin-db-staging",
+      "buckets": {
+        "privateMedia": "kuwago-media-private-staging",
+        "publication": "kuwago-publication-staging",
+        "backups": "kuwago-backups-staging"
+      },
+      "accessApplication": "kuwago-admin-access-staging",
+      "ciCredentialReference": "CLOUDFLARE_API_TOKEN_STAGING",
+      "localStateDirectory": ".wrangler/state/staging",
+      "remoteApproved": false,
+      "accessAudiences": {
+        "admin": null,
+        "catalog": null
+      },
+      "catalogAccessApplication": "kuwago-catalog-access-staging"
+    },
+    "production": {
+      "accountId": null,
+      "d1DatabaseId": null,
+      "accessIssuer": null,
+      "proposedHosts": {
+        "admin": "admin.grupokuwago.com",
+        "api": "api.grupokuwago.com"
+      },
+      "workers": {
+        "catalog": "kuwago-catalog-production",
+        "adminWeb": "kuwago-admin-web-production",
+        "adminApi": "kuwago-admin-api-production"
+      },
+      "d1": "kuwago-admin-db-production",
+      "buckets": {
+        "privateMedia": "kuwago-media-private-production",
+        "publication": "kuwago-publication-production",
+        "backups": "kuwago-backups-production"
+      },
+      "accessApplication": "kuwago-admin-access-production",
+      "ciCredentialReference": "CLOUDFLARE_API_TOKEN_PRODUCTION",
+      "localStateDirectory": ".wrangler/state/production",
+      "remoteApproved": false,
+      "accessAudiences": {
+        "admin": null,
+        "catalog": null
+      },
+      "catalogAccessApplication": null
+    }
+  }
+}

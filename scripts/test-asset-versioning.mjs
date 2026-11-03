@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { versionAssets } from './asset-versioning.mjs';
+import { versionAssets, versionModuleImports } from './asset-versioning.mjs';
 
 test('changed CSS and JS bypass stale caches while unchanged URLs stay stable', () => {
   const root = mkdtempSync(join(tmpdir(), 'kuwago-assets-'));
@@ -28,4 +28,24 @@ test('changed CSS and JS bypass stale caches while unchanged URLs stay stable', 
 test('PWA registration, installer, external resources and images keep their URLs', () => {
   const html = '<script src="/assets/js/pwa.js"></script><script src="/assets/js/pwa-install.js"></script><link href="/assets/css/pwa-install.css"><link href="https://example.com/style.css"><img src="assets/images/logo.svg">';
   assert.equal(versionAssets(html), html);
+});
+
+
+test('transitive module changes invalidate HTML entries and dependency URLs', () => {
+  const root=mkdtempSync(join(tmpdir(),'kuwago-modules-'));
+  try {
+    mkdirSync(join(root,'assets/js/contracts'),{recursive:true});
+    writeFileSync(join(root,'assets/js/entry.js'),"import {value} from './catalog.js';");
+    writeFileSync(join(root,'assets/js/catalog.js'),"import {value} from './contracts/public.js'; export {value};");
+    writeFileSync(join(root,'assets/js/contracts/public.js'),'export const value = 1;');
+    const html='<script type="module" src="assets/js/entry.js"></script>';
+    const first=versionAssets(html,root);
+    const moduleText="import {value} from './catalog.js';";
+    const before=versionModuleImports(moduleText,'assets/js/entry.js',root);
+    assert.match(before,/catalog\.js\?v=[a-f0-9]{12}/);
+    assert.equal(versionModuleImports(before,'assets/js/entry.js',root),before);
+    writeFileSync(join(root,'assets/js/contracts/public.js'),'export const value = 2;');
+    assert.notEqual(versionAssets(html,root),first);
+    assert.notEqual(versionModuleImports(moduleText,'assets/js/entry.js',root),before);
+  } finally { rmSync(root,{recursive:true,force:true}); }
 });

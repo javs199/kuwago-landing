@@ -1,0 +1,33 @@
+{
+  "algorithm": "SHA-256",
+  "migrations": [
+    {
+      "file": "0001_admin_catalog.sql",
+      "sha256": "33bd2451b568acf1c316fcc5355bca1e1cd87deacace72d3819233a00e670abd"
+    },
+    {
+      "file": "0002_integrity_guards.sql",
+      "sha256": "47abe773445a464a7a25b412a11d35799aa1a704e14d6b7846885dff35d41ed4"
+    },
+    {
+      "file": "0003_access_rbac.sql",
+      "sha256": "19ba25557c88f509927cd1fea912da3d3d4a815b56733e310be51dd155719336"
+    },
+    {
+      "file": "0004_catalog_operations.sql",
+      "sha256": "dfa41753ca3e91628077ceec2557ec8d77a02ef59062439e8adaf7780a19550b"
+    },
+    {
+      "file": "0005_publication_resilience.sql",
+      "sha256": "464b69f3df0a5e85ff960a95aa937c718a69578aaf1235b877e6130381354d3a"
+    },
+    {
+      "file": "0006_media_lifecycle.sql",
+      "sha256": "ed8fcd76c51fc8050c5b5bd676e4eb98323b62e81fc312e99589bcdb9314ac4c"
+    },
+    {
+      "file": "0007_single_operator_approval.sql",
+      "sha256": "9faa376529152202d4df5f2c052c0fcaf2f8849cb6513c1e0b904188731074d9"
+    }
+  ]
+}

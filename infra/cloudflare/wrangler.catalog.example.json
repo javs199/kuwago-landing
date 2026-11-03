@@ -1,0 +1,116 @@
+{
+  "name": "kuwago-catalog-disabled",
+  "main": "__BLOCKED_UNIMPLEMENTED_CATALOG_ENTRYPOINT__.ts",
+  "compatibility_date": "2026-10-23",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "upload_source_maps": false,
+  "observability": {
+    "enabled": false
+  },
+  "vars": {
+    "APP_ENV": "unselected",
+    "DEPLOYMENT_STATE": "disabled"
+  },
+  "env": {
+    "development": {
+      "name": "kuwago-catalog-development",
+      "account_id": "__REQUIRED_DEVELOPMENT_ACCOUNT_ID__",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "observability": {
+        "enabled": false
+      },
+      "limits": {
+        "cpu_ms": 50
+      },
+      "vars": {
+        "APP_ENV": "development",
+        "DEPLOYMENT_STATE": "disabled",
+        "MUTATIONS_ENABLED": "false",
+        "EXPECTED_HOST": "api-dev.grupokuwago.com",
+        "API_SCHEMA_VERSION": "1",
+        "CATALOG_MANIFEST_KEY": "catalog/v1/current.json",
+        "REQUIRE_ACCESS_JWT": "true",
+        "ACCESS_ISSUER": "",
+        "ACCESS_AUD": ""
+      },
+      "r2_buckets": [
+        {
+          "binding": "PUBLICATION",
+          "bucket_name": "kuwago-publication-development",
+          "remote": false
+        }
+      ]
+    },
+    "staging": {
+      "name": "kuwago-catalog-staging",
+      "account_id": "__REQUIRED_STAGING_ACCOUNT_ID__",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "observability": {
+        "enabled": false
+      },
+      "limits": {
+        "cpu_ms": 50
+      },
+      "vars": {
+        "APP_ENV": "staging",
+        "DEPLOYMENT_STATE": "disabled",
+        "MUTATIONS_ENABLED": "false",
+        "EXPECTED_HOST": "api-staging.grupokuwago.com",
+        "API_SCHEMA_VERSION": "1",
+        "CATALOG_MANIFEST_KEY": "catalog/v1/current.json",
+        "REQUIRE_ACCESS_JWT": "true",
+        "ACCESS_ISSUER": "",
+        "ACCESS_AUD": ""
+      },
+      "r2_buckets": [
+        {
+          "binding": "PUBLICATION",
+          "bucket_name": "kuwago-publication-staging",
+          "remote": false
+        }
+      ]
+    },
+    "production": {
+      "name": "kuwago-catalog-production",
+      "account_id": "__REQUIRED_PRODUCTION_ACCOUNT_ID__",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "observability": {
+        "enabled": false
+      },
+      "limits": {
+        "cpu_ms": 50
+      },
+      "vars": {
+        "APP_ENV": "production",
+        "DEPLOYMENT_STATE": "disabled",
+        "MUTATIONS_ENABLED": "false",
+        "EXPECTED_HOST": "api.grupokuwago.com",
+        "API_SCHEMA_VERSION": "1",
+        "CATALOG_MANIFEST_KEY": "catalog/v1/current.json",
+        "REQUIRE_ACCESS_JWT": "false",
+        "ACCESS_ISSUER": "",
+        "ACCESS_AUD": ""
+      },
+      "r2_buckets": [
+        {
+          "binding": "PUBLICATION",
+          "bucket_name": "kuwago-publication-production",
+          "remote": false
+        }
+      ]
+    }
+  },
+  "dev": {
+    "ip": "127.0.0.1",
+    "port": 8788,
+    "local_protocol": "http"
+  }
+}

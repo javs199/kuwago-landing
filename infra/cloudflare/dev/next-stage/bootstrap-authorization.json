@@ -1,0 +1,28 @@
+{
+  "purpose": "single-operator-first-super-admin-only",
+  "environment": "development",
+  "executionId": "264309c0-5461-41ed-b4c0-d89604a69f9b",
+  "approved": false,
+  "target": {
+    "account": "7a8bcd7992a3de359d2aff87df2fb693",
+    "id": "c5cfbe44-4fd0-4c2a-83c1-b833935534ba",
+    "name": "kuwago-admin-db-development"
+  },
+  "authorizationReference": "f5401e8f8e8cfd8ed460cb84a128b09ec0c590aebdcfa0cb6872c24ce90dcc47",
+  "sourceSetSha256": "90b433e143c54fafaf34beff691dfba339cf5d234e8d703e8495f136b0a77875",
+  "batchSha256": "9cdf0accd945857a2f0138a34c86ca53ac27813b9729c2f73e06ab35ef17506d",
+  "identitySha256": "50ecb70e91cff2f415ef91cce61df25116537a0e799020a221b2af5beb7bd6b2",
+  "baselineFingerprint": "1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5",
+  "stageSixBackupEvidenceSha256": "24d82b43a54732dbbd369f3f429852f50af9bc74e1c4b241b1c3f3d276978ab2",
+  "stageSixBackupOperationId": "1098a954-90fc-4366-b82c-808fd047262a",
+  "stageSixBackupCipherSha256": "06813068357b65049988cca2e6fa3b2d0b4de9eef247faae78af9bf8b9114d23",
+  "stage": 6,
+  "maximumBatches": 1,
+  "migrationsAllowed": false,
+  "exportsAllowed": false,
+  "deploymentsAllowed": false,
+  "consumed": true,
+  "outcome": "PASS",
+  "closedAt": "2026-10-27T21:35:10.960Z",
+  "closedEvidenceSha256": "09d895afb779ee61d84e1605a32ea0989df010c251c16f119f6f2b25f9676793"
+}

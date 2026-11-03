@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kuwago-admin-api-local-only",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-30",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "dev": { "ip": "127.0.0.1", "port": 8790, "local_protocol": "http" },
+  "send_metrics": false,
+  "observability": { "enabled": false },
+  "env": {
+    "development": {
+      "name": "kuwago-admin-api-local-only-development",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "vars": { "APP_ENV": "development", "EXECUTION_MODE": "local-only", "MUTATIONS_ENABLED": "true", "ACCESS_ISSUER": "", "ACCESS_AUD": "", "ADMIN_ORIGIN": "" },
+      "d1_databases": [{ "binding": "DB", "database_name": "kuwago-admin-db-development", "migrations_dir": "../../../packages/database/migrations", "remote": false }],
+      "r2_buckets": [
+        { "binding": "PRIVATE_MEDIA", "bucket_name": "kuwago-media-development", "remote": false },
+        { "binding": "PUBLICATION", "bucket_name": "kuwago-publication-local-development", "remote": false }
+      ]
+    }
+  }
+}

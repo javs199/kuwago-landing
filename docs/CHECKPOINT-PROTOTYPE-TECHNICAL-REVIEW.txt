@@ -1,0 +1,658 @@
+KUWAGO — RESUMEN TÉCNICO PARA REVISIÓN DEL PROTOTIPO DE CHECKPOINT
+Fecha: 25/10/2026, America/Costa_Rica
+Estado: PROTOTIPO LOCAL, NO HABILITADO PARA EJECUCIÓN REMOTA.
+
+1. ALCANCE Y PROCEDENCIA DEL DIFF
+
+Se revisa captureOwnedWriteCheckpoint(), su recibo local de ACK, la reconstrucción
+independiente del estado esperado y las tres pruebas específicas ya ejecutadas.
+No se modificó código funcional para este resumen. No se hicieron pruebas nuevas,
+consultas remotas, exportaciones, migraciones, activaciones, commit o push.
+
+IMPORTANTE: los cuatro archivos del prototipo siguen sin estar versionados.
+Por tanto NO existe en HEAD un antes de esos archivos ni una base histórica Git
+que permita certificar un diff mínimo aislado de esta función. Se entrega el diff
+unificado EXACTO disponible contra HEAD: alta completa de cada archivo desde
+/dev/null. Esto incluye código previo de transporte y de reconciliación en los
+archivos compartidos. No se inventó una versión anterior ni se presenta una
+reconstrucción manual como historial verificable. Los hashes y tamaños permiten
+identificar los bytes concretos revisados. Los anexos de dependencias son contexto
+actual; no se afirma que hayan cambiado por incorporar el prototipo.
+
+HEAD de referencia: 26055d6c71a091bea990d2f002e921504e71cd7c
+Raíz del repositorio: C:\Users\JV\Desktop\Kuwago Landing\grupo-kuwago-landing-source
+
+2. PROBLEMA QUE MOTIVA EL PROTOTIPO
+
+0004 se ejecutó una sola vez. En el intento anterior se completó inspect(4), pero
+los bookmarks Time Travel de las lecturas 191 y 254, ambos posteriores a la
+escritura, fueron distintos. La guarda detuvo el cierre del postflight y no inició
+0005/0006. No se conoce la causa histórica de esa desigualdad; no se atribuye
+arbitrariamente a la escritura propia ni se considera inocua por definición.
+
+La reconciliación remota posterior, exclusivamente de lectura, confirmó identidad,
+historial 0001–0004, esquema y dos fingerprints completos iguales a la transición
+reconstruida localmente; sus tres bookmarks fueron estables. No repitió 0004.
+Esa reconciliación valida el estado observado entonces, no activa este prototipo.
+
+3. CÓMO IDENTIFICA UNA ESCRITURA PROPIA
+
+- createStageWriter() solo produce batches de SQL aprobado, con dependencias y
+  hashes verificados; su marca en WeakSet impide pasar un array SQL arbitrario.
+- createTransport().applyBatch() genera un objeto congelado de reconocimiento
+  únicamente DESPUÉS de una respuesta HTTP/Cloudflare/query satisfactoria.
+- Un WeakMap privado asocia ese objeto con etapa, acknowledgedAt y origen
+  fixed-rest-batch-acknowledgement. Un objeto JSON fabricado no pasa
+  ownWriteMetadata(); una respuesta fallida no genera el recibo nuevo.
+- captureOwnedWriteCheckpoint() exige etapa 4 y antigüedad de entrada entre 0 y
+  60 segundos. No ejecuta applyBatch() ni crea permisos de migración.
+
+ALCANCE REAL DEL RECIBO: demuestra que una instancia de ese módulo en este
+proceso reconoció un batch aprobado. NO es una firma de Cloudflare, un ID de
+transacción del servidor ni un bookmark causal de D1. El WeakMap no vincula el
+recibo a la instancia de transporte lectora, cuenta/DB, ID de ejecución ni hash
+del batch individual. La cuenta/DB y SQL están fijados por el transporte/escritor,
+pero ese vínculo no está dentro del recibo. Además, simulationFetch genera el
+mismo tipo de recibo en tests. Antes de activarlo remotamente se debe revisar y
+endurecer ese vínculo y la separación de simulación; el recibo no puede utilizarse
+como autorización de escritura o autenticación de usuario.
+
+4. QUÉ VERIFICA ANTES DE ACEPTAR EL CHECKPOINT
+
+A. Obtiene el recibo auténtico en memoria y comprueba etapa/edad.
+B. Exige callbacks de evidencia y observación; inspect(4) valida identidad fija,
+   esquema aprobado, historial exacto, semillas, ausencia de contenido,
+   PRAGMA quick_check y foreign_key_check.
+C. Lee el historial y reconstruye el resultado esperado en workerd local efímero:
+   restaura el backup cifrado aprobado de etapa 3, verifica sus hashes y aplica
+   allí el SQL ORIGINAL de 0004. Nunca repite ese SQL en el remoto.
+D. Solo applied_at de la fila nueva 0004 se toma del historial observado y se
+   comprueba en una ventana temporal acotada. En el prototipo la ventana es
+   ACK local menos 20 segundos hasta ACK, con la tolerancia de un segundo del
+   validador. Se compara todo lo demás, incluidos tipos, filas, schema, fechas
+   previas y sqlite_sequence. No se adopta el remoto como su propio oráculo.
+E. Compara un snapshot posterior completo contra esa proyección exacta.
+   Una diferencia lógica termina la operación sin elegir una referencia distinta.
+F. Solo DESPUÉS toma el bookmark candidato de la nueva ventana y exige recibo
+   de persistencia protegido con hash. Es una fase de validación seguida de una
+   fase de checkpoint, no un catch que ignore un error anterior de concurrencia.
+G. captureBatchBaseline() exige enlace exacto al candidato, dos snapshots completos
+   iguales al fingerprint esperado y tres bookmarks iguales (first/middle/last).
+   Guarda observaciones incluso cuando falla. No tiene bucle de estabilización.
+H. assertVerifiedBaselineCurrent() exige edad menor de 30 segundos del baseline
+   y una última igualdad de bookmark antes de devolver el checkpoint.
+
+La frontera posterior a la validación permite reconocer un estado nuevo causado
+por una escritura propia respecto del estado PREVIO. NO permite ignorar un cambio
+dentro de la ventana NUEVA. Si cambia el candidato frente a first, hay diferencia
+lógica, first/middle/last no coinciden o falla la evidencia: se detiene sin rebase
+silencioso ni reintento. Puede volver a bloquear legítimamente; no se garantiza
+que elimine todos los avances de Time Travel observados en producción.
+
+5. DETECCIÓN DE CONCURRENCIA Y LÍMITES
+
+Detecta diferencias persistentes contra el resultado esperado, snapshots distintos,
+cambios de bookmark desde la frontera candidata y fallos de la evidencia.
+El escritor existente conserva guardas SQL dentro del batch: esquema, historial,
+semillas y todas las filas/tipos del snapshot, incluido ledger/secuencias. Una
+carrera posterior a la última lectura que cambie esos datos hace abortar el CHECK
+antes de aplicar la migración siguiente. El prototipo NO reemplaza esas guardas.
+
+NO OFRECE:
+- Un bloqueo distribuido, exclusión de todos los operadores, aislamiento serializable
+  entre múltiples peticiones REST ni atribución de cada escritura a un actor.
+- Prueba de ausencia de cambios transitorios que otro actor haga y revierta antes
+  de la ventana comprobada o entre lecturas dejando exactamente el mismo estado.
+- Prueba de que un cambio de Time Travel sea necesariamente una escritura de datos,
+  ni que sea necesariamente causado por nuestra migración.
+- Un bookmark causal de D1 Sessions API. Se usa Time Travel para recuperación.
+- Un ACK persistente o no reutilizable: vive solo en memoria, ownWriteMetadata()
+  no lo consume, no queda ligado a su transporte y puede ser consultado varias
+  veces durante la vigencia. El prototipo no debe exponerse a llamadores no fiables.
+- Prueba independiente del valor histórico exacto de applied_at de 0004: ese campo
+  se observa y acota; dentro de su ventana temporal no existe una copia anterior
+  con la que contrastarlo. Las fechas de las filas previas sí se preservan.
+- Un límite absoluto de 20 segundos de ejecución SQL en el servidor: el timeout
+  HTTP es una condición del cliente y no demuestra cancelación del commit remoto.
+  La ventana ACK-20s es una heurística conservadora y puede rechazar casos válidos
+  por latencia/reloj; requiere revisar marcas reales de inicio y ACK del batch.
+- Evidencia durable garantizada por la función aislada: comprueba un resultado de
+  callback con bookmarkProtected y hash. Un llamador interno incorrecto podría
+  devolver esos campos sin persistir. Faltan pruebas de integración del callback
+  concreto y su vinculación a esta invocación antes de activar el prototipo.
+- Garantía de que el fingerprint representa datos que no cambiarán después del
+  último control. De ahí las guardas transaccionales de la siguiente escritura.
+- Compatibilidad general con 0005/0006. Está limitado a etapa 4; campos aleatorios
+  como epoch de 0005 precisan un oráculo/validación específicos.
+- Borrado físico absoluto de secretos en memoria administrada.
+
+6. CÓMO SE EVITA REPETIR UNA MIGRACIÓN CUYO POSTFLIGHT FALLÓ
+
+El prototipo SOLO LEE/VALIDA el resultado; no ejecuta la migración ni reintenta SQL.
+La seguridad contra repetición procede del ejecutor/escritor ya existentes:
+- Marcador persistente de intento creado con wx antes de usar el transporte; un ID
+  consumido no se reinicia ni se reanuda aunque falte un postflight verificado.
+- El recibo de preflight y el batch se consumen antes de enviar el SQL. Un error
+  o respuesta ambigua no devuelve esa capacidad para reintentar.
+- El transporte exige batches aprobados en orden, rechaza duplicados y bloquea
+  nuevas escrituras tras fallo de su petición mutante.
+- El runner detiene la secuencia al primer error; un postflight fallido no significa
+  que el SQL haya fallado. Hay que distinguir intentada/aceptada de verificada.
+- SQL de migración y fila d1_migrations se ejecutan en el batch transaccional. Una
+  nueva ejecución no puede partir del esquema/historial previo si ya se aplicó.
+- Para decidir el estado tras ambigüedad se requiere reconciliación de SOLO LECTURA,
+  no repetir la migración. Un nuevo intento posterior necesita autorización y
+  baseline/respaldo adecuados al estado confirmado; no basta cambiar el UUID.
+
+Esto no es una garantía global exactly-once frente a todas las herramientas o
+cuentas que puedan escribir D1. Tampoco autoriza recuperar o repetir una escritura
+cuando el proceso pierde memoria o falla el disco: esos casos requieren revisión.
+
+7. ESTADO DE INTEGRACIÓN Y CRITERIO DE REVISIÓN
+
+La búsqueda de referencias muestra captureOwnedWriteCheckpoint() únicamente en
+su módulo y test, NO en los CLI de migración ni en migration-batch-runner.mjs.
+Permisos de migración 0001, lote 0002–0006, lote 0004–0006 y flags generales:
+bloqueados. Permiso backup-only también bloqueado y último intento consumido.
+No se habilitó ni se propone activar automáticamente el prototipo.
+
+NO-GO PARA ACTIVACIÓN REMOTA sin revisión de: vínculo ACK/transporte/entorno/hash,
+separación de simulaciones, callback durable real, ventana temporal de la escritura,
+consumo/vida del recibo y oráculos de futuras etapas. Son límites de la revisión,
+no defectos que se hayan corregido en esta entrega. Se mantiene el código intacto
+para que el revisor vea exactamente la versión que pasó las pruebas históricas.
+
+8. PRUEBAS RELEVANTES YA EJECUTADAS — NO REPETIDAS AHORA
+
+8.1 test/owned-write-checkpoint.test.mjs: 3/3 PASS.
+- ACK de escritura local genuina + estado esperado exacto: checkpoint estable.
+- Objeto de ACK fabricado, catalog_state diferente o evidencia no disponible:
+  rechazo sin aceptar checkpoint.
+- Bookmark cambia tras la frontera: rechazo terminal, sin renovación ni reintento.
+
+Detalle de prueba a revisar: dos llamadas conservan un argumento expectedSnapshot
+que la firma actual ya no consume. NO es el oráculo efectivo; la función reconstruye
+internamente el esperado. El test de diferencia modifica catalog_state en la base
+local y por ello comprueba un desacuerdo real con la proyección.
+Los callbacks de evidencia de estos tests son dobles, no prueba de persistencia
+real de este prototipo ni de su operación remota.
+
+8.2 test/reconcile-stage-four.test.mjs: 4/4 PASS.
+Reproducción local de la transición desde backup; discrepancias de contenido/ledger,
+identidad incorrecta, bookmark variable, timestamp fuera de ventana y fallo de
+registro. La reconciliación real separada hizo 146 peticiones exclusivamente de
+lectura y confirmó 0004; NO ejecutó el prototipo contra un escritor remoto.
+
+8.3 Suites auxiliares previamente ejecutadas:
+- baseline-observation + migration-0001 + safe-migration-runner: 30/30 PASS.
+  Igualdad de puntos, caducidad, lógica diferente, evidencia fallida, rollback,
+  carreras, marcador persistente y respuestas ambiguas sin reintento.
+- Backups y regresiones etapas 1/3/4: 36/36 PASS. Son contexto de la fuente y
+  restauración del oráculo; no se cuentan como nuevas pruebas del checkpoint.
+- Lint, TypeScript/build local y parser PowerShell: PASS en la fase anterior.
+
+No se adjuntan logs de secretos ni se afirma cobertura total. Los resultados
+proceden de la ejecución anterior y su informe D1-0004-READONLY-RECONCILIATION.md;
+no se fabricó una nueva corrida para este archivo. La fase posterior de backup de
+etapa 4 también pasó con 28 tablas/53 filas, sin activar el prototipo.
+
+Comandos históricos reproducibles, incluidos solo como referencia, NO ejecutados
+al preparar este resumen:
+  node --test test/owned-write-checkpoint.test.mjs test/reconcile-stage-four.test.mjs
+  node --test test/baseline-observation.test.mjs test/migration-0001.test.mjs test/safe-migration-runner.test.mjs
+  npm run lint
+  npm run build
+
+9. FUENTES OFICIALES YA CONSULTADAS
+
+Time Travel: puntos de recuperación y estabilidad de un timestamp fijo:
+https://developers.cloudflare.com/d1/reference/time-travel/
+GET bookmark actual o más cercano anterior a timestamp:
+https://developers.cloudflare.com/api/resources/d1/subresources/database/subresources/time_travel/methods/get_bookmark/
+D1DatabaseSession/getBookmark identifica versión vista por la última consulta:
+https://developers.cloudflare.com/d1/worker-api/d1-database/
+Consistencia secuencial con Sessions API:
+https://developers.cloudflare.com/d1/best-practices/read-replication/
+No se confunden estas APIs distintas ni se asume que el recibo REST tenga las
+propiedades del bookmark de sesión.
+
+10. MANIFIESTO Y DIFF EXACTO CONTRA HEAD
+
+Los valores de account/DB, hashes, UUID de intentos y rutas no son credenciales.
+Los marcadores synthetic_test_credential_not_real son fixtures, no tokens reales.
+No se incluyeron .env, volcados SQL, claves, cookies, JWT, enlaces firmados ni
+contenidos de backups o de registros privados. Este archivo solo incluye código
+fuente revisable y resultados depurados ya documentados.
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/owned-write-checkpoint.mjs
+SHA-256: 5e7ad6c9c6431f24f71a5adacdd7d88cb8c841c7e74fb2006819be8cbab7f2c1
+BYTES: 2775
+ESTADO: no versionado; diff íntegro /dev/null -> working tree
+
+----- INICIO DIFF EXACTO -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/owned-write-checkpoint.mjs b/infra/cloudflare/dev/scripts/safe-d1/owned-write-checkpoint.mjs
+new file mode 100644
+index 0000000..2f38a1b
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/owned-write-checkpoint.mjs
+@@ -0,0 +1,31 @@
++import {ownWriteMetadata} from './transport.mjs';
++import {createReader} from './read.mjs';
++import {snapshotFingerprint} from './snapshot.mjs';
++import {captureBatchBaseline,assertVerifiedBaselineCurrent} from './verified-baseline-control.mjs';
++import {requireSafe} from './policy.mjs';
++import {isBookmark} from './export.mjs';
++import {expectedStageFourSnapshot} from './stage-four-expectation.mjs';
++// Local prototype for 0004 only, deliberately NOT wired into a remote migration CLI.
++// Validation is separate from establishing a NEW stable checkpoint after our ack.
++// No fallback after a guard failure, retry loop, or acceptance of logical differences.
++export async function captureOwnedWriteCheckpoint(transport,{acknowledgement,recordEvidence,recordObservation}){
++ const ack=ownWriteMetadata(acknowledgement),age=Date.now()-ack.acknowledgedAt;
++ requireSafe(ack.stage===4&&age>=0&&age<60000,'own_write_scope_or_age_invalid');
++ requireSafe(typeof recordEvidence==='function'&&typeof recordObservation==='function','owned_write_evidence_required');
++ const reader=createReader(transport);await reader.inspect(4);
++ const history=await transport.select('SELECT id,name,applied_at FROM d1_migrations ORDER BY id');
++ // Never use the newly read snapshot as its own oracle: replay approved source
++ // backup + original 0004. Only its generated timestamp is observed and bounded
++ // to the successfully acknowledged REST write (20s request timeout).
++ const expectedSnapshot=await expectedStageFourSnapshot(history,{writeEvidence:{startedAt:new Date(ack.acknowledgedAt-20000).toISOString(),finishedAt:new Date(ack.acknowledgedAt).toISOString()}});
++ const observed=await reader.snapshot(),expected=snapshotFingerprint(expectedSnapshot.snapshot);
++ requireSafe(observed.stage===4&&snapshotFingerprint(observed.snapshot)===expected,'own_write_logical_difference');
++ const candidatePoint=await reader.bookmark();requireSafe(isBookmark(candidatePoint),'own_write_bookmark_invalid');
++ const proof=await recordEvidence({phase:'write_validated_before_checkpoint',stage:4,acknowledgedAt:new Date(ack.acknowledgedAt).toISOString(),fingerprint:expected,observedAt:new Date().toISOString(),bookmark:candidatePoint});
++ requireSafe(proof?.bookmarkProtected===true&&/^[a-f0-9]{64}$/.test(proof.recordSha256),'owned_write_evidence_not_confirmed');
++ // A point sampled AFTER verified own-write state becomes the boundary, not the
++ // earlier point sampled while that state was still being established.
++ const live=await captureBatchBaseline(transport,{stage:4,fingerprint:expected,originalBookmark:candidatePoint,requireOriginalBookmark:true,recordObservation});
++ await assertVerifiedBaselineCurrent(transport,live.baseline);
++ return {...live,writeValidated:true,stableCheckpointEstablished:true};
++}
+----- FIN DIFF EXACTO -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+SHA-256: 616db5d484fbe4646cde88432f16dbc95c9fcb03064d0cdb71c78e2ecf929ade
+BYTES: 5277
+ESTADO: no versionado; diff íntegro /dev/null -> working tree
+
+----- INICIO DIFF EXACTO -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/transport.mjs b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+new file mode 100644
+index 0000000..0a6dc87
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+@@ -0,0 +1,41 @@
++import {target,requireSafe,remoteExecutionEnabled} from './policy.mjs';
++import {allowedReadSql} from './read.mjs';
++import {isApprovedBatch,approvedBatchStage,hasFullSnapshotGuard} from './write.mjs';
++import {takeBatchPermit} from './migration-batch-permit.mjs';
++import {takeFinalPermit} from './migration-final-permit.mjs';
++import {takeFirstMigrationPermit} from './migration-0001-permit.mjs';
++import {isBackupRead} from './snapshot.mjs';
++import {createExporter} from './export.mjs';
++const writeAcknowledgements=new WeakMap();
++export function ownWriteMetadata(receipt){const m=writeAcknowledgements.get(receipt);requireSafe(m,'own_write_acknowledgement_required');return Object.freeze({...m});}
++// Remote transport is release-locked. Tests inject fetch into a simulation-only instance.
++export function createTransport(token,{simulationFetch,migration0001Permit,onlyFirstMigration=false,migrationBatchPermit,onlyRemainingMigrations=false,migrationFinalPermit,onlyFinalMigrations=false}={}){
++ const scopedPermit=takeFirstMigrationPermit(migration0001Permit);const firstOnly=scopedPermit||onlyFirstMigration;
++ const batchPermit=takeBatchPermit(migrationBatchPermit),remainingOnly=batchPermit||onlyRemainingMigrations;
++ const finalPermit=takeFinalPermit(migrationFinalPermit),finalOnly=finalPermit||onlyFinalMigrations;
++ requireSafe(Number(remainingOnly)+Number(firstOnly)+Number(finalOnly)<=1,'conflicting_migration_scope');
++ requireSafe(remoteExecutionEnabled||typeof simulationFetch==='function'||scopedPermit||batchPermit||finalPermit,'remote_execution_not_authorized');
++ requireSafe(typeof token==='string'&&/^[-_A-Za-z0-9]{20,256}$/.test(token),'credential_invalid');
++ const fetcher=simulationFetch??fetch,base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
++ const submitted=new WeakSet();
++ let secret=token,writeAttempted=false,nextBatchStage=finalOnly?3:1,batchFailed=false,lastAcknowledgement;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
++ async function request(suffix,body){
++  requireSafe(secret!==undefined,'credential_disposed');
++  const item={operation:suffix===''?'metadata':suffix==='/time_travel/bookmark'?'bookmark':body?.batch?'migration_batch':'read_query',httpStatus:null,codes:[]};diagnostics.push(item);
++  let response;try{response=await fetcher(base+suffix,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/json'},redirect:'manual',signal:AbortSignal.timeout(20000),...(body?{body:JSON.stringify(body)}:{})});item.httpStatus=response.status;}catch{throw Error('request_outcome_unknown');}
++  // Never persist upstream errors, bodies, headers or the request object.
++  const reader=response.body?.getReader();requireSafe(reader,'response_invalid');let total=0;const chunks=[];
++  try{while(true){const part=await reader.read();if(part.done)break;total+=part.value.length;requireSafe(total<=2000000,'response_too_large');chunks.push(Buffer.from(part.value));}}catch{throw Error('response_invalid_or_oversized');}finally{await reader.cancel().catch(()=>{});}
++  let value;try{value=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw Error('response_invalid');}
++  item.codes=Array.isArray(value.errors)?value.errors.map(e=>e?.code).filter(Number.isSafeInteger).slice(0,8):[];
++  requireSafe(response.ok,'http_rejected');requireSafe(value.success===true&&(!value.errors||value.errors.length===0),'cloudflare_rejected');return value.result;
++ }
++ async function query(body){const result=await request('/query',body);requireSafe(Array.isArray(result)&&result.length>0&&result.every(r=>r.success===true),'query_failed');return result;}
++ const exporter=createExporter(request,fetcher);
++ return Object.freeze({metadata:()=>request(''),bookmark:async()=>{const result=await request('/time_travel/bookmark');return result?.bookmark;},fullExport:bookmark=>{requireSafe(!firstOnly&&!remainingOnly&&!finalOnly,'export_not_authorized_for_migration_0001');return exporter.fullExport(bookmark);},
++  select:async sql=>{requireSafe(allowedReadSql.includes(sql)||isBackupRead(sql),'read_sql_forbidden');const result=await query({sql,params:[]});requireSafe(result.length===1&&Array.isArray(result[0].results),'read_response_invalid');return result[0].results;},
++  applyBatch:async batch=>{requireSafe(isApprovedBatch(batch)&&!submitted.has(batch),'arbitrary_or_duplicate_write_forbidden');if(firstOnly)requireSafe(approvedBatchStage(batch)===0&&!writeAttempted,'only_0001_once_authorized');if(remainingOnly||finalOnly){requireSafe(!batchFailed&&nextBatchStage<=5&&approvedBatchStage(batch)===nextBatchStage&&hasFullSnapshotGuard(batch),finalOnly?'only_0004_0006_in_order_authorized':'only_0002_0006_in_order_authorized');nextBatchStage++;}submitted.add(batch);writeAttempted=true;lastAcknowledgement=undefined;try{await query({batch});lastAcknowledgement=Object.freeze({});writeAcknowledgements.set(lastAcknowledgement,{stage:approvedBatchStage(batch)+1,acknowledgedAt:Date.now(),source:'fixed-rest-batch-acknowledgement'});}catch(error){batchFailed=true;throw error;}},
++  writeAcknowledgement:()=>lastAcknowledgement,
++  diagnostics:()=>diagnostics.map(item=>({...item,codes:[...item.codes]})),dispose(){secret=undefined;},
++ });
++}
+----- FIN DIFF EXACTO -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/stage-four-expectation.mjs
+SHA-256: 0b03800563d1ea34300baf275266b515de4b17d6d78316eb7843b6b83550e3ef
+BYTES: 4403
+ESTADO: no versionado; diff íntegro /dev/null -> working tree
+
+----- INICIO DIFF EXACTO -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/stage-four-expectation.mjs b/infra/cloudflare/dev/scripts/safe-d1/stage-four-expectation.mjs
+new file mode 100644
+index 0000000..765ae7e
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/stage-four-expectation.mjs
+@@ -0,0 +1,41 @@
++import {readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {Miniflare,convertV4MiniflareOptions} from 'miniflare';
++import {custodyRoot,dpapi} from './windows-custody.mjs';
++import {approvedSources,target,migrations,digest,requireSafe} from './policy.mjs';
++import {finalBackupPins,loadFinalBackup} from './final-backup-receipt.mjs';
++import {decryptEnvelope} from './encryption.mjs';
++import {splitMigration} from './sql.mjs';
++import {captureDatabase,snapshotFingerprint} from './snapshot.mjs';
++const prefix=resolve(custodyRoot,'migration-0004-0006-3771d065-f5e5-4bb0-b0fc-0091834f92c8');
++export function stageFourWriteEvidence(){
++ const checks=[['.attempt.json','54a0398c581e303674cc718b7809fb23a57962a5bf9016ba2552f0509b10ba08'],['.stage-3.started.json','b67f28a93479a0f955bc806930030c165f73b9ef5e11b8fcb93336440963fb2c'],['.result.json','0b2bb9cde45c154895d77dc323a657630ab30d56cfc2ef5f2736b659ddf038cd']];
++ const [attempt,started,result]=checks.map(([suffix,hash])=>{const bytes=readFileSync(prefix+suffix);requireSafe(digest(bytes)===hash,'stage_four_evidence_hash_mismatch');return JSON.parse(bytes);});
++ approvedSources();requireSafe(started.migration===migrations[3].name&&started.migrationSha256===migrations[3].sha256&&result.writeAttempts===1&&result.errorCode==='postflight_concurrent_change','stage_four_write_evidence_invalid');
++ return {startedAt:attempt.startedAt,finishedAt:result.finishedAt,migrationSha256:started.migrationSha256,hashStoredInD1Ledger:false};
++}
++export function checkedStageFourHistory(history,evidence=stageFourWriteEvidence()){
++ requireSafe(Array.isArray(history)&&history.length===4&&history.every((r,i)=>r.id===i+1&&r.name===migrations[i].name&&typeof r.applied_at==='string'),'stage_four_history_mismatch');
++ const stamp=history[3].applied_at,t=Date.parse(stamp+'Z');
++ requireSafe(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(stamp)&&Number.isFinite(t)&&new Date(t).toISOString().slice(0,19).replace('T',' ')===stamp&&t>=Date.parse(evidence.startedAt)-1000&&t<=Date.parse(evidence.finishedAt)+1000,'stage_four_timestamp_outside_attempt');
++ return stamp;
++}
++// Local oracle only: restore approved encrypted stage-three SQL and apply original
++// 0004 in ephemeral workerd. Remote code has no write/export capability.
++export async function expectedStageFourSnapshot(history,{writeEvidence=stageFourWriteEvidence()}={}){
++ const timestamp=checkedStageFourHistory(history,writeEvidence);await loadFinalBackup();let clear,sql,mf;
++ try{
++  clear=await decryptEnvelope(readFileSync(resolve(custodyRoot,finalBackupPins.operationId,'backup.kwgbak')),{protector:dpapi});const p=JSON.parse(clear.toString('utf8'));sql=Buffer.from(p.sqlBase64,'base64');p.sqlBase64=undefined;requireSafe(digest(sql)===p.sqlSha256,'expected_source_invalid');
++  mf=new Miniflare(convertV4MiniflareOptions({name:'kuwago-stage4-oracle-local',host:'127.0.0.1',modules:true,script:'export default {fetch(){return new Response(null,{status:503})}}',compatibilityDate:'2026-07-30',telemetry:{enabled:false},cf:false,d1Databases:{DB:'ephemeral-stage4-oracle'}}));
++  const db=await mf.getD1Database('DB');await db.batch(splitMigration(sql.toString('utf8')).map(q=>db.prepare(q)));
++  await db.batch([...splitMigration(approvedSources()[3]).map(q=>db.prepare(q)),db.prepare('INSERT INTO d1_migrations(id,name,applied_at) VALUES(4,?,?)').bind(migrations[3].name,timestamp)]);
++  return await captureDatabase({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async q=>(await db.prepare(q).all()).results});
++ }finally{clear?.fill(0);sql?.fill(0);await mf?.dispose();}
++}
++export function snapshotDifferences(expected,actual){
++ const differences=[];
++ if(JSON.stringify(expected.snapshot.schema)!==JSON.stringify(actual.snapshot.schema))differences.push({kind:'schema_hash_mismatch'});
++ const names=new Set([...expected.snapshot.tables.map(t=>t.name),...actual.snapshot.tables.map(t=>t.name)]);
++ for(const name of names){const a=expected.snapshot.tables.find(t=>t.name===name),b=actual.snapshot.tables.find(t=>t.name===name);if(JSON.stringify(a)!==JSON.stringify(b))differences.push({kind:'table_mismatch',table:name,expectedRows:a?.rows.length??null,actualRows:b?.rows.length??null,columnsMatch:JSON.stringify(a?.columns)===JSON.stringify(b?.columns)});}
++ return {matches:snapshotFingerprint(expected.snapshot)===snapshotFingerprint(actual.snapshot),differences};
++}
+----- FIN DIFF EXACTO -----
+
+ARCHIVO: infra/cloudflare/dev/test/owned-write-checkpoint.test.mjs
+SHA-256: d367d161a3ae2084abf9f6dbf4ddab9d2871f4909241daacd1126e87aba333f0
+BYTES: 6063
+ESTADO: no versionado; diff íntegro /dev/null -> working tree
+
+----- INICIO DIFF EXACTO -----
+diff --git a/infra/cloudflare/dev/test/owned-write-checkpoint.test.mjs b/infra/cloudflare/dev/test/owned-write-checkpoint.test.mjs
+new file mode 100644
+index 0000000..b2a840f
+--- /dev/null
++++ b/infra/cloudflare/dev/test/owned-write-checkpoint.test.mjs
+@@ -0,0 +1,47 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++
++import {localDatabase} from './auth-fixtures.mjs';
++import {target} from '../scripts/safe-d1/policy.mjs';
++import {loadFinalBackup as loadBatchBackup,finalBackupPins as batchBackupPins} from '../scripts/safe-d1/final-backup-receipt.mjs';
++import {decryptEnvelope} from '../scripts/safe-d1/encryption.mjs';
++import {custodyRoot,dpapi} from '../scripts/safe-d1/windows-custody.mjs';
++import {splitMigration} from '../scripts/safe-d1/sql.mjs';
++import {createTransport} from '../scripts/safe-d1/transport.mjs';
++import {runRemainingMigrations} from '../scripts/safe-d1/migration-batch-runner.mjs';
++
++const token='synthetic_test_credential_not_real_12345';
++import {createReader} from '../scripts/safe-d1/read.mjs';
++import {createStageWriter} from '../scripts/safe-d1/write.mjs';
++import {captureOwnedWriteCheckpoint} from '../scripts/safe-d1/owned-write-checkpoint.mjs';
++async function fixture(options={}){
++ const backup=await loadBatchBackup(),local=await localDatabase({},0);let clear,sql,writes=0,bookmarkDrift=0;const stages=[],observations=[],postflights=[],base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
++ try{
++  clear=await decryptEnvelope(readFileSync(resolve(custodyRoot,batchBackupPins.operationId,'backup.kwgbak')),{protector:dpapi});const p=JSON.parse(clear.toString('utf8'));sql=Buffer.from(p.sqlBase64,'base64');p.sqlBase64=undefined;
++  await local.db.batch(splitMigration(sql.toString('utf8')).map(q=>local.db.prepare(q)));
++ }finally{clear?.fill(0);sql?.fill(0);}
++ const transport=createTransport(token,{onlyFinalMigrations:true,simulationFetch:async(url,opts)=>{
++  assert.ok(url.startsWith(base));const ok=result=>Response.json({success:true,result});
++  if(url===base)return ok({uuid:target.id,name:options.wrongIdentity?'wrong':target.name,version:'production'});
++  if(url.endsWith('/time_travel/bookmark'))return ok({bookmark:`00000099-00000002-${String(writes+bookmarkDrift).padStart(8,'0')}-00000000000000000000000000000000`});
++  assert.equal(url,base+'/query');const body=JSON.parse(opts.body);
++  if(body.batch){writes++;if(options.networkFailure)throw Error('sensitive simulated network exception');
++   const batch=body.batch.map(q=>local.db.prepare(q.sql).bind(...q.params));if(options.failAt===writes)batch.push(local.db.prepare('INSERT INTO absent_table VALUES(1)'));
++   try{const result=await local.db.batch(batch);if(options.postLedgerRace)await local.db.prepare("UPDATE d1_migrations SET applied_at='2026-10-25 23:00:00' WHERE id=1").run();return ok(result);}catch{return Response.json({success:false,errors:[{code:7500}]},{status:400});}
++  }
++  return ok([await local.db.prepare(body.sql).all()]);
++ }});
++ return {...local,backup,transport,get writes(){return writes;},stages,observations,postflights,async run(){return runRemainingMigrations({transport,backup,environment:{},recordObservation:async o=>{observations.push(o);},recordPostflight:async p=>{postflights.push(p);if(options.postflightEvidenceFailure)throw Error('checkpoint unavailable');return {bookmarkProtected:true,recordSha256:'b'.repeat(64)};},recordBaseline:async baseline=>{if(options.baselineFailure)throw Error('simulate disk error');if(options.bookmarkRace)bookmarkDrift++;return {stage:baseline.stage,originalBookmarkPreserved:true,recordSha256:'a'.repeat(64)};},recordStage:async(stage,v)=>{stages.push(v);if(options.betweenStages&&v.status==='verified')bookmarkDrift++;if(options.race&&v.status==='outcome_not_confirmed')await local.db.prepare("UPDATE d1_migrations SET applied_at='2026-10-25 22:30:00'").run();if(options.afterStageFailure&&v.status==='verified')throw Error('checkpoint write failed');}});}};
++}
++async function writtenFixture(){const f=await fixture(),reader=createReader(f.transport),state=await reader.inspect(3),snapshot=await reader.snapshot();await createStageWriter(f.transport).apply(state,f.backup,{snapshot});const expected=await reader.snapshot();return {...f,expected,acknowledgement:f.transport.writeAcknowledgement()};}
++test('owned checkpoint prototype: genuine local own-write ack and exact expected state establish a fresh stable checkpoint',async()=>{
++ const f=await writtenFixture(),observations=[];try{const result=await captureOwnedWriteCheckpoint(f.transport,{acknowledgement:f.acknowledgement,expectedSnapshot:f.expected,recordEvidence:async()=>({bookmarkProtected:true,recordSha256:'a'.repeat(64)}),recordObservation:async o=>observations.push(o)});assert.equal(result.writeValidated,true);assert.equal(result.stableCheckpointEstablished,true);assert.equal(observations[0].logicalMatch,true);}finally{f.transport.dispose();await f.mf.dispose();}
++});
++test('owned checkpoint prototype: forged acknowledgement, logical difference and unavailable evidence cannot establish checkpoints',async()=>{
++ for(const mode of ['forged','logical','evidence']){const f=await writtenFixture();try{if(mode==='logical')await f.db.prepare('UPDATE catalog_state SET version=1').run();await assert.rejects(captureOwnedWriteCheckpoint(f.transport,{acknowledgement:mode==='forged'?{}:f.acknowledgement,recordEvidence:async()=>{if(mode==='evidence')throw Error('disk failure');return {bookmarkProtected:true,recordSha256:'a'.repeat(64)};},recordObservation:async()=>{}}));}finally{f.transport.dispose();await f.mf.dispose();}}
++});
++test('owned checkpoint prototype: bookmark change after boundary remains terminal, never renewed or retried',async()=>{
++ const f=await writtenFixture();let calls=0;const t={...f.transport,bookmark:async()=>`00000001-00000002-${String(++calls>1?2:1).padStart(8,'0')}-00000000000000000000000000000000`};try{await assert.rejects(captureOwnedWriteCheckpoint(t,{acknowledgement:f.acknowledgement,expectedSnapshot:f.expected,recordEvidence:async()=>({bookmarkProtected:true,recordSha256:'a'.repeat(64)}),recordObservation:async()=>{}}),/changed_between_stages/);assert.equal(calls,2);}finally{f.transport.dispose();await f.mf.dispose();}
++});
+----- FIN DIFF EXACTO -----
+
+11. ANEXO: DEPENDENCIAS ACTUALES PARA INTERPRETAR LAS GARANTÍAS
+No se presentan como cambios nuevos del prototipo. Son copias textuales del contexto leído, con hash.
+
+ARCHIVO DE CONTEXTO: infra/cloudflare/dev/scripts/safe-d1/verified-baseline-control.mjs
+SHA-256: 6b9d7bf484195c719a46bd5a09bb8732f45d65306e4bec9118f9442da49a051f
+----- INICIO CONTEXTO -----
+import {readFileSync,lstatSync,openSync,writeFileSync,fsyncSync,closeSync} from 'node:fs';
+import {resolve,dirname,basename} from 'node:path';
+import {custodyRoot,verifyWindowsCustody,dpapi} from './windows-custody.mjs';
+import {target,digest,requireSafe} from './policy.mjs';
+import {approvedBackupState,encryptedBackupPins} from './encrypted-backup-receipt.mjs';
+import {captureDatabase,snapshotFingerprint} from './snapshot.mjs';
+import {isBookmark} from './export.mjs';
+const auditId='9e727e66-ad85-4d6f-b1a8-e976ab2397ce',prefix=resolve(custodyRoot,'baseline-audit-'+auditId);
+const pins=Object.freeze({result:'f279c721d3ddd9bf46fba0ffbed1b5ef21f22d18e8b9d9d960bc0afdc800d6d3',private:'cbbbccf942ffab08025dc075e0690741ba94aba1c1a1361a30d223f5c25192a2'});
+const candidates=new WeakMap(),baselines=new WeakMap();
+function pinned(file,hash){const s=lstatSync(file);requireSafe(s.isFile()&&!s.isSymbolicLink()&&s.size<=100000,'baseline_evidence_invalid');const bytes=readFileSync(file);requireSafe(digest(bytes)===hash,'baseline_evidence_hash_mismatch');return JSON.parse(bytes.toString('utf8'));}
+async function unprotectBookmark(value){let plain;try{plain=await dpapi.unprotect(Buffer.from(value,'base64'));requireSafe(plain.length===32&&plain.subarray(28).toString('ascii')==='BKM1','baseline_private_record_invalid');const h=plain.subarray(0,28).toString('hex');return [h.slice(0,8),h.slice(8,16),h.slice(16,24),h.slice(24)].join('-');}finally{plain?.fill(0);}}
+async function protectBookmark(value){requireSafe(isBookmark(value),'baseline_bookmark_invalid');const plain=Buffer.concat([Buffer.from(value.replaceAll('-',''),'hex'),Buffer.from('BKM1')]);try{return (await dpapi.protect(plain)).toString('base64');}finally{plain.fill(0);}}
+export async function loadReviewedBaselineCandidate(backup){
+ verifyWindowsCustody();const publicRecord=pinned(prefix+'.result.json',pins.result),privateRecord=pinned(prefix+'.private-bookmarks.json',pins.private),stored=approvedBackupState(backup);
+ requireSafe(publicRecord.auditId===auditId&&privateRecord.auditId===auditId&&JSON.stringify(publicRecord.target)===JSON.stringify(target)&&JSON.stringify(privateRecord.target)===JSON.stringify(target)&&publicRecord.backupOperationId===encryptedBackupPins.operationId&&privateRecord.backupOperationId===encryptedBackupPins.operationId,'baseline_target_mismatch');
+ requireSafe(publicRecord.status==='logical_match'&&publicRecord.logicalContentStable===true&&publicRecord.fixedTimestampBookmarkStable===true&&publicRecord.currentBookmarksStable===true&&publicRecord.snapshots.length===2&&publicRecord.snapshots.every(s=>s.stage===0&&s.rows===0&&s.applicationTables===0&&s.fingerprint===stored.fingerprint),'baseline_candidate_not_verified');
+ const records=new Map();for(const r of privateRecord.records){requireSafe(!records.has(r.label),'baseline_records_invalid');records.set(r.label,await unprotectBookmark(r.dpapiCiphertext));}
+ requireSafe(records.size===6&&records.get('saved_backup')===stored.bookmark&&records.get('current_before')===records.get('current_between')&&records.get('current_between')===records.get('current_after')&&records.get('fixed_time_before')===records.get('fixed_time_after'),'baseline_private_comparison_failed');
+ const candidate=Object.freeze({auditId,backupOperationId:encryptedBackupPins.operationId});candidates.set(candidate,{fingerprint:stored.fingerprint,originalBookmark:stored.bookmark,auditBookmark:records.get('current_after')});return candidate;
+}
+export async function captureVerifiedLiveBaseline(transport,backup,candidate){
+ const reviewed=candidates.get(candidate),stored=approvedBackupState(backup);requireSafe(reviewed&&reviewed.fingerprint===stored.fingerprint&&reviewed.originalBookmark===stored.bookmark,'reviewed_baseline_required');
+ const startedAt=new Date().toISOString(),first=await transport.bookmark();requireSafe(isBookmark(first),'live_baseline_bookmark_invalid');
+ const a=await captureDatabase(transport),middle=await transport.bookmark(),b=await captureDatabase(transport),last=await transport.bookmark();
+ requireSafe(a.stage===0&&b.stage===0&&a.snapshot.tables.length===0&&b.snapshot.tables.length===0&&snapshotFingerprint(a.snapshot)===stored.fingerprint&&snapshotFingerprint(b.snapshot)===stored.fingerprint,'live_baseline_logical_change');
+ requireSafe(first===middle&&middle===last,'live_baseline_concurrent_bookmark_change');
+ const baseline=Object.freeze({auditId,backupOperationId:encryptedBackupPins.operationId});baselines.set(baseline,{startedAt,verifiedAt:Date.now(),fingerprint:stored.fingerprint,originalBookmark:stored.bookmark,auditBookmark:reviewed.auditBookmark,liveBookmark:last});return baseline;
+}
+export async function assertVerifiedBaselineCurrent(transport,baseline){const data=baselines.get(baseline);requireSafe(data&&Date.now()-data.verifiedAt>=0&&Date.now()-data.verifiedAt<30000,'live_baseline_stale');requireSafe(await transport.bookmark()===data.liveBookmark,'live_baseline_changed_before_write');}
+export async function persistVerifiedBaseline(baseline,file){
+ verifyWindowsCustody();requireSafe(typeof file==='string'&&dirname(resolve(file))===resolve(custodyRoot)&&/^migration-0001-[a-f0-9-]{36}\.baseline\.private\.json$/.test(basename(file)),'baseline_custody_path_invalid');const data=baselines.get(baseline);requireSafe(data,'live_baseline_required');
+ const record={format:1,target,auditId,backupOperationId:encryptedBackupPins.operationId,backupCiphertextSha256:encryptedBackupPins.ciphertextSha256,fingerprint:data.fingerprint,startedAt:data.startedAt,verifiedAt:new Date(data.verifiedAt).toISOString(),originalBookmark:await protectBookmark(data.originalBookmark),reviewedAuditBookmark:await protectBookmark(data.auditBookmark),liveBookmark:await protectBookmark(data.liveBookmark),protection:'DPAPI CurrentUser; BKM1 encoding',doesNotReplaceBackup:true};
+ const bytes=Buffer.from(JSON.stringify(record,null,2));const fd=openSync(file,'wx',0o600);try{writeFileSync(fd,bytes);fsyncSync(fd);}finally{closeSync(fd);}
+ requireSafe(digest(readFileSync(file))===digest(bytes),'baseline_evidence_readback_failed');
+ return {auditId,backupOperationId:record.backupOperationId,fingerprint:record.fingerprint,verifiedAt:record.verifiedAt,originalBookmarkPreserved:true,recordFile:file,recordSha256:digest(bytes)};
+}
+// Same stable-bookmark / two-full-snapshot control for the explicitly authorized
+// stage-one continuation. Never changes the historical backup or its receipt.
+export async function captureBatchBaseline(transport,{stage,fingerprint,originalBookmark,requireOriginalBookmark=false,recordObservation}){
+ requireSafe(stage>=1&&stage<=5&&/^[a-f0-9]{64}$/.test(fingerprint)&&isBookmark(originalBookmark),'batch_baseline_input_invalid');
+ const startedAt=new Date().toISOString(),observation={stage,startedAt,originalBookmark,expectedFingerprint:fingerprint,points:[],snapshots:[],status:'incomplete'};
+ async function point(label){const value=await transport.bookmark();requireSafe(isBookmark(value),'live_baseline_bookmark_invalid');observation.points.push({label,observedAt:new Date().toISOString(),value});return value;}
+ try{
+  const first=await point('first');observation.originalEqualsFirst=first===originalBookmark;
+  if(requireOriginalBookmark)requireSafe(first===originalBookmark,'live_baseline_changed_between_stages');
+  const a=await captureDatabase(transport);observation.snapshots.push({stage:a.stage,fingerprint:snapshotFingerprint(a.snapshot),observedAt:new Date().toISOString()});
+  const middle=await point('middle'),b=await captureDatabase(transport);observation.snapshots.push({stage:b.stage,fingerprint:snapshotFingerprint(b.snapshot),observedAt:new Date().toISOString()});const last=await point('last');
+  observation.firstEqualsMiddle=first===middle;observation.middleEqualsLast=middle===last;
+  observation.logicalMatch=a.stage===stage&&b.stage===stage&&snapshotFingerprint(a.snapshot)===fingerprint&&snapshotFingerprint(b.snapshot)===fingerprint;
+  requireSafe(observation.logicalMatch,'live_baseline_logical_change');
+  requireSafe(first===middle&&middle===last,'live_baseline_concurrent_bookmark_change');
+  observation.status='verified';const baseline=Object.freeze({stage});baselines.set(baseline,{startedAt,verifiedAt:Date.now(),fingerprint,originalBookmark,liveBookmark:last});return {baseline,snapshot:b};
+ }finally{
+  // Observe both failure and success; persistence failure blocks instead of accepting a baseline.
+  if(recordObservation)await recordObservation({...observation,finishedAt:new Date().toISOString()});
+ }
+}
+export async function persistBatchBaseline(baseline,file,backup){
+ verifyWindowsCustody();requireSafe(dirname(resolve(file))===resolve(custodyRoot)&&/^migration-(?:0002|0004)-0006-[a-f0-9-]{36}\.stage-[1-5]\.baseline\.private\.json$/.test(basename(file)),'baseline_custody_path_invalid');
+ const data=baselines.get(baseline);requireSafe(data,'live_baseline_required');
+ const record={format:1,target,stage:baseline.stage,backupOperationId:backup.operationId,backupCiphertextSha256:backup.ciphertextSha256,fingerprint:data.fingerprint,startedAt:data.startedAt,verifiedAt:new Date(data.verifiedAt).toISOString(),originalBookmark:await protectBookmark(data.originalBookmark),liveBookmark:await protectBookmark(data.liveBookmark),protection:'DPAPI CurrentUser; BKM1 encoding',doesNotReplaceBackup:true};
+ const bytes=Buffer.from(JSON.stringify(record,null,2)),fd=openSync(file,'wx',0o600);try{writeFileSync(fd,bytes);fsyncSync(fd);}finally{closeSync(fd);}
+ requireSafe(digest(readFileSync(file))===digest(bytes),'baseline_evidence_readback_failed');return {recordSha256:digest(bytes),originalBookmarkPreserved:true,stage:baseline.stage,verifiedAt:record.verifiedAt};
+}
+function writePrivateCheckpoint(file,record,pattern){
+ verifyWindowsCustody();requireSafe(dirname(resolve(file))===resolve(custodyRoot)&&pattern.test(basename(file)),'baseline_custody_path_invalid');
+ const bytes=Buffer.from(JSON.stringify(record,null,2)),fd=openSync(file,'wx',0o600);try{writeFileSync(fd,bytes);fsyncSync(fd);}finally{closeSync(fd);}
+ requireSafe(digest(readFileSync(file))===digest(bytes),'baseline_evidence_readback_failed');return {recordSha256:digest(bytes),bookmarkProtected:true};
+}
+export async function persistBatchObservation(observation,file){
+ requireSafe(Number.isInteger(observation.stage)&&observation.stage>=1&&observation.stage<=5&&Array.isArray(observation.points)&&observation.points.length<=3,'baseline_observation_invalid');
+ const points=[];for(const p of observation.points){requireSafe(['first','middle','last'].includes(p.label),'baseline_observation_invalid');points.push({label:p.label,observedAt:p.observedAt,bookmark:await protectBookmark(p.value)});}
+ const record={...observation,target,originalBookmark:await protectBookmark(observation.originalBookmark),points,protection:'DPAPI CurrentUser; BKM1 encoding',doesNotAuthorizeWrites:true};
+ return writePrivateCheckpoint(file,record,/^migration-(?:0002|0004)-0006-[a-f0-9-]{36}\.stage-[1-5]\.observation\.private\.json$/);
+}
+export async function persistBatchPostflight(checkpoint,file){
+ requireSafe(checkpoint.stage>=2&&checkpoint.stage<=6&&/^[a-f0-9]{64}$/.test(checkpoint.fingerprint)&&isBookmark(checkpoint.bookmark),'postflight_checkpoint_invalid');
+ return writePrivateCheckpoint(file,{format:1,target,stage:checkpoint.stage,fingerprint:checkpoint.fingerprint,observedAt:checkpoint.observedAt,bookmark:await protectBookmark(checkpoint.bookmark),protection:'DPAPI CurrentUser; BKM1 encoding'},/^migration-(?:0002|0004)-0006-[a-f0-9-]{36}\.postflight-stage-[2-6]\.private\.json$/);
+}
+
+----- FIN CONTEXTO -----
+
+ARCHIVO DE CONTEXTO: infra/cloudflare/dev/scripts/safe-d1/write.mjs
+SHA-256: 92b0ace8acaffd5ee704e489262ebac157859e72ce4cdf842cc55d9db09ec88a
+----- INICIO CONTEXTO -----
+import {approvedSources,digest,ledgerSql,migrations,requireSafe} from './policy.mjs';
+import {isReadReceipt,schemaGuardQuery,stageEmptyTables,seedQuery} from './read.mjs';
+import {verifyBackup} from './backup.mjs';
+import {splitMigration} from './sql.mjs';
+import {cellsQuery} from './snapshot.mjs';
+const consumed=new WeakSet();
+const approvedBatches=new WeakSet();
+const batchStages=new WeakMap();
+const fullSnapshotBatches=new WeakSet();
+export const hasFullSnapshotGuard=batch=>fullSnapshotBatches.has(batch);
+export const isApprovedBatch=batch=>approvedBatches.has(batch);
+export const approvedBatchStage=batch=>batchStages.get(batch);
+// No exported generic SQL writer: only the next approved migration can produce a batch.
+export function createStageWriter(transport){
+ return Object.freeze({async apply(state,backup,{snapshot}={}){
+  requireSafe(isReadReceipt(state)&&state.stage>=0&&state.stage<6&&!consumed.has(state),'stage_reuse_or_invalid');
+  verifyBackup(backup,state);const age=Date.now()-state.observedAt;requireSafe(age>=0&&age<30000,'preflight_stale');
+  const sources=approvedSources(),stage=state.stage,migration=migrations[stage];
+  requireSafe(digest(sources[stage])===migration.sha256&&migration.requires===stage,'migration_dependency_mismatch');
+  const batch=[{sql:'CREATE TABLE kuwago_migration_guard(ok INTEGER NOT NULL CHECK(ok=1)) STRICT',params:[]}];
+  if(stage===0)batch.push({sql:ledgerSql,params:[]});
+  const historyQuery='SELECT json_group_array(json_array(id,name)) FROM (SELECT id,name FROM d1_migrations ORDER BY id)';
+  const emptyGuard=stage>0?stageEmptyTables(stage).map(t=>` AND (SELECT COUNT(*) FROM ${t})=0`).join(''):'';
+  const seedGuard=stage>0?` AND (${seedQuery(stage)})=?`:'',controlGuard=stage>=5?" AND (SELECT COUNT(*) FROM publication_control)=1 AND EXISTS(SELECT 1 FROM publication_control WHERE id=1 AND epoch=? AND mode='ready' AND generation IS NULL AND payload_hash IS NULL)":'';
+  batch.push({sql:`INSERT INTO kuwago_migration_guard(ok) SELECT CASE WHEN (${schemaGuardQuery})=? AND (${historyQuery})=?${emptyGuard}${seedGuard}${controlGuard} THEN 1 ELSE 0 END`,params:[state.guardSchema,state.history,...(stage>0?[state.seedState]:[]),...(stage>=5?[state.controlEpoch]:[])]});
+  if(snapshot){
+   requireSafe(snapshot.stage===stage&&snapshot.snapshot.tables.length>0,'content_guard_invalid');
+   for(const table of snapshot.snapshot.tables){
+    const query=cellsQuery(table.name,table.columns),columns=table.columns.map((_,i)=>'c'+i).join(',');
+    batch.push({sql:`INSERT INTO kuwago_migration_guard(ok) SELECT CASE WHEN (SELECT json_group_array(json_array(${columns})) FROM (${query}))=? THEN 1 ELSE 0 END`,params:[JSON.stringify(table.rows)]});
+   }
+  }
+  for(const sql of splitMigration(sources[stage]))batch.push({sql,params:[]});
+  batch.push({sql:'INSERT INTO d1_migrations(name) VALUES (?)',params:[migration.name]},{sql:'DROP TABLE kuwago_migration_guard',params:[]});
+  for(const item of batch){Object.freeze(item.params);Object.freeze(item);}Object.freeze(batch);approvedBatches.add(batch);batchStages.set(batch,stage);if(snapshot)fullSnapshotBatches.add(batch);
+  consumed.add(state); // A thrown/ambiguous response consumes the capability; never retry it.
+  await transport.applyBatch(batch);return migration.name;
+ }});
+}
+
+----- FIN CONTEXTO -----
+
+ARCHIVO DE CONTEXTO: infra/cloudflare/dev/scripts/safe-d1/migration-batch-runner.mjs
+SHA-256: 119ae6752319436db19b17731942e8e954a73ea1ac7d359e2cd54486d1d7d651
+----- INICIO CONTEXTO -----
+import {approvedSources,assertEnvironment,assertRuntime,migrations,requireSafe} from './policy.mjs';
+import {createReader} from './read.mjs';
+import {createStageWriter} from './write.mjs';
+import {verifyBackup} from './backup.mjs';
+import {batchBackupState,batchBackupPins} from './batch-backup-receipt.mjs';
+import {isFinalBackupReceipt,finalBackupState,finalBackupPins} from './final-backup-receipt.mjs';
+import {snapshotFingerprint} from './snapshot.mjs';
+import {captureBatchBaseline,assertVerifiedBaselineCurrent} from './verified-baseline-control.mjs';
+function verifyTransition(before,after){
+ const oldLedger=before.snapshot.tables.find(t=>t.name==='d1_migrations'),ledger=after.snapshot.tables.find(t=>t.name==='d1_migrations');
+ requireSafe(ledger&&oldLedger&&JSON.stringify(ledger.rows.slice(0,oldLedger.rows.length))===JSON.stringify(oldLedger.rows),'postflight_previous_history_changed');
+ const seeded=new Set(['roles','permissions','role_permissions','admin_role_definitions','admin_role_permissions','publication_control','catalog_state']);
+ for(const table of after.snapshot.tables){
+  if(['d1_migrations','sqlite_sequence'].includes(table.name))continue;
+  if(!seeded.has(table.name))requireSafe(table.rows.length===0,'postflight_unexpected_content');
+  if(table.name==='catalog_state')requireSafe(JSON.stringify(table.columns)===JSON.stringify(['id','version'])&&JSON.stringify(table.rows)===JSON.stringify([['integer:31','integer:30']]),'postflight_catalog_state_invalid');
+  const old=before.snapshot.tables.find(t=>t.name===table.name);
+  if(seeded.has(table.name)&&old)requireSafe(JSON.stringify(table)===JSON.stringify(old),'postflight_seed_or_control_changed');
+ }
+}
+// One pre-batch verified full backup protects this entire bounded batch. No export
+// path exists here. Any failure is terminal; a partial batch cannot be resumed.
+export async function runRemainingMigrations({transport,backup,recordBaseline,recordStage,recordObservation,recordPostflight,environment=process.env}){
+ const result={status:'blocked',stages:[],attemptedMigration:null,writeAttempts:0,credentialDisposed:false};
+ try{
+  assertEnvironment(environment);assertRuntime();approvedSources();const finalOnly=isFinalBackupReceipt(backup),startStage=finalOnly?3:1,backupPins=finalOnly?finalBackupPins:batchBackupPins,stored=finalOnly?finalBackupState(backup):batchBackupState(backup);
+  requireSafe(typeof recordBaseline==='function'&&typeof recordStage==='function','batch_evidence_required');
+  if(finalOnly)requireSafe(typeof recordObservation==='function'&&typeof recordPostflight==='function','final_batch_durable_evidence_required');
+  const reader=createReader(transport);await reader.inspect(startStage);
+  let expectedFingerprint=stored.fingerprint,recoveryBookmark=stored.bookmark;
+  for(let stage=startStage;stage<=5;stage++){
+   approvedSources();await reader.inspect(stage);
+   const live=await captureBatchBaseline(transport,{stage,fingerprint:expectedFingerprint,originalBookmark:recoveryBookmark,requireOriginalBookmark:stage>startStage,recordObservation});
+   const evidence=await recordBaseline(live.baseline,backupPins);requireSafe(evidence?.originalBookmarkPreserved===true&&/^[a-f0-9]{64}$/.test(evidence.recordSha256),'baseline_evidence_not_confirmed');
+   const state=await reader.inspect(stage);verifyBackup(backup,state);approvedSources();
+   await assertVerifiedBaselineCurrent(transport,live.baseline);
+   await recordStage(stage,{status:'outcome_not_confirmed',migration:migrations[stage].name,migrationSha256:migrations[stage].sha256,baseline:evidence});
+   result.attemptedMigration=migrations[stage].name;result.writeAttempts++;
+   await createStageWriter(transport).apply(state,backup,{snapshot:live.snapshot});
+   const after=await reader.inspect(stage+1),postBookmark=await reader.bookmark(),post=await reader.snapshot();
+   requireSafe(post.stage===stage+1&&await reader.bookmark()===postBookmark,'postflight_concurrent_change');
+   verifyTransition(live.snapshot,post);
+   expectedFingerprint=snapshotFingerprint(post.snapshot);recoveryBookmark=postBookmark;
+   let postflightEvidence;if(recordPostflight){postflightEvidence=await recordPostflight({stage:stage+1,fingerprint:expectedFingerprint,bookmark:postBookmark,observedAt:new Date().toISOString()});requireSafe(postflightEvidence?.bookmarkProtected===true&&/^[a-f0-9]{64}$/.test(postflightEvidence.recordSha256),'postflight_evidence_not_confirmed');}
+   const completed={migration:migrations[stage].name,migrationSha256:migrations[stage].sha256,status:'verified',schemaHash:after.schemaHash,history:JSON.parse(after.history).map(([id,name])=>({id,name})),postflightVerified:true};
+   if(postflightEvidence)completed.postflightEvidence=postflightEvidence;
+   result.stages.push(completed);await recordStage(stage,completed);
+  }
+  result.status=finalOnly?'completed_0004_0006_only':'completed_0002_0006_only';
+ }catch(error){
+  result.status=result.writeAttempts?'stopped_review_required':'stopped_before_write';
+  const safe=new Set(['live_baseline_logical_change','live_baseline_concurrent_bookmark_change','live_baseline_changed_between_stages','live_baseline_stale','live_baseline_changed_before_write','schema_mismatch','history_mismatch','nonempty_installation','seed_data_mismatch','query_failed','http_rejected','cloudflare_rejected','request_outcome_unknown','postflight_concurrent_change','postflight_previous_history_changed','postflight_unexpected_content','postflight_catalog_state_invalid','postflight_seed_or_control_changed','preflight_stale','baseline_evidence_not_confirmed']);
+  result.errorCode=safe.has(error?.message)?error.message:'validation_or_operation_failed_details_omitted';
+ }finally{transport.dispose();delete environment.CLOUDFLARE_API_TOKEN;result.credentialDisposed=true;if(transport.diagnostics)result.requests=transport.diagnostics();result.finishedAt=new Date().toISOString();}
+ return result;
+}
+
+----- FIN CONTEXTO -----
+
+ARCHIVO DE CONTEXTO: infra/cloudflare/dev/scripts/safe-d1/migration-final-permit.mjs
+SHA-256: 9aa22fcdf5268a525a6608efa9d98408a2e39df6774ef0dcd69ca100824205fc
+----- INICIO CONTEXTO -----
+import {existsSync,openSync,writeFileSync,fsyncSync,closeSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {custodyRoot,verifyWindowsCustody} from './windows-custody.mjs';
+import {requireSafe,target,migrations} from './policy.mjs';
+export const finalAuthorizationId='3771d065-f5e5-4bb0-b0fc-0091834f92c8';
+// Attempt consumed: one 0004 batch accepted; postflight bookmark guard stopped the run.
+export const finalApproved=false;
+export const finalPrefix=resolve(custodyRoot,'migration-0004-0006-'+finalAuthorizationId);
+const permits=new WeakSet();
+export function issueFinalPermit(){
+ requireSafe(finalApproved,'final_batch_not_authorized');verifyWindowsCustody();requireSafe(!existsSync(finalPrefix+'.result.json'),'final_batch_already_attempted');
+ const fd=openSync(finalPrefix+'.attempt.json','wx',0o600);try{writeFileSync(fd,JSON.stringify({authorizationId:finalAuthorizationId,target,migrations:migrations.slice(3),maximumWriteBatches:3,startedAt:new Date().toISOString()}));fsyncSync(fd);}finally{closeSync(fd);}
+ const permit=Object.freeze({});permits.add(permit);return permit;
+}
+export const takeFinalPermit=p=>permits.delete(p);
+
+----- FIN CONTEXTO -----

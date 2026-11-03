@@ -1,9 +1,10 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join, normalize } from "node:path";
+import { extname, join, normalize, resolve } from "node:path";
 
 const port = Number(process.env.PORT || 4173);
-const root = process.cwd();
+// Keep the process cwd outside dist so Windows can rebuild an open preview.
+const root = resolve(process.env.PREVIEW_ROOT || process.cwd());
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",

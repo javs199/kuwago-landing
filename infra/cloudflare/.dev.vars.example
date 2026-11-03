@@ -1,0 +1,8 @@
+# Documentation only. Empty metadata is NOT a valid Access configuration.
+# Never put deploy API tokens, Access service secrets or real credentials here.
+APP_ENV=development
+DEPLOYMENT_STATE=disabled
+MUTATIONS_ENABLED=false
+ACCESS_ISSUER=
+ACCESS_AUD=
+ADMIN_ORIGIN=

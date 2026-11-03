@@ -1,0 +1,19 @@
+{
+  "purpose": "backup-only-post-0006-before-first-super-admin",
+  "executionId": "17fe22b3-a7bf-4a86-954b-f4d7c35a7db6",
+  "approved": false,
+  "expectedStage": 6,
+  "expectedApplicationTables": 32,
+  "expectedFingerprint": "1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5",
+  "expectedHistory": ["0001_admin_catalog.sql","0002_integrity_guards.sql","0003_access_rbac.sql","0004_catalog_operations.sql","0005_publication_resilience.sql","0006_media_lifecycle.sql"],
+  "target": {"account":"7a8bcd7992a3de359d2aff87df2fb693","id":"c5cfbe44-4fd0-4c2a-83c1-b833935534ba","name":"kuwago-admin-db-development"},
+  "maximumExportStarts": 1,
+  "intendedPermission": "D1 Read + D1 Write (export-only tool scope; no SQL writes)",
+  "custody": "C:\\Users\\JV\\AppData\\Local\\Kuwago\\D1Backups\\development",
+  "encryption": "existing AES-256-GCM with DPAPI and existing recovery material",
+  "requireBookmark": true,
+  "requireExactIsolatedRestore": true,
+  "preserveAllPriorBackups": true,
+  "migrationsAllowed": false,
+  "bootstrapAllowed": false
+}

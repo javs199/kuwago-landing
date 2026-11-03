@@ -1,0 +1,110 @@
+{
+  "purpose": "Local preparation only: first Super Admin and protected Admin/API DEV",
+  "environment": "development",
+  "target": {
+    "account": "7a8bcd7992a3de359d2aff87df2fb693",
+    "database": "kuwago-admin-db-development",
+    "databaseId": "c5cfbe44-4fd0-4c2a-83c1-b833935534ba"
+  },
+  "migrationEvidence": {
+    "executionId": "3b4f39d1-2271-45e8-92fe-27ae04e7f14e",
+    "stage": 6,
+    "resultSha256": "453dce194314ea308351c543a8ed5547607d0897f56aef8679b1926ef37729af",
+    "closureSha256": "e1ca3898e0fe7077dee86cb4e3bae27ba5804cbd9ae14204faf1a5ca79ee49d5",
+    "checkpointSha256": "a6e75fcb6b3d9d7f3904e10b60c4e3c575e0a040e16a700af53bd5645496ba14",
+    "fingerprint": "1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5"
+  },
+  "gates": {
+    "remoteIdentityCaptureApproved": false,
+    "remoteBootstrapApproved": false,
+    "remoteDeployApproved": false,
+    "remoteBindingsChangesApproved": false,
+    "remoteBackupApproved": false
+  },
+  "identity": {
+    "gatewayOrigin": null,
+    "verifiedIssuer": "https://blue-bread-0e64.cloudflareaccess.com",
+    "verifiedGatewayAudience": null,
+    "verifiedApiAudience": "dd73f3792def5ce94841273f79026f08e326c98d6fd98925ba0551196bb16adc",
+    "gatewayAccessCoverageVerified": false,
+    "recipientEvidence": {
+      "name": "Jesús Vargas",
+      "email": "ch.jesus.99@gmail.com",
+      "subject": "57fd05c6-e0f3-5838-8e16-4ab77d8dff41",
+      "source": "authorized Cloudflare Access Dashboard user detail and last-seen user_uuid",
+      "observedOn": "2026-10-26",
+      "freshApplicationSessionObserved": true,
+      "liveJwtCryptographicallyVerified": true,
+      "jwtVerificationAt": "2026-10-26T07:01:11.521Z",
+      "jwtExpiresAt": "2026-10-26T12:42:19.000Z",
+      "jwtVerificationReceiptId": "8e34c507-9d31-4b72-99e7-271a6a01a5ad",
+      "jwtVerificationReceiptSha256": "c80a18a77447612f9ebe0b419f2fcce88d2445ccdeabc3034386d2839e399f06",
+      "rawJwtPersisted": false
+    },
+    "grantorEvidence": null,
+    "distinctVerifiedHumanGrantorRequired": false,
+    "grantorModel": "proposed disabled technical bootstrap executor; not another human or Access identity",
+    "singleOperatorProposalApprovedForRemoteExecution": false,
+    "rawTokensPersisted": false
+  },
+  "bootstrap": {
+    "remoteExecutorImplemented": true,
+    "remoteWriteEnabled": false,
+    "automaticProvisioning": false,
+    "requiresExplicitHumanApproval": true,
+    "requiredAtomicOperations": [
+      "assert stage-6 schema/history/fingerprint and no duplicate identity or operation",
+      "create exactly verified recipient plus distinct disabled technical executor, only in empty principal tables",
+      "assign canonical super_admin only to recipient with granted_by technical executor",
+      "append audit event identifying technical execution and single human authorization reference; no independent approval claimed",
+      "verify role, audit and rollback behavior before enabling remote execution"
+    ],
+    "completed": {
+      "executionId": "264309c0-5461-41ed-b4c0-d89604a69f9b",
+      "status": "PASS",
+      "confirmedMutatingSends": 1,
+      "durablyClosed": true,
+      "closedAt": "2026-10-27T21:35:10.960Z",
+      "postflightFingerprint": "38185f66ceb9fef17d00aa59817fe6162f4262e214203507ba95112475b3d170",
+      "closedSha256": "09d895afb779ee61d84e1605a32ea0989df010c251c16f119f6f2b25f9676793"
+    }
+  },
+  "recovery": {
+    "latestVerifiedSqlBackupStage": 6,
+    "stage6FullBackupAvailable": true,
+    "requiresReviewBeforeBootstrapWrite": true,
+    "stage6Backup": {
+      "authorizationId": "17fe22b3-a7bf-4a86-954b-f4d7c35a7db6",
+      "operationId": "1098a954-90fc-4366-b82c-808fd047262a",
+      "ciphertextSha256": "06813068357b65049988cca2e6fa3b2d0b4de9eef247faae78af9bf8b9114d23",
+      "evidenceSha256": "24d82b43a54732dbbd369f3f429852f50af9bc74e1c4b241b1c3f3d276978ab2",
+      "resultSha256": "a0c16fd3e2386475d565891f3c87d3a860f8f54915126d202bd68576bb996de3",
+      "verifiedAt": "2026-10-27T21:05:14.231Z",
+      "restoredTables": 34,
+      "restoredRows": 56
+    }
+  },
+  "integration": {
+    "strategy": "same-origin gateway -> private service binding -> existing API",
+    "gatewaySource": "src/gateway.ts",
+    "apiSource": "src/index.ts",
+    "accessVerifier": "src/auth/access.ts",
+    "rbacSource": "src/auth/rbac.ts",
+    "adminClient": "apps/admin/src/api/admin-client.ts",
+    "productionFrontendSource": "api",
+    "localTestHarnessAllowedRemotely": false,
+    "deployableWranglerConfigPrepared": false,
+    "requiredBindings": [
+      "gateway: ASSETS + ADMIN_API",
+      "private API: DB + PRIVATE_MEDIA + PUBLICATION (review resource availability)",
+      "reconciler: isolated bindings and separately authorized Cron"
+    ],
+    "pending": [
+      "gateway Access app/origin/AUD and MFA confirmation",
+      "private ingress/previews disabled for API",
+      "binding/resource mapping and budget",
+      "media format policy and real Images validation",
+      "explicit build/deploy and acceptance authorization"
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kuwago-admin-api-development",
+  "account_id": "7a8bcd7992a3de359d2aff87df2fb693",
+  "main": "__BLOCKED_UNTIL_NEW_BACKUP_AUTHORIZATION__.ts",
+  "compatibility_date": "2026-10-24",
+  "workers_dev": true,
+  "preview_urls": false,
+  "routes": [],
+  "send_metrics": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false
+    }
+  },
+  "assets": {
+    "directory": "../../../apps/admin/dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+  "vars": {
+    "APP_ENV": "development",
+    "ADMIN_ORIGIN": "https://kuwago-admin-api-development.ch-jesus-99.workers.dev",
+    "ACCESS_ISSUER": "https://blue-bread-0e64.cloudflareaccess.com",
+    "ACCESS_AUD": "dd73f3792def5ce94841273f79026f08e326c98d6fd98925ba0551196bb16adc",
+    "MUTATIONS_ENABLED": "false",
+    "DEV_MAINTENANCE": "true"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kuwago-admin-db-development",
+      "database_id": "c5cfbe44-4fd0-4c2a-83c1-b833935534ba"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "PRIVATE_MEDIA",
+      "bucket_name": "kuwago-media-development"
+    }
+  ]
+}

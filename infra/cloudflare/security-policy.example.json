@@ -1,0 +1,122 @@
+{
+  "status": "DESIGN_NOT_ENFORCED",
+  "browserAdministration": {
+    "sameOrigin": true,
+    "accessBeforeEveryAsset": true,
+    "jwtVerification": [
+      "RS256 signature",
+      "fixed issuer",
+      "environment audience",
+      "exp",
+      "nbf when present",
+      "iat sanity",
+      "kid from fixed JWKS only"
+    ],
+    "trustedPrincipal": "verified issuer + sub",
+    "roleSource": "D1 environment-local assignments, never React or request body",
+    "writes": {
+      "allowedMethods": [
+        "POST",
+        "PATCH",
+        "DELETE"
+      ],
+      "exactOriginRequired": true,
+      "customHeader": "X-Kuwago-Request",
+      "contentType": "application/json",
+      "csrfTokenDecision": "not a substitute for Origin/header checks; token if future non-JSON/cookie flow needs one",
+      "uploadException": {
+        "path": "/api/v1/media",
+        "method": "POST",
+        "contentTypes": [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ],
+        "exactOriginRequired": true,
+        "customHeaderRequired": true,
+        "permission": "media:upload",
+        "noFormEncoding": true
+      }
+    },
+    "memberships": {
+      "disallowSelfRoleChange": true,
+      "privilegedChangesRequireSecondReviewer": true
+    }
+  },
+  "proposedRoles": {
+    "viewer": [
+      "services:read"
+    ],
+    "editor": [
+      "services:read",
+      "drafts:write",
+      "media:upload"
+    ],
+    "publisher": [
+      "services:read",
+      "commercial:approve",
+      "services:publish",
+      "services:archive"
+    ],
+    "securityAdmin": [
+      "members:manage"
+    ]
+  },
+  "businessDecisions": [
+    "two-person approval and prohibition on self-approval",
+    "initial individual principals and roles",
+    "MFA provider and session duration"
+  ],
+  "publicApi": {
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "credentials": false,
+    "noD1Binding": true,
+    "noPrivateMediaBinding": true,
+    "noAdminServiceBinding": true,
+    "publicR2DirectAccess": false
+  },
+  "proposedLimits": {
+    "jsonBytes": 65536,
+    "catalogResponseBytes": 1048576,
+    "uploadBytes": 2097152,
+    "imagePixels": 8000000,
+    "imageDimension": 4096,
+    "imageTypes": [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ],
+    "imagesPerRevision": 8,
+    "uploadTimeoutSeconds": 30,
+    "readRequestsPerMinutePerKey": 120,
+    "writeRequestsPerMinutePerPrincipal": 30,
+    "uploadsPerMinutePerPrincipal": 5
+  },
+  "limitsAreProposalsNotEnforced": true,
+  "proposedRecoveryObjectives": {
+    "rpoHours": 24,
+    "rtoHours": 4,
+    "testRestoreBeforeProduction": true
+  },
+  "proposedRetention": {
+    "quarantineDays": 7,
+    "unreferencedMediaGraceDays": 30,
+    "backupDays": 90,
+    "auditDays": 180,
+    "requiresBusinessApproval": true
+  },
+  "costPolicy": {
+    "monthlyBudgetUsd": null,
+    "alertsPercent": [
+      50,
+      80,
+      100
+    ],
+    "alertsAreNotHardCaps": true,
+    "productionSeparateAccountDecision": "REVIEW_REQUIRED"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "@kuwago/cloudflare-dev-preparation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/local.mjs dev",
+    "dev:public": "node scripts/local.mjs dev-public",
+    "validate:public": "node scripts/local.mjs validate-public",
+    "migrate:local": "node scripts/local.mjs migrate",
+    "verify:migrations": "node scripts/local.mjs migrate-verify",
+    "migrations:list:local": "node scripts/local.mjs list",
+    "validate:config": "node scripts/local.mjs validate",
+    "validate:gateway": "node scripts/local.mjs validate-gateway",
+    "test:e2e:gateway": "node scripts/gateway-e2e.mjs",
+    "typecheck": "node ../../../apps/admin/node_modules/typescript/bin/tsc --noEmit",
+    "lint": "node ../../../apps/admin/node_modules/eslint/bin/eslint.js src scripts test --config ../../../apps/admin/eslint.config.js --max-warnings 0",
+    "test": "node --test test/*.test.mjs",
+    "test:migrations:safe": "node --test test/safe-migration-runner.test.mjs",
+    "test:backup:readiness": "node --test test/backup-readiness.test.mjs",
+    "backup:only": "node scripts/d1-backup-only.mjs",
+    "backup:proof": "node scripts/d1-backup-only.mjs --local-proof",
+    "test:backup:only": "node --test test/backup-only.test.mjs",
+    "pretest": "npm --prefix ../../../packages/contracts run build && npm run build",
+    "build": "npm run typecheck && node scripts/build.mjs",
+    "dev:stack": "node scripts/local.mjs dev-stack",
+    "validate:barrier": "node scripts/local.mjs validate-barrier",
+    "validate:reconciler": "node scripts/local.mjs validate-reconciler",
+    "recovery:backup": "node scripts/recovery.mjs backup",
+    "recovery:restore": "node scripts/recovery.mjs restore --confirm-isolated",
+    "recovery:verify": "node scripts/recovery.mjs verify",
+    "dev:reconciler": "node scripts/local.mjs dev-reconciler",
+    "reconcile:watch": "node scripts/reconcile-watch.mjs",
+    "dev:admin-test": "node test/admin-harness.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "miniflare": "5.20261019.2-beta",
+    "sharp": "0.35.5",
+    "wrangler": "4.152.0"
+  },
+  "overrides": {
+    "undici": "7.30.1"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "jose": "6.2.13"
+  }
+}

@@ -1,11 +1,15 @@
+import { createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailability } from './catalog-adapter.js';
+
 (() => {
-  const data = window.KUWAGO_MARKETPLACE;
+  const adapter = createStaticCatalogAdapter();
   const $ = id => document.getElementById(id);
   const cart = [];
+  let data = { services: [], categories: [] }, catalog = null, loadState = 'loading';
   let activeCategory = 'all', activeService = null, editing = null;
   let language = document.documentElement.lang;
   const lang = () => language === 'es' ? 'es' : 'en';
   const t = key => window.i18n[lang()][`mp.${key}`];
+  const categoryName = id => data.categories.find(row => row.id === id)?.translations[lang()].name || t(id) || id;
   const el = (tag, text, className) => {
     const node = document.createElement(tag);
     if (text) node.textContent = text;
@@ -15,73 +19,114 @@
   const button = (label, action, className = 'mp-button mp-secondary') => {
     const node = el('button', label, className); node.type = 'button'; node.addEventListener('click', action); return node;
   };
-  const reference = service => `${t('from')} $${service.priceReference} ${t(service.unit)} · ${service.durationMinutes} ${t('minutes')}`;
+  const reference = service => {
+    const price = service.referencePrice;
+    let label = t('quote');
+    if (price) label = `${t('from')} ${price.symbol}${price.amount} ${t(price.unit)}`;
+    else if (service.price && service.price.kind !== 'quote') {
+      label = `${service.price.kind === 'from' ? t('from') + ' ' : ''}${new Intl.NumberFormat(lang(), { style:'currency', currency:service.price.currency, currencyDisplay:'code' }).format(service.price.amountMinor / 100)} ${t(service.price.unit)}`;
+    }
+    return `${label} · ${service.durationMinutes ?? '—'} ${t('minutes')}`;
+  };
   function openOptions(service, index = null) {
+    if (loadState !== 'ready' || !data.services.some(row => row.id === service.id && row.revisionId === service.revisionId)) return;
     activeService = service; editing = index;
     $('mp-dialog-title').textContent = service[lang()].title;
     $('mp-dialog-desc').textContent = service[lang()].description;
-    $('mp-dialog-meta').textContent = `${t('reference')}: ${reference(service)}`;
+    $('mp-dialog-meta').textContent = `${t(service.source === 'stitch_reference' ? 'reference' : 'details')}: ${reference(service)}`;
     $('mp-option-date').value = index === null ? $('mp-date').value : cart[index].date;
     $('mp-option-travelers').value = index === null ? $('mp-travelers').value : cart[index].travelers;
     $('mp-options').querySelector('[type="submit"]').textContent = t(index === null ? 'add' : 'save');
     $('mp-dialog').showModal();
   }
+  function renderCategories() {
+    $('mp-category').replaceChildren();
+    $('mp-filters').replaceChildren();
+    for (const id of ['all', ...data.categories.map(row => row.id)]) {
+      const label = id === 'all' ? t('all') : categoryName(id);
+      const option = el('option',label); option.value = id; $('mp-category').append(option);
+      const filter = button(label, () => {
+        activeCategory = id; $('mp-category').value = id; renderCards();
+        $('mp-filters').querySelector('[aria-pressed="true"]')?.focus();
+      }, 'mp-chip');
+      filter.setAttribute('aria-pressed',String(activeCategory === id)); $('mp-filters').append(filter);
+    }
+    $('mp-category').value = activeCategory;
+  }
   function renderCards() {
+    $('mp-cards').replaceChildren(); renderCategories();
+    $('mp-cards').setAttribute('aria-busy',String(loadState === 'loading'));
+    if (loadState === 'loading') { $('mp-results').textContent = t('loading'); return; }
+    if (loadState === 'error') {
+      $('mp-results').textContent = t('loadError');
+      $('mp-cards').append(button(t('retry'),refreshCatalog)); return;
+    }
     const query = $('mp-query').value.trim().toLocaleLowerCase(lang());
     const services = data.services.filter(service => (activeCategory === 'all' || service.category === activeCategory) && `${service[lang()].title} ${service[lang()].description}`.toLocaleLowerCase(lang()).includes(query));
-    $('mp-cards').replaceChildren();
-    services.forEach(service => {
-      const card = el('article', '', 'mp-service mp-panel');
-      const media = el('div', '', 'mp-service-media');
-      const image = el('img'); image.src = service.image; image.alt = `${t('image')}: ${service[lang()].title}`; image.loading = 'lazy'; image.width = 640; image.height = 360;
-      media.append(image, el('span', t(service.category), 'mp-badge'));
-      const content = el('div', '', 'mp-service-content');
-      content.append(el('h3', service[lang()].title), el('p', service[lang()].description), el('p', `${service.durationMinutes} ${t('minutes')} · ${t('private')}`, 'mp-meta'), el('small', t('reference'), 'mp-reference'), el('p', reference(service), 'mp-price'));
-      const actions = el('div', '', 'mp-actions');
-      actions.append(button(t('details'), () => openOptions(service)), button(t('options'), () => openOptions(service), 'mp-button'));
-      content.append(actions); card.append(media, content); $('mp-cards').append(card);
-    });
-    $('mp-results').textContent = services.length ? `${services.length} ${t('results')}` : t('noResults');
-    $('mp-filters').replaceChildren();
-    ['all','wellness','dining','water','land','nature'].forEach(category => {
-      const filter = button(t(category), () => {
-        activeCategory = category; $('mp-category').value = category; renderCards();
-        $('mp-filters').querySelector('[aria-pressed="true"]').focus();
-      }, 'mp-chip');
-      filter.setAttribute('aria-pressed', String(activeCategory === category));
-      $('mp-filters').append(filter);
-    });
+    for (const service of services) {
+      const card = el('article','','mp-service mp-panel'), media = el('div','','mp-service-media');
+      const image = el('img'); image.src = service.image; image.alt = service.alt[lang()]; image.loading = 'lazy'; image.width = 640; image.height = 360;
+      media.append(image,el('span',categoryName(service.category),'mp-badge'));
+      const content = el('div','','mp-service-content');
+      const modality = `${t(service.experienceType === 'private' ? 'privateType' : service.experienceType || 'unspecified')} · ${t(service.venue || 'unspecified')}`;
+      content.append(el('h3',service[lang()].title),el('p',service[lang()].description),el('p',`${service.durationMinutes ?? '—'} ${t('minutes')} · ${modality}`,'mp-meta'));
+      if (service.source === 'stitch_reference') content.append(el('small',t('reference'),'mp-reference'));
+      content.append(el('p',reference(service),'mp-price'));
+      const actions = el('div','','mp-actions');
+      actions.append(button(t('details'),() => openOptions(service)),button(t('options'),() => openOptions(service),'mp-button'));
+      content.append(actions); card.append(media,content); $('mp-cards').append(card);
+    }
+    $('mp-results').textContent = services.length ? `${services.length} ${t('results')}` : t(data.services.length ? 'noResults' : 'emptyCatalog');
   }
   function renderCart() {
-    $('mp-count').textContent = String(cart.length);
-    $('mp-cart-items').replaceChildren();
-    if (!cart.length) $('mp-cart-items').append(el('p', t('empty')));
+    $('mp-count').textContent = String(cart.length); $('mp-cart-items').replaceChildren();
+    if (!cart.length) $('mp-cart-items').append(el('p',t('empty')));
     cart.forEach((item,index) => {
-      const service = data.services.find(service => service.id === item.id);
-      const row = el('div', '', 'mp-cart-item');
-      const image = el('img'); image.src = service.image; image.alt = ''; image.width = 64; image.height = 64;
-      const content = el('div');
-      content.append(el('h3', service[lang()].title), el('p', `${item.date ? new Intl.DateTimeFormat(lang(), { dateStyle: 'medium' }).format(new Date(`${item.date}T12:00:00`)) : t('noDate')} · ${item.travelers} ${t('travelers')}`));
-      const actions = el('div', '', 'mp-actions');
-      const edit = button(t('edit'), () => openOptions(service,index), 'mp-text-button');
-      const remove = button(t('remove'), () => { cart.splice(index,1); renderCart(); $('mp-cart-title').focus(); }, 'mp-text-button');
-      edit.setAttribute('aria-label', `${t('edit')}: ${service[lang()].title}`); remove.setAttribute('aria-label', `${t('remove')}: ${service[lang()].title}`);
-      actions.append(edit,remove); content.append(actions); row.append(image,content); $('mp-cart-items').append(row);
+      const availability = cartAvailability(item,catalog);
+      const service = data.services.find(row => row.id === item.id);
+      const row = el('div','','mp-cart-item'), content = el('div');
+      if (service) { const image = el('img'); image.src = service.image; image.alt = ''; image.width = 64; image.height = 64; row.append(image); }
+      const title = service?.[lang()].title || item.id;
+      content.append(el('h3',title));
+      if (availability === 'available') content.append(el('p',`${item.date ? new Intl.DateTimeFormat(lang(),{dateStyle:'medium',timeZone:'UTC'}).format(new Date(`${item.date}T12:00:00Z`)) : t('noDate')} · ${item.travelers} ${t('travelers')}`));
+      else content.append(el('p',t(availability),'mp-reference'));
+      const actions = el('div','','mp-actions');
+      if (service && ['available','changed'].includes(availability)) {
+        const edit = button(t('edit'),() => openOptions(service,index),'mp-text-button');
+        edit.setAttribute('aria-label',`${t('edit')}: ${title}`); actions.append(edit);
+      }
+      const remove = button(t('remove'),() => { cart.splice(index,1); renderCart(); $('mp-cart-title').focus(); },'mp-text-button');
+      remove.setAttribute('aria-label',`${t('remove')}: ${title}`); actions.append(remove);
+      content.append(actions); row.append(content); $('mp-cart-items').append(row);
     });
   }
+  async function refreshCatalog() {
+    loadState = 'loading'; catalog = null; data = {services:[],categories:[]}; renderCards(); renderCart();
+    const result = await loadCatalog(adapter,'static_reference');
+    loadState = result.status; catalog = result.catalog;
+    data = catalog ? {categories:catalog.categories,services:catalog.services.map(toMarketplaceCard)} : {services:[],categories:[]};
+    if (!data.categories.some(row => row.id === activeCategory)) activeCategory = 'all';
+    renderCards(); renderCart();
+  }
   $('mp-cart-title').tabIndex = -1;
-  // Category select includes only supplied services; empty design categories remain filterable.
-  ['water','land','nature'].forEach(category => { const option = el('option', t(category)); option.value = category; option.dataset.i18n = `mp.${category}`; $('mp-category').append(option); });
-  $('mp-search').addEventListener('submit', event => { event.preventDefault(); activeCategory = $('mp-category').value; renderCards(); location.hash = 'experiences'; });
-  $('mp-close').addEventListener('click', () => $('mp-dialog').close());
-  $('mp-options').addEventListener('submit', event => {
+  $('mp-search').addEventListener('submit',event => { event.preventDefault(); activeCategory = $('mp-category').value; renderCards(); location.hash = 'experiences'; });
+  $('mp-close').addEventListener('click',() => $('mp-dialog').close());
+  $('mp-options').addEventListener('submit',event => {
     event.preventDefault();
-    if (!$('mp-options').reportValidity()) return;
-    const item = { id: activeService.id, date: $('mp-option-date').value, travelers: Number($('mp-option-travelers').value) };
+    if (!activeService || !$('mp-options').reportValidity()) return;
+    const item = {id:activeService.id,revisionId:activeService.revisionId,optionId:activeService.optionId,date:$('mp-option-date').value,travelers:Number($('mp-option-travelers').value)};
+    if (cartAvailability(item,catalog) !== 'available') { $('mp-dialog').close(); $('mp-results').textContent = t('changed'); return; }
     if (editing === null) cart.push(item); else cart[editing] = item;
-    $('mp-dialog').close(); renderCart();
-    if (editing !== null) $('mp-cart-title').focus();
+    $('mp-dialog').close(); renderCart(); if (editing !== null) $('mp-cart-title').focus();
   });
-  document.addEventListener('kuwago:language', event => { language = event.detail.lang; renderCards(); renderCart(); });
-  renderCards(); renderCart();
+  document.addEventListener('kuwago:language',event => {
+    language = event.detail.lang; renderCards(); renderCart();
+    if ($('mp-dialog').open && activeService) {
+      $('mp-dialog-title').textContent = activeService[lang()].title;
+      $('mp-dialog-desc').textContent = activeService[lang()].description;
+      $('mp-dialog-meta').textContent = `${t(activeService.source === 'stitch_reference' ? 'reference' : 'details')}: ${reference(activeService)}`;
+      $('mp-options').querySelector('[type="submit"]').textContent = t(editing === null ? 'add' : 'save');
+    }
+  });
+  void refreshCatalog();
 })();

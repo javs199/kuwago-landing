@@ -1,0 +1,28 @@
+{
+  "name": "@kuwago/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./public": {
+      "types": "./dist/public.d.ts",
+      "import": "./dist/public.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "lint": "node ../../apps/admin/node_modules/eslint/bin/eslint.js src --config ../../apps/admin/eslint.config.js --max-warnings 0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

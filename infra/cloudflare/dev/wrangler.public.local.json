@@ -1,0 +1,40 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kuwago-catalog-local-only",
+  "main": "src/public.ts",
+  "compatibility_date": "2026-07-30",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "send_metrics": false,
+  "dev": {
+    "ip": "127.0.0.1",
+    "port": 8791,
+    "local_protocol": "http"
+  },
+  "env": {
+    "development": {
+      "name": "kuwago-catalog-local-only-development",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "vars": {
+        "APP_ENV": "development"
+      },
+      "r2_buckets": [
+        {
+          "binding": "PUBLICATION",
+          "bucket_name": "kuwago-publication-local-development",
+          "remote": false
+        }
+      ],
+      "services": [
+        {
+          "binding": "CATALOG_BARRIER",
+          "service": "kuwago-catalog-barrier-local-only-development",
+          "remote": false
+        }
+      ]
+    }
+  }
+}

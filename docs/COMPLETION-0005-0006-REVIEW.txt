@@ -1,0 +1,808 @@
+KUWAGO — CONTINUACIÓN LOCAL EXCLUSIVA 0005–0006, PARA REVISIÓN
+25/10/2026 · America/Costa_Rica
+Estado: ejecución remota BLOQUEADA. Sin autorización de escritura ni captura de credenciales.
+ID nuevo preparado: 3b4f39d1-2271-45e8-92fe-27ae04e7f14e
+
+1. BASE EXACTA DEL DIFF Y ALCANCE
+
+Antes de editar se verificó que los cuatro archivos del resumen revisado coincidían
+con sus SHA-256 publicados en CHECKPOINT-PROTOTYPE-TECHNICAL-REVIEW.txt. Se guardó
+una copia byte a byte, más write.mjs/backup.mjs como dependencias que se modificarían.
+El diff de esta entrega compara contra ESA copia previa, no contra /dev/null para
+los archivos modificados, ni contra una reconstrucción retrospectiva de memoria.
+
+Baseline: 5150f98f-5ee4-4a7e-b885-d53a2e6e42e0
+SHA-256 del informe revisado: 5571146fbffc5d6f72deb746f87358f8264a77ed6485bf7e77504338f03e905b
+Los archivos nuevos se comparan correctamente contra /dev/null.
+No se ha hecho commit para obtener esta base ni se han alterado originales.
+
+Cambios existentes: transport.mjs, write.mjs, backup.mjs.
+Altas: completion-permit, completion-backup, completion-oracle, completion-journal,
+completion-checkpoint, completion-runner, CLI d1-migrate-0005-0006 y su test dirigido.
+owned-write-checkpoint.mjs (0004), stage-four-expectation.mjs y el test del prototipo
+anterior NO se cambian ni se conectan al flujo nuevo.
+
+2. PERMISO Y AISLAMIENTO
+
+El permiso nuevo es distinto del consumido 0004–0006. Solo admite los índices
+previos 4 y 5: SQL 0005 y después 0006, máximo dos envíos. No permite 0004, export,
+SQL arbitrario, selección de otra D1 ni reanudación de un intento parcial.
+Cuenta/DB/nombre siguen fijados a Kuwago DEV. completionApproved=false y todos
+los permisos remotos anteriores siguen falsos. El CLI se bloquea antes de leer
+stdin; no lo habilitan argumentos ni variables de entorno.
+
+La preparación conserva el patrón de token oculto mediante pipe local existente;
+no abre formularios ni pide credenciales. Para una futura ejecución haría falta
+revisión y autorización separada del permiso nuevo. No se activa el prototipo 0004.
+
+3. RESPALDO Y ESTADO DE PARTIDA
+
+Fuente: respaldo completo verificado de etapa 4, operación
+4e5b4fc2-8f1e-44e1-b2e5-f7ca82d40749.
+Ciphertext SHA-256:
+6283323d913b68ce1781553aeeac2a28e1fdd0833f73b9edd6c1535171a4356c
+Fingerprint de etapa 4:
+df24b03cf675ef1cebb593888fbcc5f4e5765aed84f061fe358e6b344de1c010
+
+Se fijan hashes de ciphertext, evidencia, resultado e informe; se comprueban ACL,
+destino y payload, y se restaura exactamente en SQLite aislada: 28 tablas y 53 filas.
+El origen esperado es el historial exacto 0001–0004 y el esquema aprobado de etapa 4.
+No hay fallback a una fuente demostrativa ni a un fingerprint recién aceptado.
+No se crea otro backup ni se conecta D1/R2 remoto para esta preparación.
+
+4. ACK CORREGIDO: PROPIEDAD, ALCANCE Y CONSUMO
+
+El recibo se crea únicamente después de una respuesta satisfactoria completa del
+batch aprobado. El WeakMap privado contiene:
+- referencia owner al MISMO objeto de transporte lector;
+- environment: development o local-simulation, nunca intercambiables;
+- executionId inmutable del permiso nuevo (simulaciones usan IDs locales distintos);
+- target fijo, scope 0005–0006, etapa concreta 5/6;
+- migrationSha256 del SQL original y batchSha256 del lote completo con sus parámetros;
+- requestStartedAt inmediatamente antes de solicitar el batch y
+  responseCompletedAt cuando su respuesta completa ya fue recibida/validada;
+- salida acotada de dos SELECT del MISMO batch: ledger y publication_control.
+
+consumeCompletionAcknowledgement exige coincidencia exacta con el transporte,
+entorno, ejecución, etapa, hash SQL y hash de intención persistida. Tras verificar
+ese vínculo, BORRA el recibo del WeakMap: no se consume otra vez ni se recupera
+tras un fallo de postflight. Un objeto fabricado o un ACK de simulación no sirve
+para desarrollo remoto. Un error/timeout no crea recibo.
+
+Los tiempos son observaciones reales del cliente sobre la petición/respuesta,
+no una ventana inferida ACK-20s, ni prueba del instante exacto del commit del servidor.
+El recibo no es una firma de Cloudflare ni un bookmark causal de Sessions API.
+
+5. RESULTADO ESPERADO DE 0005 Y 0006 SIN ADOPTAR EL REMOTO
+
+Los SQL originales no cambian. El escritor añade dos SELECT de lectura al MISMO
+batch transaccional, después del SQL y la fila de migración y antes de retirar la
+guarda temporal. Los índices de esas salidas están ligados al batch aprobado.
+No hay consulta separada posterior que pueda cambiar los valores generados antes
+de incorporarlos a la referencia.
+
+El único conjunto de valores generados que acepta el oráculo es:
+- applied_at de las nuevas filas 0005 y 0006, devueltos por ese batch, con formato
+  y calendario válidos;
+- epoch de publication_control creado por 0005: exactamente 32 caracteres hex
+  minúsculos, de la fila id=1. mode debe ser ready, generation/payload_hash NULL.
+  Esto es lo previsto para el catálogo vacío verificado; paused u otros valores
+  no se convierten en nueva referencia.
+
+Se reconstruye siempre desde el backup fijado de etapa 4 en workerd efímero local:
+se aplica el SQL original 0005 y, si corresponde, 0006. SOLO en ese oráculo local
+se sustituyen las fechas generadas y el epoch por la salida acotada del batch.
+Todo el esquema, defaults, tablas, filas, datos previos y secuencias restantes se
+predicen desde los SQL y el backup, no desde el snapshot posterior.
+
+Las cuatro filas originales del historial deben coincidir exactamente con el
+backup. En 0006 se exige que el epoch de 0005 y las primeras cinco filas del ledger
+coincidan EXACTAMENTE con el ACK de 0005 ya consumido y validado. No se acepta
+regenerar el epoch en 0006 ni ocultar un cambio de applied_at previo.
+
+El snapshot completo remoto debe ser igual al fingerprint de la proyección en
+cada etapa. Se validan además esquema/historial/semillas/FK/quick_check y ausencia
+de contenido no autorizado. No se normaliza todo el remoto ni se adopta una nueva
+versión de catalog_state por verla en la respuesta.
+
+6. GUARDAS Y CHECKPOINT EFECTIVAMENTE PERSISTIDO
+
+Se conservan las guardas SQL transaccionales: esquema, ledger, seeds, control de
+publicación y todas las filas/tipos del snapshot, incluidas secuencias y fechas.
+El hash del batch incluye las guardas, SQL original, parámetros, ledger y lecturas
+acotadas; se persiste como intención antes del envío. Se revalida la edad del
+preflight justo antes de consumir la capacidad y enviar.
+
+El checkpoint usa un diario REAL en disco con directorio verificado, archivos wx,
+fsync, SHA-256, lectura posterior y descifrado de comprobación de cada bookmark
+protegido por DPAPI. No acepta callbacks que devuelvan un booleano fingiendo
+persistencia: runCompletion exige un journal marcado en WeakSet por su fábrica,
+con entorno/ejecución coincidentes y recibos internos no fabricables.
+
+Secuencia:
+- snapshot inicial esperado restaurado desde backup + doble lectura y bookmarks
+  estables; checkpoint baseline físico y releído;
+- intención persistida con hashes y última lectura antes de SQL;
+- ACK ligado y consumido una sola vez, persistido con salida acotada;
+- proyección independiente del estado esperado y primera comparación completa;
+- frontera de checkpoint DESPUÉS de validar la escritura;
+- enlace exacto a esa frontera, dos snapshots completos iguales al esperado y
+  first/middle/last/final_check iguales; cualquier diferencia detiene sin retry;
+- checkpoint protegido, releído y descifrado; edad menor de 30 segundos;
+- registro de etapa verificada SOLO después de esa evidencia;
+- antes de 0006 se relee/verifica otra vez el checkpoint 0005 y se conservan las
+  guardas SQL completas con ese estado esperado, no con uno remoto adoptado.
+
+La escritura siguiente sigue protegida aunque haya una carrera tras la última
+lectura: el CHECK del batch aborta al ver datos diferentes. No se vuelve a elegir
+un punto si falla la ventana de bookmark.
+
+7. CIERRE FINAL DE ETAPA 6 Y NO REPETICIÓN
+
+El estado completed_0005_0006_only requiere ambas etapas [5,6], esquema 6, historial
+1–6 y checkpoint 6 verificado físicamente. Luego se escriben result.json y un
+closed.json separado que contiene el hash exacto del resultado y del checkpoint 6.
+Ambos se releen y comparan antes de devolver stage6DurablyClosed=true.
+El CLI SOLO imprime PASS si están ese estado y el recibo de cierre durable.
+
+Un resultado que diga completed sin closed.json válido no basta para declarar
+cierre. Si falla la persistencia se devuelve fallo y no se repite SQL. Se conserva
+la evidencia parcial para reconciliación manual posterior.
+
+Marcador de autorización wx + lock persistente por ejecución impiden reutilizar
+el ID. Los batches/preflight se consumen antes del envío, y una petición mutante
+fallida bloquea el transporte. Una respuesta perdida después de un commit no
+produce ACK ni desencadena una reconsulta o replay automático. Se distingue
+writesAccepted de verifiedStages: postflight fallido nunca equivale a SQL no
+aplicado. Una continuación tras ambigüedad requiere revisión y autorización propias.
+
+8. GARANTÍAS QUE SIGUEN SIN PODER OFRECERSE
+
+- No es un bloqueo distribuido de todos los escritores, ni garantiza detectar un
+  cambio transitorio revertido antes de las lecturas/guardas.
+- Time Travel no se presenta como contador transaccional ni se atribuye cada
+  avance a nuestra escritura. La nueva ventana puede detenerse por bookmark.
+- No demuestra entropía real con una sola muestra de epoch: su origen es el SQL
+  aprobado lower(hex(randomblob(16))) y la salida del mismo batch autenticado;
+  se valida forma y preservación, no se inventa un valor esperado previamente.
+- El ACK no prueba el instante de commit del servidor ni elimina una respuesta
+  ambigua. El sistema conserva el estado desconocido y se detiene.
+- No hay garantía global exactly-once contra otras herramientas/operadores; sí
+  límites por ejecución, historial, guards y ausencia de reintentos automáticos.
+- La durabilidad de fsync/DPAPI depende de Windows/disco/perfil y no sustituye el
+  backup/recuperación externos; no se promete borrado físico absoluto de memoria.
+- El journal de simulación usa directorios temporales locales. Su inyección de fallo
+  está prohibida en development. Un transporte remoto no coincide con entorno
+  local-simulation, y el CLI real no acepta configuración ni IDs arbitrarios.
+- El flujo se limita a la instalación vacía confirmada de etapa 4. Un catálogo con
+  datos o cambios requiere otro plan; no se adapta silenciosamente.
+- No se probó nada remotamente en esta entrega; no se verifican aquí permisos de
+  un futuro token, infraestructura nueva o semántica adicional de servicios.
+
+9. PRUEBAS DIRIGIDAS EJECUTADAS EN ESTA ENTREGA
+
+ÚNICA suite ejecutada:
+  node --test test/completion-0005-0006.test.mjs
+Resultado: 4/4 PASS, 0 fallos/omitidas/canceladas. Duración: 162499.032 ms.
+
+1) 0005→0006: alcance nuevo bloqueado, intento de override por entorno rechazado,
+   datos restaurados de etapa 4, SQL originales, ACKs y valores generados,
+   checkpoints reales, epoch preservado, cierre físico de etapa 6 y ledger 1–6.
+2) Cambios concurrentes: carrera después de la última lectura capturada por SQL
+   CAS, modificación posterior de catalog_state/epoch, cambio de bookmark, salida
+   transaccional inválida; también rechazo de ACK con otro transporte, entorno,
+   ejecución, etapa, SHA SQL o SHA batch, y rechazo del segundo consumo.
+3) Respuesta ambigua DESPUÉS de commit local: ledger llega a 5, pero no hay ACK,
+   no se inicia 0006, no hay cierre y se conserva intención de outcome desconocido.
+4) Fallo de persistencia después de escribir el archivo del checkpoint, tanto en
+   etapa 5 como en etapa 6: no se marca esa etapa verificada ni se crea closed.json.
+   En etapa 5 no se escribe 0006; en etapa 6 no se declara éxito final.
+
+Se usó workerd/SQLite local y el backup aprobado solo para restauración aislada;
+HTTP Cloudflare se simuló con fetch inyectado, sin credenciales reales. DPAPI y
+lectura de archivos fueron reales. No se ejecutaron suites globales, build, deploy,
+wrangler remoto ni migraciones remotas. Se hizo lint estático SOLO de los once
+archivos afectados; PASS. Los SQL de 0005/0006 conservan sus hashes originales.
+
+10. DIFF CONTRA LOS BYTES DE LA VERSIÓN REVISADA
+
+Cada bloque indica SHA antes/después. Los tres archivos compartidos se comparan
+con el snapshot guardado ANTES de editar; no son altas completas ficticias.
+Los archivos nuevos sí son altas completas. Encabezados normalizados a rutas
+relativas a/b; los hunks provienen de git diff --no-index, sin inventar preimágenes.
+No hay tokens, claves, JWT, cookies, enlaces firmados ni SQL de backup en el adjunto.
+Los marcadores synthetic_test_credential_not_real son fixtures explícitos.
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+SHA-256 antes: 616db5d484fbe4646cde88432f16dbc95c9fcb03064d0cdb71c78e2ecf929ade
+SHA-256 después: 9b59e5a92494b806e36ff6ad2567f68ce4da5df7a2fc2feea159437ad91f1279
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/transport.mjs b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+index 0a6dc87..05f4ef9 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+@@ -1,24 +1,32 @@
+-import {target,requireSafe,remoteExecutionEnabled} from './policy.mjs';
++import {target,requireSafe,remoteExecutionEnabled,digest,migrations} from './policy.mjs';
+ import {allowedReadSql} from './read.mjs';
+-import {isApprovedBatch,approvedBatchStage,hasFullSnapshotGuard} from './write.mjs';
++import {isApprovedBatch,approvedBatchStage,hasFullSnapshotGuard,approvedCompletionReadbacks} from './write.mjs';
++import {takeCompletionPermit} from './completion-permit.mjs';
+ import {takeBatchPermit} from './migration-batch-permit.mjs';
+ import {takeFinalPermit} from './migration-final-permit.mjs';
+ import {takeFirstMigrationPermit} from './migration-0001-permit.mjs';
+ import {isBackupRead} from './snapshot.mjs';
+ import {createExporter} from './export.mjs';
+ const writeAcknowledgements=new WeakMap();
+-export function ownWriteMetadata(receipt){const m=writeAcknowledgements.get(receipt);requireSafe(m,'own_write_acknowledgement_required');return Object.freeze({...m});}
++export function ownWriteMetadata(receipt){const m=writeAcknowledgements.get(receipt);requireSafe(m,'own_write_acknowledgement_required');return Object.freeze({stage:m.stage,acknowledgedAt:m.acknowledgedAt,source:m.source});}
++export function consumeCompletionAcknowledgement(receipt,{transport,environment,executionId,stage,migrationSha256,batchSha256}){
++ const m=writeAcknowledgements.get(receipt);requireSafe(m&&m.owner===transport&&m.environment===environment&&m.executionId===executionId&&m.stage===stage&&m.migrationSha256===migrationSha256&&m.batchSha256===batchSha256&&m.completionOutput,'completion_ack_binding_mismatch');
++ writeAcknowledgements.delete(receipt);const {owner,...value}=m;requireSafe(owner===transport,'completion_ack_owner_invalid');return Object.freeze(value);
++}
+ // Remote transport is release-locked. Tests inject fetch into a simulation-only instance.
+-export function createTransport(token,{simulationFetch,migration0001Permit,onlyFirstMigration=false,migrationBatchPermit,onlyRemainingMigrations=false,migrationFinalPermit,onlyFinalMigrations=false}={}){
++export function createTransport(token,{simulationFetch,migration0001Permit,onlyFirstMigration=false,migrationBatchPermit,onlyRemainingMigrations=false,migrationFinalPermit,onlyFinalMigrations=false,migrationCompletionPermit,onlyCompletionMigrations=false,simulationExecutionId}={}){
+  const scopedPermit=takeFirstMigrationPermit(migration0001Permit);const firstOnly=scopedPermit||onlyFirstMigration;
+  const batchPermit=takeBatchPermit(migrationBatchPermit),remainingOnly=batchPermit||onlyRemainingMigrations;
+  const finalPermit=takeFinalPermit(migrationFinalPermit),finalOnly=finalPermit||onlyFinalMigrations;
+- requireSafe(Number(remainingOnly)+Number(firstOnly)+Number(finalOnly)<=1,'conflicting_migration_scope');
+- requireSafe(remoteExecutionEnabled||typeof simulationFetch==='function'||scopedPermit||batchPermit||finalPermit,'remote_execution_not_authorized');
++ const completionScope=takeCompletionPermit(migrationCompletionPermit),completionOnly=Boolean(completionScope)||onlyCompletionMigrations;
++ requireSafe(Number(remainingOnly)+Number(firstOnly)+Number(finalOnly)+Number(completionOnly)<=1,'conflicting_migration_scope');
++ requireSafe(remoteExecutionEnabled||typeof simulationFetch==='function'||scopedPermit||batchPermit||finalPermit||completionScope,'remote_execution_not_authorized');
++ const context=Object.freeze({environment:typeof simulationFetch==='function'?'local-simulation':'development',executionId:completionScope?.executionId??simulationExecutionId??'legacy-unbound',scope:completionOnly?'0005-0006':'legacy',target});
++ if(completionOnly)requireSafe(/^[a-f0-9-]{36}$/.test(context.executionId),'completion_execution_id_required');
+  requireSafe(typeof token==='string'&&/^[-_A-Za-z0-9]{20,256}$/.test(token),'credential_invalid');
+  const fetcher=simulationFetch??fetch,base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
+  const submitted=new WeakSet();
+- let secret=token,writeAttempted=false,nextBatchStage=finalOnly?3:1,batchFailed=false,lastAcknowledgement;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
++ let secret=token,writeAttempted=false,nextBatchStage=completionOnly?4:finalOnly?3:1,batchFailed=false,lastAcknowledgement;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
+  async function request(suffix,body){
+   requireSafe(secret!==undefined,'credential_disposed');
+   const item={operation:suffix===''?'metadata':suffix==='/time_travel/bookmark'?'bookmark':body?.batch?'migration_batch':'read_query',httpStatus:null,codes:[]};diagnostics.push(item);
+@@ -32,10 +40,24 @@ export function createTransport(token,{simulationFetch,migration0001Permit,onlyF
+  }
+  async function query(body){const result=await request('/query',body);requireSafe(Array.isArray(result)&&result.length>0&&result.every(r=>r.success===true),'query_failed');return result;}
+  const exporter=createExporter(request,fetcher);
+- return Object.freeze({metadata:()=>request(''),bookmark:async()=>{const result=await request('/time_travel/bookmark');return result?.bookmark;},fullExport:bookmark=>{requireSafe(!firstOnly&&!remainingOnly&&!finalOnly,'export_not_authorized_for_migration_0001');return exporter.fullExport(bookmark);},
++ const client=Object.freeze({metadata:()=>request(''),bookmark:async()=>{const result=await request('/time_travel/bookmark');return result?.bookmark;},fullExport:bookmark=>{requireSafe(!firstOnly&&!remainingOnly&&!finalOnly&&!completionOnly,'export_not_authorized_for_migration_0001');return exporter.fullExport(bookmark);},
+   select:async sql=>{requireSafe(allowedReadSql.includes(sql)||isBackupRead(sql),'read_sql_forbidden');const result=await query({sql,params:[]});requireSafe(result.length===1&&Array.isArray(result[0].results),'read_response_invalid');return result[0].results;},
+-  applyBatch:async batch=>{requireSafe(isApprovedBatch(batch)&&!submitted.has(batch),'arbitrary_or_duplicate_write_forbidden');if(firstOnly)requireSafe(approvedBatchStage(batch)===0&&!writeAttempted,'only_0001_once_authorized');if(remainingOnly||finalOnly){requireSafe(!batchFailed&&nextBatchStage<=5&&approvedBatchStage(batch)===nextBatchStage&&hasFullSnapshotGuard(batch),finalOnly?'only_0004_0006_in_order_authorized':'only_0002_0006_in_order_authorized');nextBatchStage++;}submitted.add(batch);writeAttempted=true;lastAcknowledgement=undefined;try{await query({batch});lastAcknowledgement=Object.freeze({});writeAcknowledgements.set(lastAcknowledgement,{stage:approvedBatchStage(batch)+1,acknowledgedAt:Date.now(),source:'fixed-rest-batch-acknowledgement'});}catch(error){batchFailed=true;throw error;}},
++  applyBatch:async batch=>{
++   requireSafe(isApprovedBatch(batch)&&!submitted.has(batch),'arbitrary_or_duplicate_write_forbidden');const index=approvedBatchStage(batch),readbacks=approvedCompletionReadbacks(batch);
++   if(firstOnly)requireSafe(index===0&&!writeAttempted,'only_0001_once_authorized');
++   if(remainingOnly||finalOnly||completionOnly){requireSafe(!batchFailed&&nextBatchStage<=5&&index===nextBatchStage&&hasFullSnapshotGuard(batch),completionOnly?'only_0005_0006_in_order_authorized':finalOnly?'only_0004_0006_in_order_authorized':'only_0002_0006_in_order_authorized');if(completionOnly)requireSafe(readbacks,'completion_readbacks_required');nextBatchStage++;}
++   submitted.add(batch);writeAttempted=true;lastAcknowledgement=undefined;const requestStartedAt=new Date().toISOString();
++   try{
++    const results=await query({batch}),responseCompletedAt=new Date().toISOString();let completionOutput;
++    if(completionOnly){requireSafe(results.length===batch.length&&Array.isArray(results[readbacks.historyIndex]?.results)&&Array.isArray(results[readbacks.controlIndex]?.results),'completion_response_incomplete');const h=results[readbacks.historyIndex].results,c=results[readbacks.controlIndex].results;
++     completionOutput=Object.freeze({history:Object.freeze(h.map(r=>Object.freeze({id:r.id,name:r.name,applied_at:r.applied_at}))),control:Object.freeze(c.map(r=>Object.freeze({id:r.id,epoch:r.epoch,mode:r.mode,generation:r.generation,payload_hash:r.payload_hash})))});
++    }
++    lastAcknowledgement=Object.freeze({});writeAcknowledgements.set(lastAcknowledgement,{owner:client,...context,stage:index+1,migrationSha256:migrations[index].sha256,batchSha256:digest(JSON.stringify(batch)),requestStartedAt,responseCompletedAt,acknowledgedAt:Date.parse(responseCompletedAt),source:'fixed-rest-batch-acknowledgement',completionOutput});
++   }catch(error){batchFailed=true;throw error;}
++  },
+   writeAcknowledgement:()=>lastAcknowledgement,
++  executionContext:()=>context,
+   diagnostics:()=>diagnostics.map(item=>({...item,codes:[...item.codes]})),dispose(){secret=undefined;},
+  });
++ return client;
+ }
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/write.mjs
+SHA-256 antes: 92b0ace8acaffd5ee704e489262ebac157859e72ce4cdf842cc55d9db09ec88a
+SHA-256 después: a82e494e3260e54e1126d47d608854e349f748d6910cbf7cdd0bbd22c15241e4
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/write.mjs b/infra/cloudflare/dev/scripts/safe-d1/write.mjs
+index 9a7d834..eb0eb9b 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/write.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/write.mjs
+@@ -7,12 +7,14 @@ const consumed=new WeakSet();
+ const approvedBatches=new WeakSet();
+ const batchStages=new WeakMap();
+ const fullSnapshotBatches=new WeakSet();
++const completionReadbacks=new WeakMap();
++export const approvedCompletionReadbacks=batch=>completionReadbacks.get(batch);
+ export const hasFullSnapshotGuard=batch=>fullSnapshotBatches.has(batch);
+ export const isApprovedBatch=batch=>approvedBatches.has(batch);
+ export const approvedBatchStage=batch=>batchStages.get(batch);
+ // No exported generic SQL writer: only the next approved migration can produce a batch.
+ export function createStageWriter(transport){
+- return Object.freeze({async apply(state,backup,{snapshot}={}){
++ return Object.freeze({async apply(state,backup,{snapshot,captureCompletionOutput=false,beforeSubmit}={}){
+   requireSafe(isReadReceipt(state)&&state.stage>=0&&state.stage<6&&!consumed.has(state),'stage_reuse_or_invalid');
+   verifyBackup(backup,state);const age=Date.now()-state.observedAt;requireSafe(age>=0&&age<30000,'preflight_stale');
+   const sources=approvedSources(),stage=state.stage,migration=migrations[stage];
+@@ -31,8 +33,17 @@ export function createStageWriter(transport){
+    }
+   }
+   for(const sql of splitMigration(sources[stage]))batch.push({sql,params:[]});
+-  batch.push({sql:'INSERT INTO d1_migrations(name) VALUES (?)',params:[migration.name]},{sql:'DROP TABLE kuwago_migration_guard',params:[]});
++  batch.push({sql:'INSERT INTO d1_migrations(name) VALUES (?)',params:[migration.name]});
++  let readbacks;
++  if(captureCompletionOutput){
++   requireSafe(stage===4||stage===5,'completion_output_scope_invalid');readbacks={historyIndex:batch.length,controlIndex:batch.length+1};
++   batch.push({sql:'SELECT id,name,applied_at FROM d1_migrations ORDER BY id',params:[]},{sql:'SELECT id,epoch,mode,generation,payload_hash FROM publication_control WHERE id=1',params:[]});
++  }
++  batch.push({sql:'DROP TABLE kuwago_migration_guard',params:[]});
+   for(const item of batch){Object.freeze(item.params);Object.freeze(item);}Object.freeze(batch);approvedBatches.add(batch);batchStages.set(batch,stage);if(snapshot)fullSnapshotBatches.add(batch);
++  if(readbacks)completionReadbacks.set(batch,Object.freeze(readbacks));
++  if(beforeSubmit)await beforeSubmit(Object.freeze({stage:stage+1,migrationSha256:migration.sha256,batchSha256:digest(JSON.stringify(batch))}));
++  requireSafe(Date.now()-state.observedAt>=0&&Date.now()-state.observedAt<30000,'preflight_stale');
+   consumed.add(state); // A thrown/ambiguous response consumes the capability; never retry it.
+   await transport.applyBatch(batch);return migration.name;
+  }});
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/backup.mjs
+SHA-256 antes: 3711fca5e1e32714757d786f66cdb07b5131673e63291f481a1e34c026aa5afd
+SHA-256 después: 61bb204f4555eb24cfd1467e0237c13a73090b50fbd662cc3ca856f2c3063075
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/backup.mjs b/infra/cloudflare/dev/scripts/safe-d1/backup.mjs
+index 5be2929..924d34c 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/backup.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/backup.mjs
+@@ -7,6 +7,7 @@ import {verifyRestorable} from './restore.mjs';
+ import {isEncryptedBackupReceipt,verifyEncryptedBackup} from './encrypted-backup-receipt.mjs';
+ import {isBatchBackupReceipt,verifyBatchBackup} from './batch-backup-receipt.mjs';
+ import {isFinalBackupReceipt,verifyFinalBackup} from './final-backup-receipt.mjs';
++import {isCompletionBackupReceipt,verifyCompletionBackup} from './completion-backup.mjs';
+ const receipts=new WeakMap();
+ // No baseline fallback: the downloaded full SQL must restore and match the entire source snapshot.
+ export async function captureBackup(reader,file,operationId){
+@@ -27,4 +28,4 @@ export function verifyBackupFiles(receipt){
+  const data=JSON.parse(serialized);requireSafe(data.format===2&&data.kind==='complete-sql-and-time-travel'&&data.restoreVerified===true&&isBookmark(data.bookmark)&&data.exportBytes===bytes.byteLength&&digest(bytes)===data.exportSha256,'backup_export_invalid');
+  requireSafe(JSON.stringify(data.target)===JSON.stringify(target)&&data.operationId===receipt.operationId&&Date.now()>=data.createdAt&&Date.now()<=data.expiresAt,'backup_expired_or_mismatched');return data;
+ }
+-export function verifyBackup(receipt,state){if(isFinalBackupReceipt(receipt))return verifyFinalBackup(receipt,state);if(isBatchBackupReceipt(receipt))return verifyBatchBackup(receipt,state);if(isEncryptedBackupReceipt(receipt))return verifyEncryptedBackup(receipt,state);requireSafe(isReadReceipt(state),'backup_preflight_invalid');const data=verifyBackupFiles(receipt);requireSafe(data.stage===0,'backup_not_first_install');return Object.freeze({sha256:data.exportSha256,bookmark:data.bookmark,operationId:receipt.operationId});}
++export function verifyBackup(receipt,state){if(isCompletionBackupReceipt(receipt))return verifyCompletionBackup(receipt,state);if(isFinalBackupReceipt(receipt))return verifyFinalBackup(receipt,state);if(isBatchBackupReceipt(receipt))return verifyBatchBackup(receipt,state);if(isEncryptedBackupReceipt(receipt))return verifyEncryptedBackup(receipt,state);requireSafe(isReadReceipt(state),'backup_preflight_invalid');const data=verifyBackupFiles(receipt);requireSafe(data.stage===0,'backup_not_first_install');return Object.freeze({sha256:data.exportSha256,bookmark:data.bookmark,operationId:receipt.operationId});}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/completion-permit.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: e9b428be4583bf054209f0c17a6e678136b6e8948b0ad340fa54878b11479241
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/completion-permit.mjs b/infra/cloudflare/dev/scripts/safe-d1/completion-permit.mjs
+new file mode 100644
+index 0000000..9d1bfee
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/completion-permit.mjs
+@@ -0,0 +1,15 @@
++import {existsSync,openSync,writeFileSync,fsyncSync,closeSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {custodyRoot,verifyWindowsCustody} from './windows-custody.mjs';
++import {target,migrations,requireSafe} from './policy.mjs';
++export const completionId='3b4f39d1-2271-45e8-92fe-27ae04e7f14e';
++export const completionApproved=false;
++export const completionPrefix=resolve(custodyRoot,'migration-0005-0006-'+completionId);
++const permits=new WeakMap();
++export function issueCompletionPermit(){
++ requireSafe(completionApproved,'completion_not_authorized');verifyWindowsCustody();requireSafe(!existsSync(completionPrefix+'.result.json'),'completion_already_attempted');
++ const scope=Object.freeze({environment:'development',executionId:completionId,firstStage:4,lastStage:5});
++ const fd=openSync(completionPrefix+'.attempt.json','wx',0o600);try{writeFileSync(fd,JSON.stringify({target,...scope,migrations:migrations.slice(4),maximumWriteBatches:2,startedAt:new Date().toISOString()}));fsyncSync(fd);}finally{closeSync(fd);}
++ const p=Object.freeze({});permits.set(p,scope);return p;
++}
++export function takeCompletionPermit(p){const scope=permits.get(p);permits.delete(p);return scope;}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/completion-backup.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: f603c8bb176259849cf50b39cb688a59b4542defe56e5566d1bbefe12ad8ed0d
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/completion-backup.mjs b/infra/cloudflare/dev/scripts/safe-d1/completion-backup.mjs
+new file mode 100644
+index 0000000..169d0c2
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/completion-backup.mjs
+@@ -0,0 +1,24 @@
++import {readFileSync,lstatSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {root,target,digest,requireSafe} from './policy.mjs';
++import {custodyRoot,verifyWindowsCustody,dpapi} from './windows-custody.mjs';
++import {decryptEnvelope} from './encryption.mjs';
++import {verifyRestorable} from './restore.mjs';
++import {isBookmark} from './export.mjs';
++import {isReadReceipt} from './read.mjs';
++import {verifyStageFourPreparation,expectedStageFourFingerprint} from './backup-stage-four.mjs';
++export const completionBackupPins=Object.freeze({operationId:'4e5b4fc2-8f1e-44e1-b2e5-f7ca82d40749',ciphertextSha256:'6283323d913b68ce1781553aeeac2a28e1fdd0833f73b9edd6c1535171a4356c',evidenceSha256:'064b8745f6c79dbb0fb265eee8abacd643c6bec53fc4d81388e9b383d3c859a8',resultSha256:'601582fde7e401cda8647b1534837158388e2ab7f94e5a316b36add51b4fcbc6',reportSha256:'904f43276cf8180d656f19b3c0d631c7298f6deb5da8de9cbb2a416fdeb45a90'});
++const folder=resolve(custodyRoot,completionBackupPins.operationId),receipts=new WeakMap();
++function checked(file,hash,max){const s=lstatSync(file);requireSafe(s.isFile()&&!s.isSymbolicLink()&&s.size>0&&s.size<=max,'completion_backup_file_invalid');const bytes=readFileSync(file);requireSafe(digest(bytes)===hash,'completion_backup_hash_mismatch');return bytes;}
++function files(){
++ verifyWindowsCustody();verifyStageFourPreparation();requireSafe(lstatSync(folder).isDirectory()&&!lstatSync(folder).isSymbolicLink(),'completion_backup_directory_invalid');
++ checked(resolve(root,'../../../docs/D1-BACKUP-ONLY-STAGE4-REMOTE-RESULT.md'),completionBackupPins.reportSha256,100000);
++ const e=JSON.parse(checked(resolve(folder,'evidence.json'),completionBackupPins.evidenceSha256,16000)),r=JSON.parse(checked(resolve(custodyRoot,'backup-once-472f450d-3410-4808-a491-c14aa3cc16ae.result.json'),completionBackupPins.resultSha256,200000));
++ requireSafe(e.restoreVerified&&e.sourceStage===4&&r.verified&&r.cleanupComplete&&r.historyEntries===4&&r.operationId===completionBackupPins.operationId,'completion_backup_evidence_invalid');
++ return checked(resolve(folder,'backup.kwgbak'),completionBackupPins.ciphertextSha256,34000000);
++}
++export async function withCompletionSql(callback){let clear,sql;try{clear=await decryptEnvelope(files(),{protector:dpapi});const p=JSON.parse(clear.toString('utf8'));requireSafe(p.operationId===completionBackupPins.operationId&&JSON.stringify(p.target)===JSON.stringify(target)&&p.sourceStage===4&&p.sourceFingerprint===expectedStageFourFingerprint&&isBookmark(p.bookmark),'completion_backup_payload_invalid');sql=Buffer.from(p.sqlBase64,'base64');p.sqlBase64=undefined;requireSafe(digest(sql)===p.sqlSha256,'completion_backup_sql_invalid');return await callback(sql,{fingerprint:p.sourceFingerprint,bookmark:p.bookmark});}finally{clear?.fill(0);sql?.fill(0);}}
++export async function loadCompletionBackup(){return withCompletionSql(async(sql,data)=>{const r=await verifyRestorable(sql,data.fingerprint);requireSafe(r.tables===28&&r.rows===53,'completion_backup_restore_invalid');const receipt=Object.freeze({operationId:completionBackupPins.operationId});receipts.set(receipt,data);return receipt;});}
++export const isCompletionBackupReceipt=r=>receipts.has(r);
++export function completionBackupState(r){const d=receipts.get(r);requireSafe(d,'completion_backup_receipt_invalid');return Object.freeze({...d});}
++export function verifyCompletionBackup(r,state){requireSafe(receipts.has(r)&&isReadReceipt(state)&&[4,5].includes(state.stage),'completion_backup_preflight_invalid');files();return {operationId:completionBackupPins.operationId,sha256:completionBackupPins.ciphertextSha256,bookmark:receipts.get(r).bookmark};}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/completion-oracle.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: ee0bf78916c56f776979540d9ba58a6cdfff758af97e2238ede00d7cc3ca5c84
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/completion-oracle.mjs b/infra/cloudflare/dev/scripts/safe-d1/completion-oracle.mjs
+new file mode 100644
+index 0000000..c5c5281
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/completion-oracle.mjs
+@@ -0,0 +1,29 @@
++import {Miniflare,convertV4MiniflareOptions} from 'miniflare';
++import {withCompletionSql} from './completion-backup.mjs';
++import {approvedSources,migrations,target,requireSafe} from './policy.mjs';
++import {splitMigration} from './sql.mjs';
++import {captureDatabase} from './snapshot.mjs';
++function checkedGenerated(ack,previous){
++ const {stage,completionOutput:o}=ack;requireSafe([5,6].includes(stage)&&o?.history.length===stage&&o.history.every((r,i)=>r.id===i+1&&r.name===migrations[i].name),'completion_history_invalid');
++ for(const r of o.history){const t=Date.parse(r.applied_at+'Z');requireSafe(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(r.applied_at)&&Number.isFinite(t)&&new Date(t).toISOString().slice(0,19).replace('T',' ')===r.applied_at,'completion_timestamp_invalid');}
++ const c=o.control;requireSafe(c.length===1&&c[0].id===1&&/^[a-f0-9]{32}$/.test(c[0].epoch)&&c[0].mode==='ready'&&c[0].generation===null&&c[0].payload_hash===null,'completion_control_invalid');
++ if(stage===6)requireSafe(previous?.stage===5&&c[0].epoch===previous.epoch&&JSON.stringify(o.history.slice(0,5))===JSON.stringify(previous.history),'completion_generated_values_changed');
++ return Object.freeze({stage,epoch:c[0].epoch,history:o.history});
++}
++// Only epoch and CURRENT_TIMESTAMP output from this SAME successful transaction
++// are substituted locally. All schemas, defaults, rows and prior history come from
++// the pinned backup plus original migration SQL, not a postflight response.
++export async function projectCompletion(ack,previous){
++ const generated=checkedGenerated(ack,previous);let mf;
++ try{return await withCompletionSql(async sql=>{
++  mf=new Miniflare(convertV4MiniflareOptions({name:'kuwago-completion-oracle-local',host:'127.0.0.1',modules:true,script:'export default {fetch(){return new Response(null,{status:503})}}',compatibilityDate:'2026-07-30',telemetry:{enabled:false},cf:false,d1Databases:{DB:'ephemeral-completion-oracle'}}));
++  const db=await mf.getD1Database('DB');await db.batch(splitMigration(sql.toString('utf8')).map(q=>db.prepare(q)));
++  const old=(await db.prepare('SELECT id,name,applied_at FROM d1_migrations ORDER BY id').all()).results;
++  requireSafe(JSON.stringify(old)===JSON.stringify(generated.history.slice(0,4)),'completion_previous_history_changed');
++  const sources=approvedSources();for(let stage=5;stage<=ack.stage;stage++){
++   await db.batch([...splitMigration(sources[stage-1]).map(q=>db.prepare(q)),db.prepare('INSERT INTO d1_migrations(id,name,applied_at) VALUES(?,?,?)').bind(stage,migrations[stage-1].name,generated.history[stage-1].applied_at)]);
++   if(stage===5)await db.prepare('UPDATE publication_control SET epoch=? WHERE id=1').bind(generated.epoch).run();
++  }
++  const expected=await captureDatabase({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async q=>(await db.prepare(q).all()).results});return {expected,generated};
++ });}finally{await mf?.dispose();}
++}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/completion-journal.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: e56d9ebe9f13f8c07b26ecb9fc9f1a9bb7927846d8f174ad917d7cf65de49f10
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/completion-journal.mjs b/infra/cloudflare/dev/scripts/safe-d1/completion-journal.mjs
+new file mode 100644
+index 0000000..fea8806
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/completion-journal.mjs
+@@ -0,0 +1,38 @@
++import {readFileSync,openSync,writeFileSync,fsyncSync,closeSync,lstatSync,existsSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {custodyRoot,verifyWindowsCustody,dpapi} from './windows-custody.mjs';
++import {digest,target,requireSafe} from './policy.mjs';
++import {isBookmark} from './export.mjs';
++const journals=new WeakSet();
++export const isCompletionJournal=j=>journals.has(j);
++export function createCompletionJournal({root=custodyRoot,environment,executionId,failCheckpointStage}={}){
++ requireSafe(['development','local-simulation'].includes(environment)&&/^[a-f0-9-]{36}$/.test(executionId),'completion_journal_scope_invalid');
++ if(environment==='development')requireSafe(resolve(root)===resolve(custodyRoot)&&failCheckpointStage===undefined,'completion_production_journal_override');
++ const prefix=resolve(root,'migration-0005-0006-'+executionId),receipts=new WeakMap();
++ function verifyRoot(){if(environment==='development')verifyWindowsCustody();requireSafe(lstatSync(root).isDirectory()&&!lstatSync(root).isSymbolicLink(),'completion_journal_root_invalid');}
++ function exclusive(file,value){verifyRoot();const bytes=Buffer.from(JSON.stringify(value,null,2)),fd=openSync(file,'wx',0o600);try{writeFileSync(fd,bytes);fsyncSync(fd);}finally{closeSync(fd);}requireSafe(digest(readFileSync(file))===digest(bytes),'completion_journal_readback_failed');return digest(bytes);}
++ async function sealPoint(p){requireSafe(isBookmark(p.value),'completion_checkpoint_point_invalid');const bytes=Buffer.concat([Buffer.from(p.value.replaceAll('-',''),'hex'),Buffer.from('BKM1')]);try{return {...p,value:undefined,ciphertext:(await dpapi.protect(bytes)).toString('base64')};}finally{bytes.fill(0);}}
++ async function validatePoints(points,expected){
++  requireSafe(points.length===expected.length,'completion_checkpoint_points_changed');
++  for(let i=0;i<points.length;i++){let bytes;try{bytes=await dpapi.unprotect(Buffer.from(points[i].ciphertext,'base64'));requireSafe(bytes.length===32&&bytes.subarray(28).toString('ascii')==='BKM1'&&bytes.subarray(0,28).toString('hex')===expected[i].value.replaceAll('-','')&&points[i].label===expected[i].label,'completion_checkpoint_decryption_mismatch');}finally{bytes?.fill(0);}}
++ }
++ const journal=Object.freeze({environment,executionId,
++  begin(){verifyRoot();requireSafe(!existsSync(prefix+'.result.json'),'completion_journal_already_finished');exclusive(prefix+'.lock.json',{target,environment,executionId,startedAt:new Date().toISOString()});},
++  write(kind,stage,value){requireSafe(['intent','ack','verified','result'].includes(kind)&&[4,5,6].includes(stage),'completion_journal_kind_invalid');return exclusive(kind==='result'?prefix+'.result.json':prefix+`.stage-${stage}.${kind}.json`,{...value,target,environment,executionId});},
++  async checkpoint(stage,{fingerprint,points,phase}){
++   requireSafe([4,5,6].includes(stage)&&/^[a-f0-9]{64}$/.test(fingerprint)&&['baseline','postflight','observation','before_write'].includes(phase),'completion_checkpoint_invalid');
++   const sealed=[];for(const p of points)sealed.push(await sealPoint(p));const file=prefix+`.stage-${stage}.${phase}.private.json`,value={target,environment,executionId,stage,fingerprint,points:sealed,phase,createdAt:new Date().toISOString()};
++   const sha256=exclusive(file,value);
++   if(environment==='local-simulation'&&stage===failCheckpointStage&&phase==='postflight')throw Error('completion_checkpoint_simulated_readback_failure');
++   const stored=JSON.parse(readFileSync(file));requireSafe(digest(readFileSync(file))===sha256&&stored.fingerprint===fingerprint&&stored.executionId===executionId&&stored.environment===environment&&stored.stage===stage,'completion_checkpoint_readback_failed');await validatePoints(stored.points,points);
++   const receipt=Object.freeze({});receipts.set(receipt,{file,sha256,stage,fingerprint,points:points.map(p=>({...p}))});return receipt;
++  },
++  async verifyCheckpoint(receipt){verifyRoot();const r=receipts.get(receipt);requireSafe(r&&digest(readFileSync(r.file))===r.sha256,'completion_checkpoint_receipt_invalid');const v=JSON.parse(readFileSync(r.file));requireSafe(v.executionId===executionId&&v.environment===environment&&v.stage===r.stage&&v.fingerprint===r.fingerprint,'completion_checkpoint_scope_changed');await validatePoints(v.points,r.points);return Object.freeze({stage:r.stage,fingerprint:r.fingerprint,recordSha256:r.sha256});},
++  async closeResult(result,receipt){
++   const verified=await journal.verifyCheckpoint(receipt);requireSafe(verified.stage===6&&result.status==='completed_0005_0006_only'&&JSON.stringify(result.verifiedStages.map(s=>s.stage))==='[5,6]','completion_close_invalid');
++   const resultSha256=journal.write('result',6,result),closure={target,environment,executionId,stage:6,resultSha256,checkpointSha256:verified.recordSha256,closedAt:new Date().toISOString()};
++   const closureSha256=exclusive(prefix+'.closed.json',closure),r=JSON.parse(readFileSync(prefix+'.closed.json'));
++   requireSafe(r.resultSha256===digest(readFileSync(prefix+'.result.json'))&&r.checkpointSha256===verified.recordSha256&&r.executionId===executionId&&r.environment===environment&&r.stage===6,'completion_closure_readback_failed');return Object.freeze({resultSha256,closureSha256,stage6DurablyClosed:true});
++  },
++ });journals.add(journal);return journal;
++}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/completion-checkpoint.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: 7c39f298c63483db811521c3b875eb1d97cbea2a2ed94e48bed93a94d24539e1
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/completion-checkpoint.mjs b/infra/cloudflare/dev/scripts/safe-d1/completion-checkpoint.mjs
+new file mode 100644
+index 0000000..6f28c11
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/completion-checkpoint.mjs
+@@ -0,0 +1,17 @@
++import {captureDatabase,snapshotFingerprint} from './snapshot.mjs';
++import {isBookmark} from './export.mjs';
++import {requireSafe} from './policy.mjs';
++export async function completionCheckpoint(transport,{expected,journal,phase,boundary}){
++ const fingerprint=snapshotFingerprint(expected.snapshot),points=boundary?[{...boundary}]:[];let capturedAt;
++ async function point(label){const value=await transport.bookmark();requireSafe(isBookmark(value),'completion_bookmark_invalid');const p={label,value,observedAt:new Date().toISOString()};points.push(p);return p;}
++ try{
++  const first=await point('first');if(boundary)requireSafe(first.value===boundary.value,'completion_boundary_changed');
++  const a=await captureDatabase(transport);requireSafe(a.stage===expected.stage&&snapshotFingerprint(a.snapshot)===fingerprint,'completion_logical_difference');
++  const middle=await point('middle'),b=await captureDatabase(transport);requireSafe(b.stage===expected.stage&&snapshotFingerprint(b.snapshot)===fingerprint,'completion_logical_difference');
++  const last=await point('last');requireSafe(first.value===middle.value&&middle.value===last.value,'completion_bookmark_changed');capturedAt=Date.now();
++  const final=await point('final_check');requireSafe(final.value===last.value,'completion_bookmark_changed');
++  const receipt=await journal.checkpoint(expected.stage,{fingerprint,points,phase});const evidence=await journal.verifyCheckpoint(receipt);
++  requireSafe(Date.now()-capturedAt>=0&&Date.now()-capturedAt<30000,'completion_checkpoint_stale');
++  return {receipt,evidence,snapshot:b,point:final,capturedAt};
++ }catch(error){try{await journal.checkpoint(expected.stage,{fingerprint,points,phase:'observation'});}catch{/* Preserve existing failure evidence; never continue. */}throw error;}
++}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/safe-d1/completion-runner.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: 6bd30734453aac0fc1cfc0ed9f11e0b13c3ae0b638d9e670498f42b4337e2142
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/completion-runner.mjs b/infra/cloudflare/dev/scripts/safe-d1/completion-runner.mjs
+new file mode 100644
+index 0000000..28fdc39
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/safe-d1/completion-runner.mjs
+@@ -0,0 +1,48 @@
++import {approvedSources,assertEnvironment,assertRuntime,migrations,schemaHashes,requireSafe} from './policy.mjs';
++import {completionBackupState,withCompletionSql} from './completion-backup.mjs';
++import {createReader} from './read.mjs';
++import {createStageWriter} from './write.mjs';
++import {consumeCompletionAcknowledgement} from './transport.mjs';
++import {projectCompletion} from './completion-oracle.mjs';
++import {completionCheckpoint} from './completion-checkpoint.mjs';
++import {isCompletionJournal} from './completion-journal.mjs';
++import {Miniflare,convertV4MiniflareOptions} from 'miniflare';
++import {splitMigration} from './sql.mjs';
++import {captureDatabase,snapshotFingerprint} from './snapshot.mjs';
++import {target} from './policy.mjs';
++async function sourceSnapshot(){let mf;try{return await withCompletionSql(async sql=>{mf=new Miniflare(convertV4MiniflareOptions({name:'kuwago-completion-source',host:'127.0.0.1',modules:true,script:'export default {fetch(){return new Response(null,{status:503})}}',compatibilityDate:'2026-07-30',telemetry:{enabled:false},cf:false,d1Databases:{DB:'ephemeral-completion-source'}}));const db=await mf.getD1Database('DB');await db.batch(splitMigration(sql.toString('utf8')).map(q=>db.prepare(q)));return captureDatabase({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async q=>(await db.prepare(q).all()).results});});}finally{await mf?.dispose();}}
++export async function runCompletion({transport,backup,journal,environment='development',executionId,processEnvironment=process.env}){
++ const result={status:'blocked',executionId,writeAttempts:0,writesAccepted:[],verifiedStages:[],credentialDisposed:false};
++ let finalCheckpointReceipt;
++ try{
++  assertEnvironment(processEnvironment);assertRuntime();approvedSources();const ctx=transport.executionContext();
++  requireSafe(ctx.scope==='0005-0006'&&ctx.environment===environment&&ctx.executionId===executionId&&isCompletionJournal(journal)&&journal.environment===environment&&journal.executionId===executionId,'completion_scope_mismatch');
++  const stored=completionBackupState(backup);journal.begin();const reader=createReader(transport);await reader.inspect(4);
++  let expected=await sourceSnapshot();requireSafe(expected.stage===4&&snapshotFingerprint(expected.snapshot)===stored.fingerprint,'completion_source_mismatch');
++  let checkpoint=await completionCheckpoint(transport,{expected,journal,phase:'baseline'}),generated;
++  for(const stage of [5,6]){
++   await journal.verifyCheckpoint(checkpoint.receipt);approvedSources();const state=await reader.inspect(stage-1);let intent;
++   requireSafe(Date.now()-checkpoint.capturedAt<30000,'completion_checkpoint_stale');
++   await createStageWriter(transport).apply(state,backup,{snapshot:checkpoint.snapshot,captureCompletionOutput:true,beforeSubmit:async summary=>{
++    requireSafe(summary.stage===stage&&summary.migrationSha256===migrations[stage-1].sha256,'completion_intent_invalid');
++    const value=await transport.bookmark(),p={label:'before_write',value,observedAt:new Date().toISOString()};requireSafe(value===checkpoint.point.value,'completion_bookmark_changed_before_write');
++    const guardReceipt=await journal.checkpoint(stage,{fingerprint:snapshotFingerprint(expected.snapshot),points:[p],phase:'before_write'});await journal.verifyCheckpoint(guardReceipt);
++    intent={...summary,executionId,environment,preparedAt:new Date().toISOString(),status:'outcome_not_confirmed'};journal.write('intent',stage,intent);result.writeAttempts++;
++   }});
++   const ack=consumeCompletionAcknowledgement(transport.writeAcknowledgement(),{transport,environment,executionId,stage,migrationSha256:intent.migrationSha256,batchSha256:intent.batchSha256});
++   result.writesAccepted.push({stage,migration:migrations[stage-1].name,requestStartedAt:ack.requestStartedAt,responseCompletedAt:ack.responseCompletedAt,batchSha256:ack.batchSha256});
++   journal.write('ack',stage,{stage,migrationSha256:ack.migrationSha256,batchSha256:ack.batchSha256,requestStartedAt:ack.requestStartedAt,responseCompletedAt:ack.responseCompletedAt,completionOutput:ack.completionOutput});
++   const projection=await projectCompletion(ack,generated);expected=projection.expected;generated=projection.generated;
++   const inspected=await reader.inspect(stage),candidate=await reader.snapshot();requireSafe(candidate.stage===stage&&snapshotFingerprint(candidate.snapshot)===snapshotFingerprint(expected.snapshot),'completion_postwrite_logical_difference');
++   const boundary={label:'candidate_after_verified_write',value:await transport.bookmark(),observedAt:new Date().toISOString()};
++   checkpoint=await completionCheckpoint(transport,{expected,journal,phase:'postflight',boundary});
++   const record={stage,migration:migrations[stage-1].name,migrationSha256:migrations[stage-1].sha256,schemaHash:inspected.schemaHash,fingerprint:checkpoint.evidence.fingerprint,checkpointSha256:checkpoint.evidence.recordSha256,history:JSON.parse(inspected.history).map(([id,name])=>({id,name}))};
++   journal.write('verified',stage,record);result.verifiedStages.push(record);
++  }
++  const final=await journal.verifyCheckpoint(checkpoint.receipt);requireSafe(final.stage===6&&result.verifiedStages.length===2&&result.verifiedStages[1].schemaHash===schemaHashes[6],'completion_final_stage_unverified');
++  result.finalCheckpoint=final;result.status='completed_0005_0006_only';
++  finalCheckpointReceipt=checkpoint.receipt;
++ }catch(error){result.status=result.writeAttempts?'stopped_review_required':'stopped_before_write';const codes=new Set(['completion_logical_difference','completion_postwrite_logical_difference','completion_boundary_changed','completion_bookmark_changed','completion_bookmark_changed_before_write','request_outcome_unknown','completion_checkpoint_simulated_readback_failure','completion_checkpoint_receipt_invalid','completion_ack_binding_mismatch','completion_previous_history_changed','completion_generated_values_changed','completion_control_invalid','completion_checkpoint_readback_failed','query_failed','http_rejected']);result.errorCode=codes.has(error?.message)?error.message:'completion_validation_or_persistence_failed';}
++ finally{transport.dispose();delete processEnvironment.CLOUDFLARE_API_TOKEN;result.credentialDisposed=true;result.finishedAt=new Date().toISOString();result.requests=transport.diagnostics();try{if(finalCheckpointReceipt&&result.status==='completed_0005_0006_only')result.closure=await journal.closeResult(result,finalCheckpointReceipt);else journal.write('result',6,result);}catch{result.status='stopped_result_persistence_failed';}}
++ return result;
++}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/scripts/d1-migrate-0005-0006.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: 3fb3cfb2a399f17fcb1d9cd3b0e4ce95bcae08561bb76678c8b365f91b866187
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/scripts/d1-migrate-0005-0006.mjs b/infra/cloudflare/dev/scripts/d1-migrate-0005-0006.mjs
+new file mode 100644
+index 0000000..df20bc9
+--- /dev/null
++++ b/infra/cloudflare/dev/scripts/d1-migrate-0005-0006.mjs
+@@ -0,0 +1,17 @@
++import {existsSync} from 'node:fs';
++import {completionApproved,completionId,completionPrefix,issueCompletionPermit} from './safe-d1/completion-permit.mjs';
++import {loadCompletionBackup} from './safe-d1/completion-backup.mjs';
++import {createCompletionJournal} from './safe-d1/completion-journal.mjs';
++import {runCompletion} from './safe-d1/completion-runner.mjs';
++import {createTransport} from './safe-d1/transport.mjs';
++import {assertEnvironment,assertRuntime,approvedSources,requireSafe} from './safe-d1/policy.mjs';
++const chunks=[];let bytes,token,transport;
++try{
++ requireSafe(completionApproved,'completion_not_authorized');requireSafe(process.argv.length===2&&!process.stdin.isTTY,'private_pipe_required');assertEnvironment(process.env);assertRuntime();approvedSources();
++ requireSafe(!existsSync(completionPrefix+'.attempt.json')&&!existsSync(completionPrefix+'.result.json'),'completion_already_attempted');
++ let size=0;for await(const p of process.stdin){chunks.push(p);size+=p.length;requireSafe(size<=4096,'private_input_limit');}bytes=Buffer.concat(chunks);const input=JSON.parse(bytes.toString('utf8'));requireSafe(Object.keys(input).join(',')==='token','private_input_invalid');token=input.token;input.token=undefined;
++ const backup=await loadCompletionBackup(),permit=issueCompletionPermit();transport=createTransport(token,{migrationCompletionPermit:permit});token=undefined;
++ const journal=createCompletionJournal({environment:'development',executionId:completionId}),result=await runCompletion({transport,backup,journal,executionId:completionId});
++ const ok=result.status==='completed_0005_0006_only'&&result.closure?.stage6DurablyClosed===true;console.log(JSON.stringify({status:ok?'PASS':'FAIL',executionId:completionId}));process.exitCode=ok?0:2;
++}catch{console.log(JSON.stringify({status:completionApproved?'FAIL':'BLOCKED',executionId:completionId}));process.exitCode=2;}
++finally{transport?.dispose();token=undefined;requireSafe(token===undefined,'credential_cleanup_failed');bytes?.fill(0);for(const p of chunks)p.fill(0);delete process.env.CLOUDFLARE_API_TOKEN;}
+----- FIN DIFF -----
+
+ARCHIVO: infra/cloudflare/dev/test/completion-0005-0006.test.mjs
+SHA-256 antes: (archivo inexistente)
+SHA-256 después: 0e23c8a960d13e58d225cf3906ae67a27845a6384820fee13057dc637ca7e98d
+----- INICIO DIFF -----
+diff --git a/infra/cloudflare/dev/test/completion-0005-0006.test.mjs b/infra/cloudflare/dev/test/completion-0005-0006.test.mjs
+new file mode 100644
+index 0000000..8e5346a
+--- /dev/null
++++ b/infra/cloudflare/dev/test/completion-0005-0006.test.mjs
+@@ -0,0 +1,62 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {mkdirSync,mkdtempSync,readFileSync,existsSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {randomUUID} from 'node:crypto';
++import {spawnSync} from 'node:child_process';
++import {localDatabase} from './auth-fixtures.mjs';
++import {root,target,migrations} from '../scripts/safe-d1/policy.mjs';
++import {splitMigration} from '../scripts/safe-d1/sql.mjs';
++import {withCompletionSql,loadCompletionBackup} from '../scripts/safe-d1/completion-backup.mjs';
++import {createTransport,consumeCompletionAcknowledgement} from '../scripts/safe-d1/transport.mjs';
++import {createCompletionJournal} from '../scripts/safe-d1/completion-journal.mjs';
++import {runCompletion} from '../scripts/safe-d1/completion-runner.mjs';
++import {createReader} from '../scripts/safe-d1/read.mjs';
++import {createStageWriter} from '../scripts/safe-d1/write.mjs';
++import {completionApproved,issueCompletionPermit} from '../scripts/safe-d1/completion-permit.mjs';
++const parent=resolve(root,'.wrangler/completion-directed-tests');mkdirSync(parent,{recursive:true});
++async function fixture(options={}){
++ const local=await localDatabase({},0),backup=await loadCompletionBackup(),executionId=randomUUID(),dir=mkdtempSync(resolve(parent,'run-'));let writes=0,books=0,extra=0;
++ await withCompletionSql(sql=>local.db.batch(splitMigration(sql.toString('utf8')).map(q=>local.db.prepare(q))));
++ const base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`,transport=createTransport('synthetic_test_credential_not_real_12345',{onlyCompletionMigrations:true,simulationExecutionId:executionId,simulationFetch:async(url,opts)=>{
++  assert.ok(url.startsWith(base));const ok=result=>Response.json({success:true,result});if(url===base)return ok({uuid:target.id,name:target.name,version:'production'});
++  if(url.endsWith('/time_travel/bookmark')){books++;if(options.bookmarkRace&&books===7)extra++;return ok({bookmark:`00000001-00000002-${String(writes+extra).padStart(8,'0')}-00000000000000000000000000000000`});}
++  assert.equal(url,base+'/query');const q=JSON.parse(opts.body);
++  if(q.batch){writes++;if(options.atomicRace)await local.db.prepare('UPDATE catalog_state SET version=1').run();let result;
++   try{result=await local.db.batch(q.batch.map(x=>local.db.prepare(x.sql).bind(...x.params)));}catch{return Response.json({success:false,errors:[{code:7500}]},{status:400});}
++   if(options.ambiguous)throw Error('synthetic connection lost after local commit');
++   if(options.catalogRace)await local.db.prepare('UPDATE catalog_state SET version=1').run();
++   if(options.epochRace)await local.db.prepare("UPDATE publication_control SET epoch='eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'").run();
++   if(options.badAckControl){const index=q.batch.findIndex(x=>x.sql==='SELECT id,epoch,mode,generation,payload_hash FROM publication_control WHERE id=1');result[index].results[0].mode='paused';}
++   return ok(result);
++  }
++  return ok([await local.db.prepare(q.sql).all()]);
++ }});
++ const journal=createCompletionJournal({root:dir,environment:'local-simulation',executionId,failCheckpointStage:options.failCheckpointStage}),prefix=resolve(dir,'migration-0005-0006-'+executionId);
++ return {...local,backup,transport,journal,executionId,prefix,get writes(){return writes;},run:()=>runCompletion({transport,backup,journal,executionId,environment:'local-simulation',processEnvironment:{}})};
++}
++test('0005→0006: exclusive blocked scope, original migrations, projected generated values and durable stage-6 closure',async()=>{
++ assert.equal(completionApproved,false);assert.throws(()=>issueCompletionPermit());assert.throws(()=>createTransport('synthetic_test_credential_not_real_12345',{onlyCompletionMigrations:true,simulationExecutionId:randomUUID()}));
++ const child=spawnSync(process.execPath,[resolve(root,'scripts/d1-migrate-0005-0006.mjs')],{input:'not a credential',encoding:'utf8',env:{...process.env,COMPLETION_APPROVED:'true'}});assert.equal(child.status,2);assert.equal(JSON.parse(child.stdout).status,'BLOCKED');
++ const f=await fixture();try{
++  const r=await f.run();assert.equal(r.status,'completed_0005_0006_only',JSON.stringify({status:r.status,error:r.errorCode,accepted:r.writesAccepted}));assert.equal(f.writes,2);assert.deepEqual(r.verifiedStages.map(s=>s.stage),[5,6]);assert.equal(r.closure.stage6DurablyClosed,true);
++  const closure=JSON.parse(readFileSync(f.prefix+'.closed.json')),stored=JSON.parse(readFileSync(f.prefix+'.result.json'));assert.equal(closure.stage,6);assert.equal(stored.finalCheckpoint.stage,6);assert.equal(stored.status,'completed_0005_0006_only');assert.deepEqual((await f.db.prepare('SELECT name FROM d1_migrations ORDER BY id').all()).results.map(r=>r.name),migrations.map(m=>m.name));
++  const a=JSON.parse(readFileSync(f.prefix+'.stage-5.ack.json')),b=JSON.parse(readFileSync(f.prefix+'.stage-6.ack.json'));assert.match(a.completionOutput.control[0].epoch,/^[a-f0-9]{32}$/);assert.equal(a.completionOutput.control[0].epoch,b.completionOutput.control[0].epoch);assert.ok(Date.parse(a.requestStartedAt)<=Date.parse(a.responseCompletedAt));
++  await assert.rejects(f.transport.applyBatch([{sql:'DROP TABLE services',params:[]}]));await assert.rejects(async()=>f.transport.fullExport('unused'));assert.equal(f.writes,2);
++ }finally{f.transport.dispose();await f.mf.dispose();}
++});
++test('concurrent changes: SQL CAS, postwrite data/epoch, bookmark, transaction output and ACK binding fail closed',async()=>{
++ for(const options of [{atomicRace:true},{catalogRace:true},{epochRace:true},{bookmarkRace:true},{badAckControl:true}]){const f=await fixture(options);try{const r=await f.run();assert.notEqual(r.status,'completed_0005_0006_only');assert.equal(f.writes,1);assert.equal(r.verifiedStages.length,0);assert.equal(existsSync(f.prefix+'.closed.json'),false);}finally{f.transport.dispose();await f.mf.dispose();}}
++ const f=await fixture();try{
++  const reader=createReader(f.transport),state=await reader.inspect(4),snapshot=await reader.snapshot();let intent;await createStageWriter(f.transport).apply(state,f.backup,{snapshot,captureCompletionOutput:true,beforeSubmit:async x=>{intent=x;}});
++  const receipt=f.transport.writeAcknowledgement(),binding={transport:f.transport,environment:'local-simulation',executionId:f.executionId,stage:5,migrationSha256:intent.migrationSha256,batchSha256:intent.batchSha256};
++  for(const bad of [{transport:{}},{environment:'development'},{executionId:randomUUID()},{stage:6},{migrationSha256:'0'.repeat(64)},{batchSha256:'0'.repeat(64)}])assert.throws(()=>consumeCompletionAcknowledgement(receipt,{...binding,...bad}),/binding_mismatch/);
++  const ack=consumeCompletionAcknowledgement(receipt,binding);assert.equal(ack.stage,5);assert.throws(()=>consumeCompletionAcknowledgement(receipt,binding),/binding_mismatch/);assert.equal(f.writes,1);
++ }finally{f.transport.dispose();await f.mf.dispose();}
++});
++test('ambiguous response after a real local commit: no ACK, no retry, no 0006 and durable unknown outcome',async()=>{
++ const f=await fixture({ambiguous:true});try{const r=await f.run();assert.equal(r.status,'stopped_review_required');assert.equal(r.errorCode,'request_outcome_unknown');assert.equal(f.writes,1);assert.equal(r.writesAccepted.length,0);assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM d1_migrations').first()).n,5);assert.equal(f.transport.writeAcknowledgement(),undefined);assert.equal(existsSync(f.prefix+'.stage-6.intent.json'),false);assert.equal(existsSync(f.prefix+'.closed.json'),false);assert.ok(existsSync(f.prefix+'.stage-5.intent.json'));}finally{await f.mf.dispose();}
++});
++test('persistence failure after checkpoint write: stop at 0005 or final 0006 and never claim stage-6 closure',async()=>{
++ for(const stage of [5,6]){const f=await fixture({failCheckpointStage:stage});try{const r=await f.run();assert.equal(r.status,'stopped_review_required',JSON.stringify({status:r.status,error:r.errorCode}));assert.equal(f.writes,stage-4);assert.deepEqual(r.verifiedStages.map(s=>s.stage),stage===5?[]:[5]);assert.equal(existsSync(f.prefix+'.closed.json'),false);assert.equal(existsSync(f.prefix+`.stage-${stage}.verified.json`),false);assert.ok(existsSync(f.prefix+`.stage-${stage}.postflight.private.json`));assert.equal(r.credentialDisposed,true);}finally{await f.mf.dispose();}}
++});
+----- FIN DIFF -----
+
+11. MIGRACIONES ORIGINALES, INTACTAS (NO EJECUTAR ESTE ADJUNTO)
+
+ARCHIVO SQL ORIGINAL: packages/database/migrations/0005_publication_resilience.sql
+SHA-256: 464b69f3df0a5e85ff960a95aa937c718a69578aaf1235b877e6130381354d3a
+----- INICIO SQL ORIGINAL -----
+-- Forward-only: approved migrations 0001-0004 are unchanged.
+CREATE TABLE publication_control (
+ id INTEGER PRIMARY KEY CHECK(id=1),
+ epoch TEXT NOT NULL CHECK(length(epoch)=32 AND epoch NOT GLOB '*[^0-9a-f]*'),
+ mode TEXT NOT NULL CHECK(mode IN ('ready','paused')),
+ generation INTEGER CHECK(generation BETWEEN 0 AND 9007199254740991),
+ payload_hash TEXT CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),
+ CHECK((generation IS NULL AND payload_hash IS NULL) OR (generation IS NOT NULL AND payload_hash IS NOT NULL))
+) STRICT;
+INSERT INTO publication_control(id,epoch,mode)
+ SELECT 1,lower(hex(randomblob(16))),CASE WHEN EXISTS(SELECT 1 FROM publication_outbox)
+ OR EXISTS(SELECT 1 FROM services WHERE status='published') THEN 'paused' ELSE 'ready' END;
+ALTER TABLE publication_outbox ADD COLUMN epoch TEXT;
+ALTER TABLE publication_outbox ADD COLUMN payload_hash TEXT;
+ALTER TABLE publication_outbox ADD COLUMN delivery_state TEXT NOT NULL DEFAULT 'pending'
+ CHECK(delivery_state IN ('pending','delivered','superseded','escalated','quarantined'));
+ALTER TABLE publication_outbox ADD COLUMN retry_count INTEGER NOT NULL DEFAULT 0 CHECK(retry_count>=0);
+ALTER TABLE publication_outbox ADD COLUMN next_attempt_at INTEGER NOT NULL DEFAULT 0 CHECK(next_attempt_at>=0);
+ALTER TABLE publication_outbox ADD COLUMN lease_token TEXT;
+ALTER TABLE publication_outbox ADD COLUMN lease_until INTEGER NOT NULL DEFAULT 0 CHECK(lease_until>=0);
+UPDATE publication_outbox SET delivery_state='quarantined',last_error_code='legacy_requires_review';
+CREATE INDEX outbox_retry ON publication_outbox(epoch,delivery_state,next_attempt_at,lease_until);
+CREATE TABLE publication_alerts (
+ id TEXT PRIMARY KEY NOT NULL, epoch TEXT NOT NULL, generation INTEGER NOT NULL,
+ code TEXT NOT NULL CHECK(code IN ('withdrawal_overdue','retry_exhausted','delivery_error','recovery_required')),
+ first_seen_at INTEGER NOT NULL, last_seen_at INTEGER NOT NULL, occurrences INTEGER NOT NULL DEFAULT 1,
+ UNIQUE(epoch,generation,code)
+) STRICT;
+CREATE TABLE publication_recovery_events (
+ id TEXT PRIMARY KEY NOT NULL, source_epoch TEXT NOT NULL, target_epoch TEXT NOT NULL,
+ action TEXT NOT NULL CHECK(action IN ('restore_quarantined','legacy_quarantined','resume_empty')),
+ created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+) STRICT;
+
+----- FIN SQL ORIGINAL -----
+
+ARCHIVO SQL ORIGINAL: packages/database/migrations/0006_media_lifecycle.sql
+SHA-256: ed8fcd76c51fc8050c5b5bd676e4eb98323b62e81fc312e99589bcdb9314ac4c
+----- INICIO SQL ORIGINAL -----
+-- Additive only: original revisions and media identities remain intact.
+CREATE TABLE media_processing (
+  media_id TEXT PRIMARY KEY NOT NULL REFERENCES media_assets(id),
+  version INTEGER NOT NULL DEFAULT 1 CHECK(version>=1),
+  validation_code TEXT NOT NULL DEFAULT 'decoder_unavailable',
+  normalized_sha256 TEXT,
+  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  deleted_at TEXT
+) STRICT;
+CREATE TABLE media_upload_limits (
+  principal_id TEXT NOT NULL REFERENCES principals(id),
+  window_start INTEGER NOT NULL,
+  attempts INTEGER NOT NULL CHECK(attempts BETWEEN 1 AND 30),
+  PRIMARY KEY(principal_id,window_start)
+) STRICT;
+
+CREATE TRIGGER media_not_attachable BEFORE INSERT ON revision_media
+WHEN EXISTS(SELECT 1 FROM media_assets WHERE id=NEW.media_id AND state IN ('retired','rejected','deleted'))
+BEGIN SELECT RAISE(ABORT,'media_not_attachable'); END;
+CREATE TRIGGER media_published_immutable BEFORE UPDATE ON media_assets
+WHEN EXISTS(SELECT 1 FROM revision_media rm JOIN services s ON s.published_revision_id=rm.revision_id WHERE rm.media_id=OLD.id AND s.status='published')
+AND (NEW.state<>OLD.state OR NEW.sha256 IS NOT OLD.sha256 OR NEW.derivative_object_key IS NOT OLD.derivative_object_key OR NEW.usage_approval<>OLD.usage_approval)
+BEGIN SELECT RAISE(ABORT,'published_media_immutable'); END;
+
+CREATE TABLE media_read_limits (
+ principal_id TEXT NOT NULL REFERENCES principals(id),
+ window_start INTEGER NOT NULL,
+ attempts INTEGER NOT NULL CHECK(attempts BETWEEN 1 AND 300),
+ PRIMARY KEY(principal_id,window_start)
+) STRICT;
+
+----- FIN SQL ORIGINAL -----
+
+12. CONTROL FINAL Y BASE DE REVISIÓN
+infra/cloudflare/dev/scripts/safe-d1/owned-write-checkpoint.mjs
+  base=5e7ad6c9c6431f24f71a5adacdd7d88cb8c841c7e74fb2006819be8cbab7f2c1
+  actual=5e7ad6c9c6431f24f71a5adacdd7d88cb8c841c7e74fb2006819be8cbab7f2c1
+infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+  base=616db5d484fbe4646cde88432f16dbc95c9fcb03064d0cdb71c78e2ecf929ade
+  actual=9b59e5a92494b806e36ff6ad2567f68ce4da5df7a2fc2feea159437ad91f1279
+infra/cloudflare/dev/scripts/safe-d1/stage-four-expectation.mjs
+  base=0b03800563d1ea34300baf275266b515de4b17d6d78316eb7843b6b83550e3ef
+  actual=0b03800563d1ea34300baf275266b515de4b17d6d78316eb7843b6b83550e3ef
+infra/cloudflare/dev/test/owned-write-checkpoint.test.mjs
+  base=d367d161a3ae2084abf9f6dbf4ddab9d2871f4909241daacd1126e87aba333f0
+  actual=d367d161a3ae2084abf9f6dbf4ddab9d2871f4909241daacd1126e87aba333f0
+infra/cloudflare/dev/scripts/safe-d1/write.mjs
+  base=92b0ace8acaffd5ee704e489262ebac157859e72ce4cdf842cc55d9db09ec88a
+  actual=a82e494e3260e54e1126d47d608854e349f748d6910cbf7cdd0bbd22c15241e4
+infra/cloudflare/dev/scripts/safe-d1/backup.mjs
+  base=3711fca5e1e32714757d786f66cdb07b5131673e63291f481a1e34c026aa5afd
+  actual=61bb204f4555eb24cfd1467e0237c13a73090b50fbd662cc3ca856f2c3063075
+
+Flags verificados: completionApproved=false; remoteExecutionEnabled=false; backupExecutionApproved=false; batchApproved=false; finalApproved=false.
+ID de ejecución nuevo sin consumir. No se crearon tokens ni recursos remotos,
+no se abrió una GUI de credenciales, no se hizo export adicional, migración remota,
+deploy, commit ni push. La entrega se detiene para revisión.

@@ -1,0 +1,116 @@
+{
+  "name": "kuwago-admin-web-disabled",
+  "main": "__BLOCKED_UNIMPLEMENTED_ADMIN_WEB_ENTRYPOINT__.ts",
+  "compatibility_date": "2026-10-23",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "upload_source_maps": false,
+  "observability": {
+    "enabled": false
+  },
+  "vars": {
+    "APP_ENV": "unselected",
+    "DEPLOYMENT_STATE": "disabled"
+  },
+  "env": {
+    "development": {
+      "name": "kuwago-admin-web-development",
+      "account_id": "__REQUIRED_DEVELOPMENT_ACCOUNT_ID__",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "observability": {
+        "enabled": false
+      },
+      "limits": {
+        "cpu_ms": 50
+      },
+      "vars": {
+        "APP_ENV": "development",
+        "DEPLOYMENT_STATE": "disabled",
+        "MUTATIONS_ENABLED": "false",
+        "EXPECTED_HOST": "admin-dev.grupokuwago.com",
+        "ACCESS_ISSUER": "",
+        "ACCESS_AUD": "",
+        "ADMIN_ORIGIN": "https://admin-dev.grupokuwago.com",
+        "REQUIRE_ACCESS_JWT": "true"
+      },
+      "services": [
+        {
+          "binding": "ADMIN_API",
+          "service": "kuwago-admin-api-development"
+        }
+      ]
+    },
+    "staging": {
+      "name": "kuwago-admin-web-staging",
+      "account_id": "__REQUIRED_STAGING_ACCOUNT_ID__",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "observability": {
+        "enabled": false
+      },
+      "limits": {
+        "cpu_ms": 50
+      },
+      "vars": {
+        "APP_ENV": "staging",
+        "DEPLOYMENT_STATE": "disabled",
+        "MUTATIONS_ENABLED": "false",
+        "EXPECTED_HOST": "admin-staging.grupokuwago.com",
+        "ACCESS_ISSUER": "",
+        "ACCESS_AUD": "",
+        "ADMIN_ORIGIN": "https://admin-staging.grupokuwago.com",
+        "REQUIRE_ACCESS_JWT": "true"
+      },
+      "services": [
+        {
+          "binding": "ADMIN_API",
+          "service": "kuwago-admin-api-staging"
+        }
+      ]
+    },
+    "production": {
+      "name": "kuwago-admin-web-production",
+      "account_id": "__REQUIRED_PRODUCTION_ACCOUNT_ID__",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "observability": {
+        "enabled": false
+      },
+      "limits": {
+        "cpu_ms": 50
+      },
+      "vars": {
+        "APP_ENV": "production",
+        "DEPLOYMENT_STATE": "disabled",
+        "MUTATIONS_ENABLED": "false",
+        "EXPECTED_HOST": "admin.grupokuwago.com",
+        "ACCESS_ISSUER": "",
+        "ACCESS_AUD": "",
+        "ADMIN_ORIGIN": "https://admin.grupokuwago.com",
+        "REQUIRE_ACCESS_JWT": "true"
+      },
+      "services": [
+        {
+          "binding": "ADMIN_API",
+          "service": "kuwago-admin-api-production"
+        }
+      ]
+    }
+  },
+  "assets": {
+    "directory": "__BLOCKED_ADMIN_ASSET_DIRECTORY_NOT_CONFIGURED__",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "single-page-application"
+  },
+  "dev": {
+    "ip": "127.0.0.1",
+    "port": 8787,
+    "local_protocol": "http"
+  }
+}

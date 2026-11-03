@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kuwago-admin-api-development",
+  "account_id": "__PENDING_VERIFIED_ACCOUNT_ID__",
+  "main": "__BLOCKED_REMOTE_IMPLEMENTATION_NOT_AUTHORIZED__.ts",
+  "compatibility_date": "2026-07-30",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "send_metrics": false,
+  "observability": { "enabled": false },
+  "vars": {
+    "APP_ENV": "development", "MUTATIONS_ENABLED": "false", "REQUIRE_ACCESS_JWT": "true",
+    "ACCESS_ISSUER": "", "ACCESS_AUD": "", "ADMIN_ORIGIN": ""
+  },
+  "d1_databases": [{ "binding": "DB", "database_name": "kuwago-admin-db-development", "database_id": "__PENDING_VERIFIED_D1_ID__", "migrations_dir": "../../../packages/database/migrations", "remote": false }],
+  "r2_buckets": [{ "binding": "PRIVATE_MEDIA", "bucket_name": "kuwago-media-development", "remote": false }]
+}

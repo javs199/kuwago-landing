@@ -1,0 +1,12 @@
+{
+  "environment": "development",
+  "evidence": "user_reported_2026-10-23_not_independently_read_back",
+  "worker": "kuwago-admin-api-development",
+  "database": { "name": "kuwago-admin-db-development", "id": null },
+  "privateMediaBucket": "kuwago-media-development",
+  "accountId": null,
+  "access": { "applicationName": "Kuwago Admin DEV - Acceso autorizado", "applicationId": null, "issuer": null, "audience": null, "coveredHosts": [] },
+  "remoteBindingsVerified": false,
+  "manualEvidence": ["anonymous intercepted", "authorized Google identity allowed", "unauthorized Google identity rejected", "R2 no public URL or custom domain", "D1 initially empty"],
+  "remoteChangesAuthorized": false
+}

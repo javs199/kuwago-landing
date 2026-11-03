@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kuwago-catalog-barrier-local-only",
+  "main": "src/barrier.ts",
+  "compatibility_date": "2026-07-30",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "send_metrics": false,
+  "dev": {
+    "ip": "127.0.0.1",
+    "port": 8792
+  },
+  "env": {
+    "development": {
+      "workers_dev": false,
+      "routes": [],
+      "vars": {
+        "APP_ENV": "development"
+      },
+      "preview_urls": false,
+      "d1_databases": [
+        {
+          "remote": false,
+          "binding": "DB",
+          "database_name": "kuwago-admin-db-development"
+        }
+      ],
+      "name": "kuwago-catalog-barrier-local-only-development"
+    }
+  }
+}

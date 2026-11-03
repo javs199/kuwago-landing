@@ -1,7 +1,7 @@
 import { getConciergePage } from './page-config.mjs';
-import { cpSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve, sep } from "node:path";
-import { versionAssets } from './asset-versioning.mjs';
+import { cpSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { resolve, sep, join } from "node:path";
+import { versionAssets, versionModuleImports } from './asset-versioning.mjs';
 
 const conciergePage = getConciergePage();
 const output = "dist";
@@ -24,6 +24,15 @@ cpSync("assets", `${output}/assets`, {
     return absolute !== projectImages && !absolute.startsWith(`${projectImages}${sep}`);
   },
 });
+// Version every static ESM dependency, including shared validators, as well as HTML entries.
+function versionModules(directory) {
+  for (const entry of readdirSync(directory,{withFileTypes:true})) {
+    const path = join(directory,entry.name);
+    if (entry.isDirectory()) versionModules(path);
+    else if (entry.name.endsWith('.js')) writeFileSync(join(output,path),versionModuleImports(readFileSync(path,'utf8'),path));
+  }
+}
+versionModules('assets/js');
 cpSync(".htaccess", `${output}/.htaccess`);
 cpSync("robots.txt", `${output}/robots.txt`);
 cpSync("sitemap.xml", `${output}/sitemap.xml`);

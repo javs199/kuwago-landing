@@ -10,9 +10,18 @@
     "test:assets": "node --test scripts/test-asset-versioning.mjs",
     "test:loader": "node --test scripts/test-loader.mjs",
     "test:pwa": "node --test scripts/test-pwa.mjs scripts/test-pwa-install.mjs",
-    "css": "tailwindcss -i styles/tailwind.input.css -o assets/css/tailwind.css --minify"
+    "css": "tailwindcss -i styles/tailwind.input.css -o assets/css/tailwind.css --minify",
+    "contracts:build": "node scripts/contracts-build.mjs",
+    "predev": "npm run contracts:build",
+    "precheck": "npm run contracts:build",
+    "prebuild": "npm run contracts:build",
+    "test:catalog": "node --test scripts/test-catalog.mjs",
+    "pretest:catalog": "npm run contracts:build",
+    "test:contracts": "npm --prefix packages/contracts run build && npm --prefix packages/contracts test",
+    "lint:catalog": "node apps/admin/node_modules/eslint/bin/eslint.js assets/js/catalog-adapter.js assets/js/catalog-static.js assets/js/marketplace.js assets/js/marketplace-data.js --config scripts/eslint.catalog.config.mjs --max-warnings 0"
   },
   "devDependencies": {
     "tailwindcss": "3.4.19"
-  }
+  },
+  "type": "module"
 }

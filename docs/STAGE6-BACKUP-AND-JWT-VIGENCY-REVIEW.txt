@@ -1,0 +1,926 @@
+KUWAGO DEV — BACKUP ETAPA 6 Y CORRECCION LOCAL DE VIGENCIA JWT
+27/10/2026, America/Costa_Rica. ENTREGA PARA REVISION.
+
+1. RESULTADO REMOTO: PASS, UNICO BACKUP-ONLY AUTORIZADO
+Autorizacion consumida: 17fe22b3-a7bf-4a86-954b-f4d7c35a7db6
+Operation ID: 1098a954-90fc-4366-b82c-808fd047262a
+Destino: kuwago-admin-db-development
+UUID D1: c5cfbe44-4fd0-4c2a-83c1-b833935534ba
+Cuenta: 7a8bcd7992a3de359d2aff87df2fb693
+Los 23 archivos del manifiesto del adjunto revisado coincidieron antes de habilitar
+el permiso. Su SHA se comprobo y se preservo el documento original:
+aa701c492ae1e7865d66df64fca2f49371489d013457bcad6347ef17e774a75f
+Se comprobo ausencia de attempt/result del ID y lock pendiente, ACL y cierre 6.
+Solo se habilitaron temporalmente el gate especifico del backup y su perfil JSON.
+Token D1 y clave EXISTENTE por interfaz oculta/pipe; este flujo no uso JWT Access.
+
+HTTP API: 275 respuestas 200: 5 metadatos, 265 SELECT/PRAGMA de lectura,
+4 bookmarks, 1 export_start. Cero polls: el unico export respondio completo.
+No SQL remoto de escritura, ni migraciones, bootstrap o roles. La descarga
+firmada no recibio el token API ni dejo su URL en evidencia.
+32 tablas de aplicacion, historial 0001–0006, integridad y estado logico exactos.
+Fingerprint antes/despues/restaurado:
+1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5
+Primera lectura bookmark: 2026-10-27T21:04:49.147Z.
+Intermedia: 2026-10-27T21:04:56.199Z. Ultima pre-export: 2026-10-27T21:05:03.144Z.
+Igualdad de bookmarks y snapshots pre-export: true. El flujo tambien exigio
+igualdad logica y bookmark tras exportar. Valores de bookmarks no expuestos.
+Resultado completo observado a 2026-10-27T21:05:15.5238178Z (15:05:15 Costa Rica).
+
+Ciphertext fuera de Git:
+C:\Users\JV\AppData\Local\Kuwago\D1Backups\development\1098a954-90fc-4366-b82c-808fd047262a\backup.kwgbak
+SHA-256 ciphertext: 06813068357b65049988cca2e6fa3b2d0b4de9eef247faae78af9bf8b9114d23
+SHA-256 evidence.json: 24d82b43a54732dbbd369f3f429852f50af9bc74e1c4b241b1c3f3d276978ab2
+SHA-256 resultado: a0c16fd3e2386475d565891f3c87d3a860f8f54915126d202bd68576bb996de3
+AES-256-GCM + DPAPI + recuperacion independiente con la clave introducida: PASS.
+Restauracion SQLite aislada: 34 tablas totales y 56 filas, comparacion exacta PASS.
+Carga adicional con loadBootstrapRecovery (pins, descifrado, SQLite y Miniflare):
+PASS local, sin llamadas remotas. El respaldo anterior de etapa 4 sigue verificable.
+No se reemplazaron respaldos por checkpoints ni se tocaron respaldos anteriores.
+
+CIERRE: cleanupComplete=true, credentialDisposed=true. Sin backup-only.lock.
+Formulario PID 52420 terminado, sin hijos; token ausente del entorno actual.
+Los campos/referencias se vaciaron; buffers se sobrescribieron por el flujo existente.
+No se promete borrado fisico absoluto de RAM ni de historial/sincronizacion externa.
+No se modifico/revoco el token remotamente: se descarto de los procesos locales.
+stageSixBackupApproved=false, perfil approved=false, alreadyUsed=true.
+
+2. CORRECCION DE VIGENCIA — FUNDAMENTO Y CAMBIO ACOTADO
+Defecto revisado: la comprobacion anterior de runBootstrap podia quedar separada
+del fetch por verifyCheckpoint, persistencia de intent/request-invocation,
+lecturas de bookmark y serializacion. El JWT podia vencer en ese intervalo.
+
+Se exporta assertBootstrapIdentityFresh desde single-operator-bootstrap.mjs,
+reutilizando el WeakSet de evidencia criptograficamente verificada. Captura
+Date.now una sola vez y exige issuer/AUD registrados, edad >=0 y <300000 ms,
+y checkedAt < expiresAt (sin tolerancia adicional a la expiracion).
+La antiguedad es la de la verificacion criptografica local, no una reinterpretacion
+del iat del JWT. Su firma/issuer/AUD/iat/nbf/exp ya se validan en el verificador existente.
+
+El transporte invoca ese control en request, DESPUES de persistir el marcador
+previo y preparar/serializar las opciones de fetch. No hay await ni I/O entre
+este ultimo control y la invocacion del fetch mutante. No se reduce el TTL ni se
+relaja otra guarda; se conserva el actor tecnico con enabled=0, sin roles.
+El actor tecnico sigue siendo distinto del destinatario y no es un revisor humano.
+No se modificaron aprobaciones comerciales, multimedia, Access ni autenticacion.
+
+El marcador request-invocation sigue significando about-to-invoke; no prueba envio.
+La observacion del transporte ahora distingue fetchInvoked/fetchInvokedAt.
+runBootstrap registra requestActuallyInvoked de esa observacion:
+- JWT vencido o verificacion antigua: STOPPED_BEFORE_SEND,
+  errorCode=bootstrap_identity_stale, intentionRecorded=true,
+  requestInvocationRecorded=true, requestActuallyInvoked=false,
+  requiresReadOnlyReconciliation=false, cero fetch mutantes y sin reintento.
+- Si fetch fue invocado y la respuesta se pierde o falla postflight:
+  UNCERTAIN_OR_POSTFLIGHT_FAILED, requestActuallyInvoked=true,
+  requiresReadOnlyReconciliation=true. No implica que no hubo escritura.
+Las capacidades/intent quedan consumidas incluso al detenerse, sin reintento.
+El ACK usa ahora la hora de la invocacion efectiva, no la anterior a la persistencia.
+
+3. PRUEBAS DIRIGIDAS Y EVIDENCIA
+Sin JWT real ni captura nueva para la correccion. Identidades de test firmadas
+RS256 con claves efimeras exclusivamente de test y JWKS simulado.
+La regresion avanza el reloj SOLO al existir el archivo durable request-invocation,
+despues de pasar el control temprano. Prueba exp exacta y edad de 300000 ms;
+ambos dan cero invocaciones de fetch mutante, cero roles, intent conservado y sin retry.
+Se restauro el reloj antes de consultar Miniflare para no afectar sus credenciales
+internas de test. La primera corrida del fixture fallo por usar restore en vez de
+mock.restore; se corrigio el fixture y se preservo el log de ese fallo. No fue una
+escritura remota ni un fallo del backup. Un comando de verificacion local por eval
+tambien fallo por herencia de --input-type en un worker; se repitio como archivo
+local y dio PASS. No se repitio ni reinicio el export remoto por esos fallos locales.
+
+Nueva regresion (expiracion + antiguedad):
+✔ JWT expires or identity ages during request journal persistence: zero mutating fetches (13586.9145ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14020.6891
+
+Recorrido correcto y perdida de respuesta/postflight:
+✔ durable bootstrap: fixed target, single request, verified independent oracle and durable closure (12452.4886ms)
+✔ durable bootstrap: commit with ambiguous response, bad readback or checkpoint collision never claims PASS or retries (24724.2688ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 37554.5956
+
+Capacidades y respaldo real ya disponible:
+✔ capabilities: remote gate and recovery evidence; no exports, arbitrary SQL, forged recovery or changed scope (3357.4952ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3754.4628
+
+Lint de los cinco archivos afectados: PASS. No se repitieron suites globales,
+builds ni migraciones. Se conservaron los resultados previos; estas cuatro pruebas
+dirigidas distintas incluyen los dos escenarios de carrera de la prueba nueva y
+los fallos de respuesta/postflight del caso de regresion. El test de capacidades
+se adapto al hecho de que ahora SI existe backup 6, sin habilitar el bootstrap.
+
+4. RECUPERACION Y PENDIENTES PARA BOOTSTRAP
+Ya existe backup remoto COMPLETO de etapa 6, con cifrado y restore exacto: no es
+el backup 4 ni un checkpoint. operationId y hashes quedaron registrados en
+next-stage/bootstrap-authorization.json y development-plan.json.
+approved sigue false, executionId sigue null, sin sourceSet/batch/autorizacion
+humana de escritura. Todos los gates de bootstrap/deploy permanecen bloqueados.
+
+Para autorizar el alta posteriormente:
+1) Revisar este diff y fijar version efectiva del ejecutor corregido.
+2) Autorizar expresamente UN batch del primer Super Admin en D1 DEV, con UUID,
+   hash de lote y referencia real de autorizacion de Jesus. No segundo revisor ficticio.
+3) Capturar JWT vigente privadamente EN ESE MOMENTO; el PASS del 26/10 es historico
+   y vencido. Esta instruccion no solicito ni capturo otro JWT real.
+4) Volver a comprobar pins/ciphertext/restore del backup 6, destino, historial,
+   esquema, fingerprint remoto y bookmark fresco antes del batch. Una diferencia
+   logica obliga a detenerse y revisar baseline/recuperacion, sin nuevo export automatico.
+5) Aplicar solo si todos los controles pasan; confirmar postflight/cierre durable.
+   Ante respuesta ambigua, solo reconciliacion de lectura, nunca un segundo envio.
+No se necesita otro export preventivo por esta preparacion si el estado no cambia.
+No se restaurara remotamente sin autorizacion separada; el bookmark historico
+esta dentro del respaldo cifrado, y el nuevo control de concurrencia sigue vigente.
+
+Limitaciones: el ultimo chequeo es un punto local en el tiempo. No promete que un
+JWT no venza durante el transito, una pausa del sistema operativo posterior al
+chequeo, o su procesamiento remoto; tampoco detecta toda revocacion sobrevenida.
+No se afirma recepcion por Cloudflare a partir del marcador previo. Sin respuesta,
+el envio efectivo es incierto respecto a commit y se conserva esa incertidumbre.
+La correccion no ofrece transaccion distribuida D1–R2 ni cambia la guarda SQL.
+
+5. MANIFIESTO DEL CAMBIO LOCAL Y DIFF EXACTO CONTRA VERSION REVISADA
+Version revisada base: SINGLE-OPERATOR-BOOTSTRAP-FINAL-REVIEW.txt SHA arriba.
+Las bases de estos archivos se comprobaron contra sus hashes del manifiesto de
+ese adjunto antes de generar el diff. Metadatos del respaldo nuevo son evidencia
+adicional; la autorizacion especifica del export se habilito y se volvio a bloquear.
+Conjunto actual de fuentes del bootstrap (release BLOQUEADA): af7ee7d9a016596c30afa927006283a615b115d4712a64f666cee7d0cc6ca0e4
+
+
+BASE c3394fc686af6ce9c085259a654b49cc29088b1d07fd108d5d1a10b45848d4bb
+FINAL b34dd3e9f6a2a00ea4f0acb5b3bf3e65e292388623f6e5d993bc2bcca79378cf
+infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
+diff --git a/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs b/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
+index f5b75d0..24fb4c6 100644
+--- a/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
++++ b/infra/cloudflare/dev/scripts/single-operator-bootstrap.mjs
+@@ -36,16 +36,18 @@ export async function verifyBootstrapRecipient(request,{fetcher=fetch}={}){
+   verifiedAt:Date.now(),expiresAt:payload.exp*1000});
+  identities.add(evidence);return evidence;
+ }
+-function fresh(identity){
++export function assertBootstrapIdentityFresh(identity){
+  requireSafe(identities.has(identity)&&identity.issuer===devAccess.issuer&&identity.audience===devAccess.audience,
+   'bootstrap_verified_identity_required');
+- requireSafe(Date.now()-identity.verifiedAt>=0&&Date.now()-identity.verifiedAt<300000&&Date.now()<identity.expiresAt,
++ const checkedAt=Date.now(),ageMs=checkedAt-identity.verifiedAt;
++ requireSafe(ageMs>=0&&ageMs<300000&&checkedAt<identity.expiresAt,
+   'bootstrap_identity_stale');
++ return {checkedAt,ageMs};
+ }
+ // The caller must supply a real stage-6 read receipt and a complete independently
+ // verified baseline snapshot. Neither is manufactured from a post-write response.
+ export function prepareSingleOperatorBootstrap({preflight,snapshot,expectedFingerprint,identity,executionId,authorizationReference}){
+- fresh(identity);approvedSources();
++ assertBootstrapIdentityFresh(identity);approvedSources();
+  requireSafe(isReadReceipt(preflight)&&preflight.stage===6&&Date.now()-preflight.observedAt>=0&&Date.now()-preflight.observedAt<30000,'bootstrap_preflight_invalid');
+  requireSafe(snapshot?.stage===6&&/^[a-f0-9]{64}$/.test(expectedFingerprint)&&snapshotFingerprint(snapshot.snapshot)===expectedFingerprint,'bootstrap_fingerprint_mismatch');
+  requireSafe(/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(executionId)&&/^[a-f0-9]{64}$/.test(authorizationReference),'bootstrap_execution_or_authorization_invalid');
+@@ -87,7 +89,7 @@ export function prepareSingleOperatorBootstrap({preflight,snapshot,expectedFinge
+ // Local rehearsal adapter only. This module has no route into the existing remote
+ // transport and cannot enable its capabilities. Future wiring requires review.
+ export async function rehearseBootstrap(plan,localDb){
+- requireSafe(plans.has(plan)&&!used.has(plan),'bootstrap_plan_consumed_or_invalid');fresh(plan.identity);
++ requireSafe(plans.has(plan)&&!used.has(plan),'bootstrap_plan_consumed_or_invalid');assertBootstrapIdentityFresh(plan.identity);
+  requireSafe(Date.now()-plan.preparedAt<30000,'bootstrap_plan_stale');
+  used.add(plan); // Consume BEFORE invoking batch; ambiguous responses never retry.
+  await localDb.batch(plan.statements.map(s=>localDb.prepare(s.sql).bind(...s.params)));
+
+
+BASE 35851c2b42e4dc1f7dde0a6c8711a034698d649db32f5fb3999e1c5146d3f5bb
+FINAL aca794ababc607f96a72da2d7ea4713b41d4e9a254b8ed70237dc97322a3aee3
+infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/transport.mjs b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+index ddd852f..3b0094d 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/transport.mjs
+@@ -8,7 +8,7 @@ import {takeFirstMigrationPermit} from './migration-0001-permit.mjs';
+ import {isBackupRead} from './snapshot.mjs';
+ import {createExporter} from './export.mjs';
+ import {takeBootstrapPermit,takeBootstrapPreflightPermit} from './bootstrap-permit.mjs';
+-import {bootstrapBatchPlan,isBootstrapRead,identityEvidenceHash} from '../single-operator-bootstrap.mjs';
++import {bootstrapBatchPlan,isBootstrapRead,identityEvidenceHash,assertBootstrapIdentityFresh} from '../single-operator-bootstrap.mjs';
+ import {isBootstrapJournal} from './bootstrap-journal.mjs';
+ const writeAcknowledgements=new WeakMap();
+ export function ownWriteMetadata(receipt){const m=writeAcknowledgements.get(receipt);requireSafe(m,'own_write_acknowledgement_required');return Object.freeze({stage:m.stage,acknowledgedAt:m.acknowledgedAt,source:m.source});}
+@@ -38,11 +38,20 @@ export function createTransport(token,{simulationFetch,migration0001Permit,onlyF
+  requireSafe(typeof token==='string'&&/^[-_A-Za-z0-9]{20,256}$/.test(token),'credential_invalid');
+  const fetcher=simulationFetch??fetch,base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
+  const submitted=new WeakSet();
+- let secret=token,writeAttempted=false,nextBatchStage=completionOnly?4:finalOnly?3:1,batchFailed=false,lastAcknowledgement,bootstrapInvocationRecorded=false;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
++ let secret=token,writeAttempted=false,nextBatchStage=completionOnly?4:finalOnly?3:1,batchFailed=false,lastAcknowledgement,bootstrapInvocationRecorded=false,bootstrapFetchInvoked=false,bootstrapFetchInvokedAt;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
+  async function request(suffix,body){
+   requireSafe(secret!==undefined,'credential_disposed');
+-  const item={operation:suffix===''?'metadata':suffix==='/time_travel/bookmark'?'bookmark':body?.batch?(bootstrapOnly?'bootstrap_batch':'migration_batch'):'read_query',httpStatus:null,codes:[]};diagnostics.push(item);
+-  let response;try{response=await fetcher(base+suffix,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/json'},redirect:'manual',signal:AbortSignal.timeout(20000),...(body?{body:JSON.stringify(body)}:{})});item.httpStatus=response.status;}catch{throw Error('request_outcome_unknown');}
++  const item={operation:suffix===''?'metadata':suffix==='/time_travel/bookmark'?'bookmark':body?.batch?(bootstrapOnly?'bootstrap_batch':'migration_batch'):'read_query',httpStatus:null,codes:[]};
++  const options={method:body?'POST':'GET',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/json'},redirect:'manual',signal:AbortSignal.timeout(20000),...(body?{body:JSON.stringify(body)}:{})};
++  // Last synchronous guard AFTER journal persistence and serialization, with no
++  // await or filesystem operation between this check and the mutating fetch.
++  // Keep failures outside the network catch: stale identity means ZERO sends.
++  if(bootstrapOnly&&body?.batch){
++   const plan=bootstrapBatchPlan(body.batch),freshness=assertBootstrapIdentityFresh(plan?.identity);
++   bootstrapFetchInvokedAt=new Date(freshness.checkedAt).toISOString();bootstrapFetchInvoked=true;
++  }
++  diagnostics.push(item);
++  let response;try{response=await fetcher(base+suffix,options);item.httpStatus=response.status;}catch{throw Error('request_outcome_unknown');}
+   // Never persist upstream errors, bodies, headers or the request object.
+   const reader=response.body?.getReader();requireSafe(reader,'response_invalid');let total=0;const chunks=[];
+   try{while(true){const part=await reader.read();if(part.done)break;total+=part.value.length;requireSafe(total<=2000000,'response_too_large');chunks.push(Buffer.from(part.value));}}catch{throw Error('response_invalid_or_oversized');}finally{await reader.cancel().catch(()=>{});}
+@@ -71,7 +80,7 @@ export function createTransport(token,{simulationFetch,migration0001Permit,onlyF
+      const results=await query({batch}),responseCompletedAt=new Date().toISOString();
+      requireSafe(results.length===batch.length&&results.slice(plan.readbackStart).length===3&&results.slice(plan.readbackStart).every(r=>Array.isArray(r.results)),'bootstrap_response_incomplete');
+      lastAcknowledgement=Object.freeze({});
+-     writeAcknowledgements.set(lastAcknowledgement,{owner:client,...context,stage:6,sourceSetSha256:bootstrapScope.sourceSetSha256,batchSha256:plan.batchSha256,requestStartedAt,responseCompletedAt,
++     writeAcknowledgements.set(lastAcknowledgement,{owner:client,...context,stage:6,sourceSetSha256:bootstrapScope.sourceSetSha256,batchSha256:plan.batchSha256,requestStartedAt:bootstrapFetchInvokedAt,responseCompletedAt,
+       bootstrapOutput:results.slice(plan.readbackStart).map(r=>r.results)});
+     }catch(error){batchFailed=true;throw error;}return;
+    }
+@@ -90,7 +99,7 @@ export function createTransport(token,{simulationFetch,migration0001Permit,onlyF
+   writeAcknowledgement:()=>lastAcknowledgement,
+   executionContext:()=>context,
+   bootstrapContext:()=>bootstrapScope,
+-  bootstrapWriteObservation:()=>({invocationRecorded:bootstrapInvocationRecorded}),
++  bootstrapWriteObservation:()=>({invocationRecorded:bootstrapInvocationRecorded,fetchInvoked:bootstrapFetchInvoked,fetchInvokedAt:bootstrapFetchInvokedAt}),
+   diagnostics:()=>diagnostics.map(item=>({...item,codes:[...item.codes]})),dispose(){secret=undefined;},
+  });
+  return client;
+
+
+BASE 665741b13eaf6e363ba8fb36d46fabb18d1233e08039f99358142c4f00715d06
+FINAL 60e859b4c50de9fce5de3abe8e92f2531818659ba252c42eb7f9b16c547413b9
+infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs
+diff --git a/infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs
+index 5c0a400..c50cd1d 100644
+--- a/infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs
++++ b/infra/cloudflare/dev/scripts/safe-d1/bootstrap-runner.mjs
+@@ -9,8 +9,7 @@ import {projectBootstrap} from './bootstrap-oracle.mjs';
+ import {snapshotFingerprint} from './snapshot.mjs';
+ const used=new WeakSet();
+ export async function runBootstrap({transport,plan,recovery,journal,scope}){
+- const result={status:'STOPPED',intentionRecorded:false,requestInvocationRecorded:false,writeAccepted:false,writeVerified:false,durablyClosed:false};
+- let attempted=false;
++ const result={status:'STOPPED',intentionRecorded:false,requestInvocationRecorded:false,requestActuallyInvoked:false,writeAccepted:false,writeVerified:false,durablyClosed:false};
+  try{
+   requireSafe(isBootstrapPlan(plan)&&!used.has(plan),'bootstrap_plan_consumed_or_invalid');used.add(plan);
+   const c=transport.executionContext();
+@@ -25,7 +24,7 @@ export async function runBootstrap({transport,plan,recovery,journal,scope}){
+   await journal.verifyCheckpoint(baseline.receipt);
+   result.phase='intent';journal.write('intent',{scope,baselineCheckpointSha256:baseline.evidence.recordSha256,recordedAt:new Date().toISOString()});result.intentionRecorded=true;
+   requireSafe(await transport.bookmark()===baseline.point.value,'bootstrap_concurrent_bookmark_change');
+-  result.phase='batch';attempted=true;await transport.applyBatch(plan.statements);result.requestInvocationRecorded=true;
++  result.phase='batch';await transport.applyBatch(plan.statements);result.requestInvocationRecorded=true;result.requestActuallyInvoked=true;
+   const ack=consumeBootstrapAcknowledgement(transport.writeAcknowledgement(),{transport,scope});
+   result.writeAccepted=true;journal.write('ack',{stage:6,batchSha256:ack.batchSha256,sourceSetSha256:ack.sourceSetSha256,requestStartedAt:ack.requestStartedAt,responseCompletedAt:ack.responseCompletedAt});
+   result.phase='oracle';const expected=projectBootstrap(plan,ack); // Does not adopt arbitrary postflight data.
+@@ -34,11 +33,14 @@ export async function runBootstrap({transport,plan,recovery,journal,scope}){
+   const postflight=await completionCheckpoint(transport,{expected,journal,phase:'postflight'});
+   result.writeVerified=true;result.status='PASS';result.postflightFingerprint=snapshotFingerprint(expected.snapshot);
+   result.phase='closure';result.closure=await journal.close(result,postflight.receipt);result.durablyClosed=result.closure.durablyClosed;
+- }catch{
+-  result.requestInvocationRecorded=transport.bootstrapWriteObservation?.().invocationRecorded===true;
+-  result.status=attempted?'UNCERTAIN_OR_POSTFLIGHT_FAILED':'STOPPED_BEFORE_SEND';
++ }catch(error){
++  const observation=transport.bootstrapWriteObservation?.();
++  result.requestInvocationRecorded=observation?.invocationRecorded===true;
++  result.requestActuallyInvoked=observation?.fetchInvoked===true;
++  result.status=result.requestActuallyInvoked?'UNCERTAIN_OR_POSTFLIGHT_FAILED':'STOPPED_BEFORE_SEND';
++  if(['bootstrap_identity_stale','bootstrap_verified_identity_required'].includes(error?.message))result.errorCode=error.message;
+   // A failed response is never evidence that no write occurred. No retry.
+-  result.requiresReadOnlyReconciliation=attempted;
++  result.requiresReadOnlyReconciliation=result.requestActuallyInvoked;
+   try{journal.write('result',{...result,failedAt:new Date().toISOString()});}catch{/* Existing durable evidence is never overwritten. */}
+  }finally{transport.dispose();result.credentialDisposed=true;}
+  return result;
+
+
+BASE 274b0523dcbd29f37bd6946160a9f6df846d1bba9cbd9d9906c9e21f5927a2b3
+FINAL 8574f9a08a80897c471d994e39b7b750ce43ed271584a21a47da90f8cc74e02b
+infra/cloudflare/dev/test/bootstrap-durable.test.mjs
+diff --git a/infra/cloudflare/dev/test/bootstrap-durable.test.mjs b/infra/cloudflare/dev/test/bootstrap-durable.test.mjs
+index 9a8e05a..4f6c902 100644
+--- a/infra/cloudflare/dev/test/bootstrap-durable.test.mjs
++++ b/infra/cloudflare/dev/test/bootstrap-durable.test.mjs
+@@ -28,7 +28,7 @@ async function fixture(options={}){
+  try{
+   await f.db.batch([f.db.prepare(ledgerSql),...migrations.map(m=>f.db.prepare('INSERT INTO d1_migrations(name) VALUES (?)').bind(m.name))]);
+   const reader=createReader({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async q=>(await f.db.prepare(q).all()).results}),preflight=await reader.inspect(6),snapshot=await reader.snapshot();
+-  const now=Math.floor(Date.now()/1000),token=await new SignJWT({iss:devAccess.issuer,aud:devAccess.audience,sub:expectedSubject,email:recipientEmail,iat:now,exp:now+600}).setProtectedHeader({alg:'RS256',kid:jwk.kid}).sign(keys.privateKey);
++  const now=Math.floor(Date.now()/1000),token=await new SignJWT({iss:devAccess.issuer,aud:devAccess.audience,sub:expectedSubject,email:recipientEmail,iat:now,exp:now+(options.identityTtlSeconds??600)}).setProtectedHeader({alg:'RS256',kid:jwk.kid}).sign(keys.privateKey);
+   const identity=await verifyBootstrapRecipient(new Request('https://synthetic.invalid',{headers:{'Cf-Access-Jwt-Assertion':token}}),{fetcher:async()=>Response.json({keys:[jwk]})});
+   const plan=prepareSingleOperatorBootstrap({preflight,snapshot,expectedFingerprint:snapshotFingerprint(snapshot.snapshot),identity,executionId,authorizationReference:'a'.repeat(64)});
+   // Export a synthetic local D1 snapshot into SQL only in memory, then use the
+@@ -89,9 +89,13 @@ test('durable bootstrap: commit with ambiguous response, bad readback or checkpo
+   assert.notEqual((await f.run()).status,'PASS');assert.equal(f.writes,1);
+  }finally{await f.mf.dispose();}}
+ });
+-test('capabilities: remote gate/backup missing; no exports, arbitrary SQL, forged recovery or changed scope',async()=>{
++test('capabilities: remote gate and recovery evidence; no exports, arbitrary SQL, forged recovery or changed scope',async()=>{
+  assert.equal(bootstrapExecutionApproved,false);assert.throws(()=>issueBootstrapPermit({},'a'.repeat(64)),/not_authorized/);
+- await assert.rejects(loadBootstrapRecovery(),/stage_six_backup_missing/);
++ const recoveryPlan=JSON.parse(readFileSync(resolve(root,'next-stage/bootstrap-authorization.json')));
++ if(recoveryPlan.stageSixBackupOperationId){
++  const savedRecovery=bootstrapRecoveryState(await loadBootstrapRecovery(),'development');
++  assert.equal(savedRecovery.fingerprint,recoveryPlan.baselineFingerprint);
++ }else await assert.rejects(loadBootstrapRecovery(),/stage_six_backup_missing/);
+  const child=spawnSync(process.execPath,[resolve(root,'scripts/d1-bootstrap-private.mjs')],{input:'not a credential',encoding:'utf8',env:{SystemRoot:process.env.SystemRoot,PATH:process.env.PATH}});
+  assert.equal(child.status,2);assert.equal(JSON.parse(child.stdout).status,'BLOCKED');
+  assert.equal(stageSixBackupApproved,false);assert.throws(()=>issueStageSixBackupPermit(),/not_authorized/);
+@@ -129,3 +133,27 @@ test('stage-six recovery profile validates real closure locally, does not call r
+  assert.equal(validateStageSixSnapshot(p6.expected).applicationTables,32);
+  assert.equal(snapshotFingerprint(p6.expected.snapshot),plan.migrationEvidence.fingerprint);
+ });
++
++test('JWT expires or identity ages during request journal persistence: zero mutating fetches',async t=>{
++ for(const cause of ['expiration','verification-age']){
++  const f=await fixture({identityTtlSeconds:cause==='expiration'?60:600});let clock;
++  try{
++   const marker=resolve(f.directory,'bootstrap-'+f.executionId+'.request-invocation.json');
++   const realNow=Date.now.bind(Date),deadline=cause==='expiration'?f.plan.identity.expiresAt:f.plan.identity.verifiedAt+300000;
++   // Time advances only AFTER the durable about-to-invoke marker exists. The
++   // runner's earlier freshness check has passed, reproducing the reviewed gap.
++   clock=t.mock.method(Date,'now',()=>existsSync(marker)?deadline:realNow());
++   const r=await f.run();
++   // Restore before querying Miniflare: its own internal request credentials must
++   // not inherit the synthetic future clock used only for the final send guard.
++   clock.mock.restore();clock=undefined;
++   assert.equal(r.status,'STOPPED_BEFORE_SEND');assert.equal(r.errorCode,'bootstrap_identity_stale');
++   assert.equal(r.intentionRecorded,true);assert.equal(r.requestInvocationRecorded,true);
++   assert.equal(r.requestActuallyInvoked,false);assert.equal(r.requiresReadOnlyReconciliation,false);
++   assert.equal(f.writes,0);assert.equal(f.transport.diagnostics().filter(d=>d.operation==='bootstrap_batch').length,0);
++   assert.equal(existsSync(marker),true);assert.equal(existsSync(resolve(f.directory,'bootstrap-'+f.executionId+'.intent.json')),true);
++   assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM administrator_roles').first()).n,0);
++   assert.notEqual((await f.run()).status,'PASS');assert.equal(f.writes,0);
++  }finally{clock?.mock.restore();f.transport.dispose();await f.mf.dispose();}
++ }
++});
+
+
+BASE e996f0f0440cffb7eda07b55bfb9142b31172ad1eda8ae83a006128d1137cdb2
+FINAL 74debc2429e41e10a30cbed064375cf2e250bdaa5fb4c3f30417faf1ef209151
+infra/cloudflare/dev/scripts/next-stage-readiness.mjs
+diff --git a/infra/cloudflare/dev/scripts/next-stage-readiness.mjs b/infra/cloudflare/dev/scripts/next-stage-readiness.mjs
+index 6c55aa5..49e9424 100644
+--- a/infra/cloudflare/dev/scripts/next-stage-readiness.mjs
++++ b/infra/cloudflare/dev/scripts/next-stage-readiness.mjs
+@@ -12,4 +12,4 @@ const r=JSON.parse(bytes),c=JSON.parse(closureBytes);
+ requireSafe(digest(bytes)===e.resultSha256&&digest(closureBytes)===e.closureSha256&&digest(checkpoint)===e.checkpointSha256&&c.resultSha256===e.resultSha256&&c.checkpointSha256===e.checkpointSha256&&c.stage===6&&r.status==='completed_0005_0006_only'&&r.finalCheckpoint.fingerprint===e.fingerprint&&r.verifiedStages[1].schemaHash===schemaHashes[6]&&JSON.stringify(r.verifiedStages[1].history)===JSON.stringify(migrations.map((m,i)=>({id:i+1,name:m.name}))),'next_stage_migration_evidence_invalid');
+ for(const file of [plan.integration.gatewaySource,plan.integration.apiSource,plan.integration.accessVerifier,plan.integration.rbacSource])requireSafe(existsSync(resolve(root,file)),'next_stage_existing_component_missing');
+ requireSafe(existsSync(resolve(root,'../../../',plan.integration.adminClient)),'next_stage_admin_client_missing');
+-console.log(JSON.stringify({inspection:'local-evidence-only',migrationClosureVerified:true,lastKnownRemoteStage:6,lastKnownRemoteVerificationAt:r.finishedAt,bootstrapReady:false,deployReady:false,remoteGatesBlocked:true,pending:['JWT verification receipt exists; reverify privately at actual bootstrap execution','review durable single-operator bootstrap and explicit one-batch authorization','gateway origin/app/AUD and private API topology','stage-6 full encrypted backup and isolated restore; separately authorize export','fresh bootstrap-specific preflight and recovery bookmark','explicit remote creation/deployment approvals'],reusedComponentsLocated:true}));
++console.log(JSON.stringify({inspection:'local-evidence-only',migrationClosureVerified:true,lastKnownRemoteStage:6,lastKnownRemoteVerificationAt:r.finishedAt,bootstrapReady:false,deployReady:false,remoteGatesBlocked:true,pending:['JWT verification receipt exists; reverify privately at actual bootstrap execution','review durable single-operator bootstrap and explicit one-batch authorization','gateway origin/app/AUD and private API topology',plan.recovery.stage6FullBackupAvailable?'stage-6 full encrypted backup is pinned/restored; revalidate it before bootstrap':'stage-6 full encrypted backup and isolated restore; separately authorize export','fresh bootstrap-specific preflight and recovery bookmark','explicit remote creation/deployment approvals'],reusedComponentsLocated:true}));
+
+
+6. ARCHIVO COMPLETO single-operator-bootstrap.mjs (incluye helper y todas sus funciones)
+
+// Reviewed batch preparation. Remote permission remains release-locked separately.
+import {decodeJwt} from 'jose';
+import {createAccessVerifier} from '../.wrangler/build/security.js';
+import {approvedSources,digest,migrations,requireSafe,target,schemaDigest} from './safe-d1/policy.mjs';
+import {isReadReceipt,schemaGuardQuery} from './safe-d1/read.mjs';
+import {cellsQuery,snapshotFingerprint} from './safe-d1/snapshot.mjs';
+
+export const remoteBootstrapEnabled=false;
+export const technicalIssuer='urn:kuwago:technical:bootstrap:development';
+export const recipientEmail='ch.jesus.99@gmail.com';
+// Observed in the authorized Access user detail, NOT inferred from an email.
+export const expectedSubject='57fd05c6-e0f3-5838-8e16-4ab77d8dff41';
+export const devAccess=Object.freeze({
+ issuer:'https://blue-bread-0e64.cloudflareaccess.com',
+ audience:'dd73f3792def5ce94841273f79026f08e326c98d6fd98925ba0551196bb16adc',
+});
+const identities=new WeakSet(),plans=new WeakSet(),used=new WeakSet(),batchPlans=new WeakMap();
+const freeze=value=>{if(value&&typeof value==='object'&&!Object.isFrozen(value)){for(const v of Object.values(value))freeze(v);Object.freeze(value);}return value;};
+export const isBootstrapPlan=plan=>plans.has(plan);
+export const bootstrapBatchPlan=batch=>batchPlans.get(batch);
+export const identityEvidenceHash=identity=>digest(JSON.stringify({issuer:identity.issuer,subject:identity.subject,audience:identity.audience,email:identity.email}));
+export const bootstrapPostflightQueries=Object.freeze([
+ schemaGuardQuery,'SELECT id,issuer,subject,enabled,created_at FROM principals ORDER BY id',
+ 'SELECT principal_id,role_id,granted_by,granted_at FROM administrator_roles',
+ 'SELECT id,actor_id,action,entity_type,entity_id,request_id,outcome,revision_id,created_at FROM audit_events',
+ 'SELECT * FROM principal_roles','PRAGMA foreign_key_check',
+]);
+export function isBootstrapRead(plan,sql,params=[]){return plans.has(plan)&&params.length===0&&(bootstrapPostflightQueries.includes(sql)||plan.unchangedTables.some(t=>sql===cellsQuery(t.name,t.columns)));}
+// Reuse the real verifier; decoding is used ONLY after signature/iss/aud/time verification.
+export async function verifyBootstrapRecipient(request,{fetcher=fetch}={}){
+ const identity=await createAccessVerifier(devAccess,fetcher)(request);
+ const payload=decodeJwt(request.headers.get('Cf-Access-Jwt-Assertion'));
+ requireSafe(payload.email===recipientEmail,'bootstrap_recipient_email_mismatch');
+ requireSafe(identity.subject===expectedSubject,'bootstrap_recipient_subject_mismatch');
+ const evidence=Object.freeze({...identity,email:recipientEmail,audience:devAccess.audience,
+  verifiedAt:Date.now(),expiresAt:payload.exp*1000});
+ identities.add(evidence);return evidence;
+}
+export function assertBootstrapIdentityFresh(identity){
+ requireSafe(identities.has(identity)&&identity.issuer===devAccess.issuer&&identity.audience===devAccess.audience,
+  'bootstrap_verified_identity_required');
+ const checkedAt=Date.now(),ageMs=checkedAt-identity.verifiedAt;
+ requireSafe(ageMs>=0&&ageMs<300000&&checkedAt<identity.expiresAt,
+  'bootstrap_identity_stale');
+ return {checkedAt,ageMs};
+}
+// The caller must supply a real stage-6 read receipt and a complete independently
+// verified baseline snapshot. Neither is manufactured from a post-write response.
+export function prepareSingleOperatorBootstrap({preflight,snapshot,expectedFingerprint,identity,executionId,authorizationReference}){
+ assertBootstrapIdentityFresh(identity);approvedSources();
+ requireSafe(isReadReceipt(preflight)&&preflight.stage===6&&Date.now()-preflight.observedAt>=0&&Date.now()-preflight.observedAt<30000,'bootstrap_preflight_invalid');
+ requireSafe(snapshot?.stage===6&&/^[a-f0-9]{64}$/.test(expectedFingerprint)&&snapshotFingerprint(snapshot.snapshot)===expectedFingerprint,'bootstrap_fingerprint_mismatch');
+ requireSafe(/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(executionId)&&/^[a-f0-9]{64}$/.test(authorizationReference),'bootstrap_execution_or_authorization_invalid');
+ const tables=snapshot.snapshot.tables;
+ requireSafe(schemaDigest(snapshot.snapshot.schema.filter(s=>s.name!=='d1_migrations'))===preflight.schemaHash,'bootstrap_snapshot_schema_mismatch');
+ requireSafe(tables.length>0&&new Set(tables.map(t=>t.name)).size===tables.length,'bootstrap_snapshot_invalid');
+ for(const name of ['principals','administrator_roles','principal_roles','audit_events'])
+  requireSafe(tables.some(t=>t.name===name&&t.rows.length===0),'bootstrap_not_first_administrator');
+ // Ensure the snapshot covers precisely the schema's tables plus sqlite_sequence.
+ const expectedTables=snapshot.snapshot.schema.filter(s=>s.type==='table').map(s=>s.name).concat('sqlite_sequence').sort();
+ requireSafe(JSON.stringify(tables.map(t=>t.name).sort())===JSON.stringify(expectedTables),'bootstrap_snapshot_incomplete');
+ const recipientId='access:'+digest(identity.issuer+'\n'+identity.subject),actorId='bootstrap:'+executionId;
+ const action='administrators.bootstrap.single_operator.v1.approval.'+authorizationReference;
+ const statements=[];
+ const add=(sql,params=[])=>statements.push(Object.freeze({sql,params:Object.freeze(params)}));
+ // Deliberate NOT NULL failure aborts the complete D1 atomic batch, without new DDL.
+ const guard=(condition,params)=>add(`INSERT INTO principals(id,issuer,subject,enabled) SELECT NULL,?,?,0 WHERE COALESCE((${condition}),0)=0`,[technicalIssuer,executionId,...params]);
+ guard(`(${schemaGuardQuery})=?`,[preflight.guardSchema]);
+ guard("(SELECT json_group_array(json_array(id,name)) FROM (SELECT id,name FROM d1_migrations ORDER BY id))=?",[JSON.stringify(migrations.map((m,i)=>[i+1,m.name]))]);
+ for(const table of tables){
+  const columns=table.columns.map((_,i)=>'c'+i).join(',');
+  guard(`(SELECT json_group_array(json_array(${columns})) FROM (${cellsQuery(table.name,table.columns)}))=?`,[JSON.stringify(table.rows)]);
+ }
+ add('INSERT INTO principals(id,issuer,subject,enabled) VALUES (?,?,?,0)',[actorId,technicalIssuer,executionId]);
+ add('INSERT INTO principals(id,issuer,subject,enabled) VALUES (?,?,?,1)',[recipientId,identity.issuer,identity.subject]);
+ add("INSERT INTO administrator_roles(principal_id,role_id,granted_by) VALUES (?,'super_admin',?)",[recipientId,actorId]);
+ // Actor is the technical executor, NOT a fictional independent human approver.
+ add("INSERT INTO audit_events(id,actor_id,action,entity_type,entity_id,request_id,outcome) VALUES (?,?,?,'administrator_role',?,?,'allowed')",
+  ['bootstrap-audit:'+executionId,actorId,action,recipientId,executionId]);
+ const readbackStart=statements.length;
+ for(const sql of bootstrapPostflightQueries.slice(1,4))add(sql);
+ const plan=freeze({environment:'development',target,executionId,recipientId,actorId,action,
+  authorizationReference,baselineFingerprint:expectedFingerprint,statements:Object.freeze(statements),
+  batchSha256:digest(JSON.stringify(statements)),remoteEnabled:false,preparedAt:Date.now(),identity,
+  expectedSchema:preflight.guardSchema,baselineSnapshot:structuredClone(snapshot),readbackStart,
+  unchangedTables:structuredClone(tables.filter(t=>!['principals','administrator_roles','audit_events'].includes(t.name)))});
+ plans.add(plan);batchPlans.set(plan.statements,plan);return plan;
+}
+// Local rehearsal adapter only. This module has no route into the existing remote
+// transport and cannot enable its capabilities. Future wiring requires review.
+export async function rehearseBootstrap(plan,localDb){
+ requireSafe(plans.has(plan)&&!used.has(plan),'bootstrap_plan_consumed_or_invalid');assertBootstrapIdentityFresh(plan.identity);
+ requireSafe(Date.now()-plan.preparedAt<30000,'bootstrap_plan_stale');
+ used.add(plan); // Consume BEFORE invoking batch; ambiguous responses never retry.
+ await localDb.batch(plan.statements.map(s=>localDb.prepare(s.sql).bind(...s.params)));
+ return verifyBootstrapPostflight(plan,localDb);
+}
+export async function verifyBootstrapPostflight(plan,db){
+ requireSafe(plans.has(plan),'bootstrap_plan_invalid');
+ const rows=async(sql,params=[])=>{const result=await db.prepare(sql).bind(...params).all();requireSafe(result.success,'bootstrap_readback_failed');return result.results;};
+ requireSafe((await rows(schemaGuardQuery))[0]?.value===plan.expectedSchema,'bootstrap_schema_postflight_mismatch');
+ for(const table of plan.unchangedTables){
+  const result=await rows(cellsQuery(table.name,table.columns));
+  requireSafe(JSON.stringify(result.map(r=>table.columns.map((_,i)=>r['c'+i])))===JSON.stringify(table.rows),'bootstrap_unrelated_data_postflight_mismatch');
+ }
+ const principals=await rows(bootstrapPostflightQueries[1]);
+ requireSafe(principals.length===2&&principals.some(p=>p.id===plan.actorId&&p.issuer===technicalIssuer&&p.subject===plan.executionId&&p.enabled===0)&&principals.some(p=>p.id===plan.recipientId&&p.issuer===plan.identity.issuer&&p.subject===plan.identity.subject&&p.enabled===1),'bootstrap_principal_postflight_mismatch');
+ const roles=await rows(bootstrapPostflightQueries[2]);
+ requireSafe(roles.length===1&&roles[0].principal_id===plan.recipientId&&roles[0].role_id==='super_admin'&&roles[0].granted_by===plan.actorId,'bootstrap_role_postflight_mismatch');
+ const audit=await rows(bootstrapPostflightQueries[3]);
+ requireSafe(audit.length===1&&audit[0].id==='bootstrap-audit:'+plan.executionId&&audit[0].actor_id===plan.actorId&&audit[0].action===plan.action&&audit[0].entity_type==='administrator_role'&&audit[0].entity_id===plan.recipientId&&audit[0].request_id===plan.executionId&&audit[0].outcome==='allowed'&&audit[0].revision_id===null,'bootstrap_audit_postflight_mismatch');
+ requireSafe((await rows('SELECT * FROM principal_roles')).length===0,'bootstrap_legacy_role_unexpected');
+ requireSafe((await rows('PRAGMA foreign_key_check')).length===0,'bootstrap_integrity_failed');
+ return {status:'local_rehearsal_pass',remoteExecuted:false,technicalActorDisabled:true,independentHumanApproval:false};
+}
+
+
+7. FUNCIONES MODIFICADAS COMPLETAS: createTransport y runBootstrap
+Se incluyen los archivos completos para preservar imports, cierres y contexto.
+
+
+===== scripts/safe-d1/transport.mjs =====
+import {target,requireSafe,remoteExecutionEnabled,digest,migrations} from './policy.mjs';
+import {allowedReadSql} from './read.mjs';
+import {isApprovedBatch,approvedBatchStage,hasFullSnapshotGuard,approvedCompletionReadbacks} from './write.mjs';
+import {takeCompletionPermit} from './completion-permit.mjs';
+import {takeBatchPermit} from './migration-batch-permit.mjs';
+import {takeFinalPermit} from './migration-final-permit.mjs';
+import {takeFirstMigrationPermit} from './migration-0001-permit.mjs';
+import {isBackupRead} from './snapshot.mjs';
+import {createExporter} from './export.mjs';
+import {takeBootstrapPermit,takeBootstrapPreflightPermit} from './bootstrap-permit.mjs';
+import {bootstrapBatchPlan,isBootstrapRead,identityEvidenceHash,assertBootstrapIdentityFresh} from '../single-operator-bootstrap.mjs';
+import {isBootstrapJournal} from './bootstrap-journal.mjs';
+const writeAcknowledgements=new WeakMap();
+export function ownWriteMetadata(receipt){const m=writeAcknowledgements.get(receipt);requireSafe(m,'own_write_acknowledgement_required');return Object.freeze({stage:m.stage,acknowledgedAt:m.acknowledgedAt,source:m.source});}
+export function consumeCompletionAcknowledgement(receipt,{transport,environment,executionId,stage,migrationSha256,batchSha256}){
+ const m=writeAcknowledgements.get(receipt);requireSafe(m&&m.owner===transport&&m.environment===environment&&m.executionId===executionId&&m.stage===stage&&m.migrationSha256===migrationSha256&&m.batchSha256===batchSha256&&m.completionOutput,'completion_ack_binding_mismatch');
+ writeAcknowledgements.delete(receipt);const {owner,...value}=m;requireSafe(owner===transport,'completion_ack_owner_invalid');return Object.freeze(value);
+}
+export function consumeBootstrapAcknowledgement(receipt,{transport,scope}){
+ const m=writeAcknowledgements.get(receipt);
+ requireSafe(m?.owner===transport&&m.bootstrapOutput&&m.scope==='bootstrap'&&m.environment===scope.environment&&m.executionId===scope.executionId&&m.stage===6&&m.batchSha256===scope.batchSha256&&m.sourceSetSha256===scope.sourceSetSha256,'bootstrap_ack_binding_mismatch');
+ writeAcknowledgements.delete(receipt);const {owner,...ack}=m;requireSafe(owner===transport,'bootstrap_ack_owner_invalid');return Object.freeze(ack);
+}
+// Remote transport is release-locked. Tests inject fetch into a simulation-only instance.
+export function createTransport(token,{simulationFetch,migration0001Permit,onlyFirstMigration=false,migrationBatchPermit,onlyRemainingMigrations=false,migrationFinalPermit,onlyFinalMigrations=false,migrationCompletionPermit,onlyCompletionMigrations=false,simulationExecutionId,bootstrapPermit,simulationBootstrapScope,bootstrapJournal,bootstrapPreflightPermit}={}){
+ const scopedPermit=takeFirstMigrationPermit(migration0001Permit);const firstOnly=scopedPermit||onlyFirstMigration;
+ const batchPermit=takeBatchPermit(migrationBatchPermit),remainingOnly=batchPermit||onlyRemainingMigrations;
+ const finalPermit=takeFinalPermit(migrationFinalPermit),finalOnly=finalPermit||onlyFinalMigrations;
+ const completionScope=takeCompletionPermit(migrationCompletionPermit),completionOnly=Boolean(completionScope)||onlyCompletionMigrations;
+ const bootstrapScope=takeBootstrapPermit(bootstrapPermit)??(typeof simulationFetch==='function'?simulationBootstrapScope:undefined),bootstrapOnly=Boolean(bootstrapScope);
+ const bootstrapReadScope=takeBootstrapPreflightPermit(bootstrapPreflightPermit);
+ requireSafe(!simulationBootstrapScope||typeof simulationFetch==='function','bootstrap_simulation_transport_required');
+ requireSafe(Number(remainingOnly)+Number(firstOnly)+Number(finalOnly)+Number(completionOnly)+Number(bootstrapOnly)+Number(Boolean(bootstrapReadScope))<=1,'conflicting_migration_scope');
+ requireSafe(remoteExecutionEnabled||typeof simulationFetch==='function'||scopedPermit||batchPermit||finalPermit||completionScope||bootstrapScope||bootstrapReadScope,'remote_execution_not_authorized');
+ const context=Object.freeze({environment:typeof simulationFetch==='function'?'local-simulation':'development',executionId:bootstrapScope?.executionId??bootstrapReadScope?.executionId??completionScope?.executionId??simulationExecutionId??'legacy-unbound',scope:bootstrapOnly?'bootstrap':bootstrapReadScope?'bootstrap-preflight':completionOnly?'0005-0006':'legacy',target});
+ if(bootstrapOnly)requireSafe(bootstrapScope.environment===context.environment&&JSON.stringify(bootstrapScope.target)===JSON.stringify(target)&&bootstrapScope.stage===6&&bootstrapScope.maximumBatches===1&&isBootstrapJournal(bootstrapJournal)&&bootstrapJournal.environment===context.environment&&bootstrapJournal.executionId===context.executionId,'bootstrap_transport_scope_invalid');
+ if(completionOnly)requireSafe(/^[a-f0-9-]{36}$/.test(context.executionId),'completion_execution_id_required');
+ requireSafe(typeof token==='string'&&/^[-_A-Za-z0-9]{20,256}$/.test(token),'credential_invalid');
+ const fetcher=simulationFetch??fetch,base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
+ const submitted=new WeakSet();
+ let secret=token,writeAttempted=false,nextBatchStage=completionOnly?4:finalOnly?3:1,batchFailed=false,lastAcknowledgement,bootstrapInvocationRecorded=false,bootstrapFetchInvoked=false,bootstrapFetchInvokedAt;const diagnostics=[];token=undefined;requireSafe(token===undefined,'credential_transfer_failed');
+ async function request(suffix,body){
+  requireSafe(secret!==undefined,'credential_disposed');
+  const item={operation:suffix===''?'metadata':suffix==='/time_travel/bookmark'?'bookmark':body?.batch?(bootstrapOnly?'bootstrap_batch':'migration_batch'):'read_query',httpStatus:null,codes:[]};
+  const options={method:body?'POST':'GET',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/json'},redirect:'manual',signal:AbortSignal.timeout(20000),...(body?{body:JSON.stringify(body)}:{})};
+  // Last synchronous guard AFTER journal persistence and serialization, with no
+  // await or filesystem operation between this check and the mutating fetch.
+  // Keep failures outside the network catch: stale identity means ZERO sends.
+  if(bootstrapOnly&&body?.batch){
+   const plan=bootstrapBatchPlan(body.batch),freshness=assertBootstrapIdentityFresh(plan?.identity);
+   bootstrapFetchInvokedAt=new Date(freshness.checkedAt).toISOString();bootstrapFetchInvoked=true;
+  }
+  diagnostics.push(item);
+  let response;try{response=await fetcher(base+suffix,options);item.httpStatus=response.status;}catch{throw Error('request_outcome_unknown');}
+  // Never persist upstream errors, bodies, headers or the request object.
+  const reader=response.body?.getReader();requireSafe(reader,'response_invalid');let total=0;const chunks=[];
+  try{while(true){const part=await reader.read();if(part.done)break;total+=part.value.length;requireSafe(total<=2000000,'response_too_large');chunks.push(Buffer.from(part.value));}}catch{throw Error('response_invalid_or_oversized');}finally{await reader.cancel().catch(()=>{});}
+  let value;try{value=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw Error('response_invalid');}
+  item.codes=Array.isArray(value.errors)?value.errors.map(e=>e?.code).filter(Number.isSafeInteger).slice(0,8):[];
+  requireSafe(response.ok,'http_rejected');requireSafe(value.success===true&&(!value.errors||value.errors.length===0),'cloudflare_rejected');return value.result;
+ }
+ async function query(body){const result=await request('/query',body);requireSafe(Array.isArray(result)&&result.length>0&&result.every(r=>r.success===true),'query_failed');return result;}
+ const exporter=createExporter(request,fetcher);
+ const client=Object.freeze({metadata:()=>request(''),bookmark:async()=>{const result=await request('/time_travel/bookmark');return result?.bookmark;},fullExport:bookmark=>{requireSafe(!firstOnly&&!remainingOnly&&!finalOnly&&!completionOnly&&!bootstrapOnly&&!bootstrapReadScope,'export_not_authorized_for_migration_0001');return exporter.fullExport(bookmark);},
+  select:async sql=>{requireSafe(allowedReadSql.includes(sql)||isBackupRead(sql),'read_sql_forbidden');const result=await query({sql,params:[]});requireSafe(result.length===1&&Array.isArray(result[0].results),'read_response_invalid');return result[0].results;},
+  bootstrapSelect:async(plan,sql,params=[])=>{
+   requireSafe(bootstrapOnly&&plan.executionId===context.executionId&&plan.batchSha256===bootstrapScope.batchSha256&&isBootstrapRead(plan,sql,params),'bootstrap_read_forbidden');
+   const result=await query({sql,params});requireSafe(result.length===1&&Array.isArray(result[0].results),'bootstrap_read_response_invalid');return result[0].results;
+  },
+  applyBatch:async batch=>{
+   requireSafe(!bootstrapReadScope,'bootstrap_preflight_read_only');
+   if(bootstrapOnly){
+    const plan=bootstrapBatchPlan(batch);
+    requireSafe(plan&&!writeAttempted&&!submitted.has(batch)&&!batchFailed&&plan.executionId===context.executionId&&plan.batchSha256===bootstrapScope.batchSha256&&digest(JSON.stringify(batch))===bootstrapScope.batchSha256&&identityEvidenceHash(plan.identity)===bootstrapScope.identitySha256&&plan.baselineFingerprint===bootstrapScope.baselineFingerprint&&plan.authorizationReference===bootstrapScope.authorizationReference,'bootstrap_arbitrary_duplicate_or_scope_mismatch');
+    submitted.add(batch);writeAttempted=true;lastAcknowledgement=undefined;
+    const requestStartedAt=new Date().toISOString();
+    try{
+     bootstrapJournal.write('request-invocation',{executionId:context.executionId,batchSha256:plan.batchSha256,requestStartedAt,meaning:'about-to-invoke-fetch; not confirmation of server receipt'});
+     bootstrapInvocationRecorded=true;
+     const results=await query({batch}),responseCompletedAt=new Date().toISOString();
+     requireSafe(results.length===batch.length&&results.slice(plan.readbackStart).length===3&&results.slice(plan.readbackStart).every(r=>Array.isArray(r.results)),'bootstrap_response_incomplete');
+     lastAcknowledgement=Object.freeze({});
+     writeAcknowledgements.set(lastAcknowledgement,{owner:client,...context,stage:6,sourceSetSha256:bootstrapScope.sourceSetSha256,batchSha256:plan.batchSha256,requestStartedAt:bootstrapFetchInvokedAt,responseCompletedAt,
+      bootstrapOutput:results.slice(plan.readbackStart).map(r=>r.results)});
+    }catch(error){batchFailed=true;throw error;}return;
+   }
+   requireSafe(isApprovedBatch(batch)&&!submitted.has(batch),'arbitrary_or_duplicate_write_forbidden');const index=approvedBatchStage(batch),readbacks=approvedCompletionReadbacks(batch);
+   if(firstOnly)requireSafe(index===0&&!writeAttempted,'only_0001_once_authorized');
+   if(remainingOnly||finalOnly||completionOnly){requireSafe(!batchFailed&&nextBatchStage<=5&&index===nextBatchStage&&hasFullSnapshotGuard(batch),completionOnly?'only_0005_0006_in_order_authorized':finalOnly?'only_0004_0006_in_order_authorized':'only_0002_0006_in_order_authorized');if(completionOnly)requireSafe(readbacks,'completion_readbacks_required');nextBatchStage++;}
+   submitted.add(batch);writeAttempted=true;lastAcknowledgement=undefined;const requestStartedAt=new Date().toISOString();
+   try{
+    const results=await query({batch}),responseCompletedAt=new Date().toISOString();let completionOutput;
+    if(completionOnly){requireSafe(results.length===batch.length&&Array.isArray(results[readbacks.historyIndex]?.results)&&Array.isArray(results[readbacks.controlIndex]?.results),'completion_response_incomplete');const h=results[readbacks.historyIndex].results,c=results[readbacks.controlIndex].results;
+     completionOutput=Object.freeze({history:Object.freeze(h.map(r=>Object.freeze({id:r.id,name:r.name,applied_at:r.applied_at}))),control:Object.freeze(c.map(r=>Object.freeze({id:r.id,epoch:r.epoch,mode:r.mode,generation:r.generation,payload_hash:r.payload_hash})))});
+    }
+    lastAcknowledgement=Object.freeze({});writeAcknowledgements.set(lastAcknowledgement,{owner:client,...context,stage:index+1,migrationSha256:migrations[index].sha256,batchSha256:digest(JSON.stringify(batch)),requestStartedAt,responseCompletedAt,acknowledgedAt:Date.parse(responseCompletedAt),source:'fixed-rest-batch-acknowledgement',completionOutput});
+   }catch(error){batchFailed=true;throw error;}
+  },
+  writeAcknowledgement:()=>lastAcknowledgement,
+  executionContext:()=>context,
+  bootstrapContext:()=>bootstrapScope,
+  bootstrapWriteObservation:()=>({invocationRecorded:bootstrapInvocationRecorded,fetchInvoked:bootstrapFetchInvoked,fetchInvokedAt:bootstrapFetchInvokedAt}),
+  diagnostics:()=>diagnostics.map(item=>({...item,codes:[...item.codes]})),dispose(){secret=undefined;},
+ });
+ return client;
+}
+
+
+===== scripts/safe-d1/bootstrap-runner.mjs =====
+import {target,requireSafe} from './policy.mjs';
+import {isBootstrapPlan,identityEvidenceHash,verifyBootstrapPostflight} from '../single-operator-bootstrap.mjs';
+import {bootstrapRecoveryState} from './bootstrap-recovery.mjs';
+import {bootstrapSourceHash} from './bootstrap-permit.mjs';
+import {isBootstrapJournal} from './bootstrap-journal.mjs';
+import {completionCheckpoint} from './completion-checkpoint.mjs';
+import {consumeBootstrapAcknowledgement} from './transport.mjs';
+import {projectBootstrap} from './bootstrap-oracle.mjs';
+import {snapshotFingerprint} from './snapshot.mjs';
+const used=new WeakSet();
+export async function runBootstrap({transport,plan,recovery,journal,scope}){
+ const result={status:'STOPPED',intentionRecorded:false,requestInvocationRecorded:false,requestActuallyInvoked:false,writeAccepted:false,writeVerified:false,durablyClosed:false};
+ try{
+  requireSafe(isBootstrapPlan(plan)&&!used.has(plan),'bootstrap_plan_consumed_or_invalid');used.add(plan);
+  const c=transport.executionContext();
+  requireSafe(c.scope==='bootstrap'&&c.executionId===plan.executionId&&JSON.stringify(c.target)===JSON.stringify(target)&&scope.environment===c.environment&&JSON.stringify(transport.bootstrapContext())===JSON.stringify(scope),'bootstrap_context_mismatch');
+  requireSafe(isBootstrapJournal(journal)&&journal.environment===c.environment&&journal.executionId===plan.executionId,'bootstrap_journal_mismatch');
+  const r=bootstrapRecoveryState(recovery,c.environment);
+  requireSafe(r.fingerprint===plan.baselineFingerprint&&r.evidenceSha256===scope.stageSixBackupEvidenceSha256&&scope.sourceSetSha256===bootstrapSourceHash()&&scope.batchSha256===plan.batchSha256&&scope.identitySha256===identityEvidenceHash(plan.identity)&&scope.authorizationReference===plan.authorizationReference,'bootstrap_evidence_binding_mismatch');
+  result.phase='durable-begin';journal.begin(scope);
+  result.phase='baseline';
+  const baseline=await completionCheckpoint(transport,{expected:plan.baselineSnapshot,journal,phase:'baseline'});
+  requireSafe(Date.now()<plan.identity.expiresAt&&Date.now()-plan.identity.verifiedAt<300000&&scope.sourceSetSha256===bootstrapSourceHash(),'bootstrap_identity_or_sources_stale');
+  await journal.verifyCheckpoint(baseline.receipt);
+  result.phase='intent';journal.write('intent',{scope,baselineCheckpointSha256:baseline.evidence.recordSha256,recordedAt:new Date().toISOString()});result.intentionRecorded=true;
+  requireSafe(await transport.bookmark()===baseline.point.value,'bootstrap_concurrent_bookmark_change');
+  result.phase='batch';await transport.applyBatch(plan.statements);result.requestInvocationRecorded=true;result.requestActuallyInvoked=true;
+  const ack=consumeBootstrapAcknowledgement(transport.writeAcknowledgement(),{transport,scope});
+  result.writeAccepted=true;journal.write('ack',{stage:6,batchSha256:ack.batchSha256,sourceSetSha256:ack.sourceSetSha256,requestStartedAt:ack.requestStartedAt,responseCompletedAt:ack.responseCompletedAt});
+  result.phase='oracle';const expected=projectBootstrap(plan,ack); // Does not adopt arbitrary postflight data.
+  const db={prepare(sql){let params=[];return {bind(...p){params=p;return this;},async all(){return {success:true,results:await transport.bootstrapSelect(plan,sql,params)};}};}};
+  result.phase='postflight';await verifyBootstrapPostflight(plan,db);
+  const postflight=await completionCheckpoint(transport,{expected,journal,phase:'postflight'});
+  result.writeVerified=true;result.status='PASS';result.postflightFingerprint=snapshotFingerprint(expected.snapshot);
+  result.phase='closure';result.closure=await journal.close(result,postflight.receipt);result.durablyClosed=result.closure.durablyClosed;
+ }catch(error){
+  const observation=transport.bootstrapWriteObservation?.();
+  result.requestInvocationRecorded=observation?.invocationRecorded===true;
+  result.requestActuallyInvoked=observation?.fetchInvoked===true;
+  result.status=result.requestActuallyInvoked?'UNCERTAIN_OR_POSTFLIGHT_FAILED':'STOPPED_BEFORE_SEND';
+  if(['bootstrap_identity_stale','bootstrap_verified_identity_required'].includes(error?.message))result.errorCode=error.message;
+  // A failed response is never evidence that no write occurred. No retry.
+  result.requiresReadOnlyReconciliation=result.requestActuallyInvoked;
+  try{journal.write('result',{...result,failedAt:new Date().toISOString()});}catch{/* Existing durable evidence is never overwritten. */}
+ }finally{transport.dispose();result.credentialDisposed=true;}
+ return result;
+}
+
+
+8. PRUEBA/HELPER MODIFICADOS COMPLETOS
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync,mkdirSync,mkdtempSync,existsSync,writeFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import {generateKeyPair,exportJWK,SignJWT} from 'jose';
+import {localDatabase} from './auth-fixtures.mjs';
+import {ledgerSql,migrations,target,root,schemaQuery} from '../scripts/safe-d1/policy.mjs';
+import {createReader} from '../scripts/safe-d1/read.mjs';
+import {snapshotFingerprint,identifier} from '../scripts/safe-d1/snapshot.mjs';
+import {devAccess,expectedSubject,recipientEmail,verifyBootstrapRecipient,prepareSingleOperatorBootstrap} from '../scripts/single-operator-bootstrap.mjs';
+import {createBootstrapJournal} from '../scripts/safe-d1/bootstrap-journal.mjs';
+import {scopeForBootstrap,issueBootstrapPermit,bootstrapExecutionApproved} from '../scripts/safe-d1/bootstrap-permit.mjs';
+import {createTransport,consumeBootstrapAcknowledgement} from '../scripts/safe-d1/transport.mjs';
+import {verifySimulationRecovery,bootstrapRecoveryState,loadBootstrapRecovery} from '../scripts/safe-d1/bootstrap-recovery.mjs';
+import {runBootstrap} from '../scripts/safe-d1/bootstrap-runner.mjs';
+import {projectBootstrap} from '../scripts/safe-d1/bootstrap-oracle.mjs';
+import {validateStageSixSnapshot,verifyStageSixClosure} from '../scripts/safe-d1/backup-stage-six.mjs';
+import {projectCompletion} from '../scripts/safe-d1/completion-oracle.mjs';
+import {custodyRoot} from '../scripts/safe-d1/windows-custody.mjs';
+import {stageSixBackupApproved,issueStageSixBackupPermit} from '../scripts/safe-d1/backup-six-permit.mjs';
+
+const parent=resolve(root,'.wrangler/bootstrap-directed-tests');mkdirSync(parent,{recursive:true});
+const keys=await generateKeyPair('RS256'),jwk={...await exportJWK(keys.publicKey),kid:'synthetic-bootstrap-directed',alg:'RS256'};
+async function fixture(options={}){
+ const f=await localDatabase(),executionId=randomUUID(),directory=mkdtempSync(resolve(parent,'run-'));
+ try{
+  await f.db.batch([f.db.prepare(ledgerSql),...migrations.map(m=>f.db.prepare('INSERT INTO d1_migrations(name) VALUES (?)').bind(m.name))]);
+  const reader=createReader({metadata:async()=>({uuid:target.id,name:target.name,version:'production'}),select:async q=>(await f.db.prepare(q).all()).results}),preflight=await reader.inspect(6),snapshot=await reader.snapshot();
+  const now=Math.floor(Date.now()/1000),token=await new SignJWT({iss:devAccess.issuer,aud:devAccess.audience,sub:expectedSubject,email:recipientEmail,iat:now,exp:now+(options.identityTtlSeconds??600)}).setProtectedHeader({alg:'RS256',kid:jwk.kid}).sign(keys.privateKey);
+  const identity=await verifyBootstrapRecipient(new Request('https://synthetic.invalid',{headers:{'Cf-Access-Jwt-Assertion':token}}),{fetcher:async()=>Response.json({keys:[jwk]})});
+  const plan=prepareSingleOperatorBootstrap({preflight,snapshot,expectedFingerprint:snapshotFingerprint(snapshot.snapshot),identity,executionId,authorizationReference:'a'.repeat(64)});
+  // Export a synthetic local D1 snapshot into SQL only in memory, then use the
+  // existing isolated SQLite restorer to establish the simulation recovery proof.
+  const raw=(await f.db.prepare(schemaQuery).all()).results.filter(r=>!['_cf_KV','_cf_METADATA'].includes(r.name));
+  const statements=['PRAGMA defer_foreign_keys=TRUE',...raw.filter(r=>r.type==='table').map(r=>r.sql)];
+  const literal=cell=>{const [type,hex]=cell.split(':');return type==='null'?'NULL':type==='text'?`CAST(X'${hex}' AS TEXT)`:type==='blob'?`X'${hex}'`:Buffer.from(hex,'hex').toString('utf8');};
+  for(const table of snapshot.snapshot.tables){if(table.name==='sqlite_sequence')statements.push('DELETE FROM sqlite_sequence');for(const row of table.rows)statements.push(`INSERT INTO ${identifier(table.name)} (${table.columns.map(identifier).join(',')}) VALUES (${row.map(literal).join(',')})`);}
+  statements.push(...raw.filter(r=>r.type!=='table').map(r=>r.sql));
+  const sql=Buffer.from(statements.join(';\n')+';'),recovery=await verifySimulationRecovery(sql,plan.baselineFingerprint);sql.fill(0);
+  const recoveryState=bootstrapRecoveryState(recovery,'local-simulation'),scope={...scopeForBootstrap(plan,recoveryState.evidenceSha256),environment:'local-simulation'};
+  const journal=createBootstrapJournal({root:directory,environment:'local-simulation',executionId});
+  let writes=0,books=0,disposed=false;
+  const base=`https://api.cloudflare.com/client/v4/accounts/${target.account}/d1/database/${target.id}`;
+  const transport=createTransport('synthetic_test_credential_not_real_12345',{simulationBootstrapScope:scope,bootstrapJournal:journal,simulationFetch:async(url,opts)=>{
+   assert.ok(url===base||url===base+'/query'||url===base+'/time_travel/bookmark');const ok=result=>Response.json({success:true,result});
+   if(url===base)return ok({uuid:options.wrongTarget?'incorrect':target.id,name:target.name,version:'production'});
+   if(url.endsWith('/time_travel/bookmark')){books++;const n=options.bookmarkRace&&books>=5?2:writes?3:1;return ok({bookmark:`00000001-00000002-0000000${n}-00000000000000000000000000000000`});}
+   const body=JSON.parse(opts.body);
+   if(body.batch){
+    writes++;const intent=resolve(directory,'bootstrap-'+executionId+'.intent.json');assert.equal(existsSync(intent),true);
+    const durable=JSON.parse(readFileSync(intent));assert.equal(durable.scope.batchSha256,plan.batchSha256);
+    if(options.atomicRace)await f.db.prepare("INSERT INTO categories(id,slug) VALUES ('concurrent','concurrent')").run();
+    const result=await f.db.batch(body.batch.map(s=>f.db.prepare(s.sql).bind(...s.params)));
+    if(options.ambiguous)throw Error('synthetic ambiguous response after commit');
+    if(options.corruptCheckpoint)writeFileSync(resolve(directory,'bootstrap-'+executionId+'.postflight.private.json'),'occupied');
+    if(options.badIdentity)result[plan.readbackStart].results[0].subject='wrong';
+    return ok(result);
+   }
+   return ok([await f.db.prepare(body.sql).bind(...body.params).all()]);
+  }});
+  const wrapped=new Proxy(transport,{get(t,k){if(k==='dispose')return ()=>{disposed=true;t.dispose();};return t[k];}});
+  // ACK ownership is tied to the real transport object; runner uses it directly.
+  return {...f,plan,recovery,scope,journal,transport,directory,executionId,wrapped,get writes(){return writes;},get disposed(){return disposed;},run:()=>runBootstrap({transport,plan,recovery,journal,scope})};
+ }catch(error){await f.mf.dispose();throw error;}
+}
+test('durable bootstrap: fixed target, single request, verified independent oracle and durable closure',async()=>{
+ const f=await fixture();try{
+  const r=await f.run();assert.equal(r.status,'PASS',JSON.stringify(r));assert.equal(r.durablyClosed,true);assert.equal(f.writes,1);
+  const prefix=resolve(f.directory,'bootstrap-'+f.executionId);assert.equal(JSON.parse(readFileSync(prefix+'.closed.json')).executionId,f.executionId);
+  assert.equal(JSON.parse(readFileSync(prefix+'.request-invocation.json')).meaning,'about-to-invoke-fetch; not confirmation of server receipt');
+  await assert.rejects(f.transport.applyBatch(f.plan.statements));assert.equal(f.writes,1);
+  assert.notEqual((await f.run()).status,'PASS');assert.equal(f.writes,1);
+ }finally{await f.mf.dispose();}
+});
+test('durable bootstrap: target mismatch, bookmark race and SQL concurrent change stop without retries',async()=>{
+ for(const options of [{wrongTarget:true},{bookmarkRace:true},{atomicRace:true}]){const f=await fixture(options);try{
+  const r=await f.run();assert.notEqual(r.status,'PASS');assert.equal(r.durablyClosed,false);assert.equal(f.writes,options.atomicRace?1:0);
+  assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM administrator_roles').first()).n,0);
+ }finally{await f.mf.dispose();}}
+});
+test('durable bootstrap: commit with ambiguous response, bad readback or checkpoint collision never claims PASS or retries',async()=>{
+ for(const options of [{ambiguous:true},{badIdentity:true},{corruptCheckpoint:true}]){const f=await fixture(options);try{
+  const r=await f.run();assert.equal(r.status,'UNCERTAIN_OR_POSTFLIGHT_FAILED');assert.equal(r.requiresReadOnlyReconciliation,true);assert.equal(f.writes,1);
+  assert.equal(r.intentionRecorded,true);assert.equal(r.requestInvocationRecorded,true);
+  assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM administrator_roles').first()).n,1);
+  assert.equal(existsSync(resolve(f.directory,'bootstrap-'+f.executionId+'.closed.json')),false);
+  assert.notEqual((await f.run()).status,'PASS');assert.equal(f.writes,1);
+ }finally{await f.mf.dispose();}}
+});
+test('capabilities: remote gate and recovery evidence; no exports, arbitrary SQL, forged recovery or changed scope',async()=>{
+ assert.equal(bootstrapExecutionApproved,false);assert.throws(()=>issueBootstrapPermit({},'a'.repeat(64)),/not_authorized/);
+ const recoveryPlan=JSON.parse(readFileSync(resolve(root,'next-stage/bootstrap-authorization.json')));
+ if(recoveryPlan.stageSixBackupOperationId){
+  const savedRecovery=bootstrapRecoveryState(await loadBootstrapRecovery(),'development');
+  assert.equal(savedRecovery.fingerprint,recoveryPlan.baselineFingerprint);
+ }else await assert.rejects(loadBootstrapRecovery(),/stage_six_backup_missing/);
+ const child=spawnSync(process.execPath,[resolve(root,'scripts/d1-bootstrap-private.mjs')],{input:'not a credential',encoding:'utf8',env:{SystemRoot:process.env.SystemRoot,PATH:process.env.PATH}});
+ assert.equal(child.status,2);assert.equal(JSON.parse(child.stdout).status,'BLOCKED');
+ assert.equal(stageSixBackupApproved,false);assert.throws(()=>issueStageSixBackupPermit(),/not_authorized/);
+ const backupChild=spawnSync(process.execPath,[resolve(root,'scripts/d1-backup-six-private.mjs')],{input:'not a credential',encoding:'utf8',env:{SystemRoot:process.env.SystemRoot,PATH:process.env.PATH}});
+ assert.equal(backupChild.status,2);assert.equal(JSON.parse(backupChild.stdout).status,'BLOCKED');
+ assert.throws(()=>createTransport('synthetic_test_credential_not_real_12345',{simulationBootstrapScope:{}}),/simulation_transport_required/);
+ const f=await fixture();try{
+  await assert.rejects(async()=>f.transport.fullExport('unused'));
+  await assert.rejects(f.transport.applyBatch([{sql:'DELETE FROM principals',params:[]}]));
+  await assert.rejects(f.transport.bootstrapSelect(f.plan,'SELECT * FROM principals',[]));
+  assert.throws(()=>bootstrapRecoveryState(f.recovery,'development'));
+  assert.throws(()=>consumeBootstrapAcknowledgement({}, {transport:f.transport,scope:f.scope}));
+  assert.throws(()=>projectBootstrap(f.plan,{stage:6,executionId:'wrong',batchSha256:f.plan.batchSha256}));
+  const r=await runBootstrap({transport:f.transport,plan:f.plan,recovery:{},journal:f.journal,scope:f.scope});assert.equal(r.status,'STOPPED_BEFORE_SEND');assert.equal(f.writes,0);
+ }finally{await f.mf.dispose();}
+});
+test('bootstrap ACK binds transport, environment, execution, stage, batch and source hash, and is consumed once',async()=>{
+ const f=await fixture();try{
+  f.journal.begin(f.scope);f.journal.write('intent',{scope:f.scope});await f.transport.applyBatch(f.plan.statements);
+  const receipt=f.transport.writeAcknowledgement();
+  for(const changed of [{environment:'development'},{executionId:randomUUID()},{batchSha256:'f'.repeat(64)},{sourceSetSha256:'f'.repeat(64)}])assert.throws(()=>consumeBootstrapAcknowledgement(receipt,{transport:f.transport,scope:{...f.scope,...changed}}));
+  assert.throws(()=>consumeBootstrapAcknowledgement(receipt,{transport:{},scope:f.scope}));
+  const ack=consumeBootstrapAcknowledgement(receipt,{transport:f.transport,scope:f.scope});assert.equal(ack.stage,6);
+  assert.throws(()=>consumeBootstrapAcknowledgement(receipt,{transport:f.transport,scope:f.scope}));
+  const expected=projectBootstrap(f.plan,ack),snapshot=await createReader(f.transport).snapshot();assert.equal(snapshotFingerprint(expected.snapshot),snapshotFingerprint(snapshot.snapshot));
+ }finally{f.transport.dispose();await f.mf.dispose();}
+});
+test('stage-six recovery profile validates real closure locally, does not call remote, rejects stage-four/fingerprint mismatch',async()=>{
+ const proof=verifyStageSixClosure();assert.equal(proof.stage,6);assert.equal(proof.fullBackup,false);
+ assert.throws(()=>validateStageSixSnapshot({stage:4,snapshot:{schema:[],tables:[]}}));
+ const f=await fixture();try{assert.throws(()=>validateStageSixSnapshot(f.plan.baselineSnapshot),/fingerprint_mismatch/);}finally{await f.mf.dispose();}
+ const plan=JSON.parse(readFileSync(resolve(root,'next-stage/development-plan.json'))),prefix=resolve(custodyRoot,'migration-0005-0006-'+plan.migrationEvidence.executionId);
+ const ack5=JSON.parse(readFileSync(prefix+'.stage-5.ack.json')),ack6=JSON.parse(readFileSync(prefix+'.stage-6.ack.json'));
+ const p5=await projectCompletion(ack5),p6=await projectCompletion(ack6,p5.generated);
+ assert.equal(validateStageSixSnapshot(p6.expected).applicationTables,32);
+ assert.equal(snapshotFingerprint(p6.expected.snapshot),plan.migrationEvidence.fingerprint);
+});
+
+test('JWT expires or identity ages during request journal persistence: zero mutating fetches',async t=>{
+ for(const cause of ['expiration','verification-age']){
+  const f=await fixture({identityTtlSeconds:cause==='expiration'?60:600});let clock;
+  try{
+   const marker=resolve(f.directory,'bootstrap-'+f.executionId+'.request-invocation.json');
+   const realNow=Date.now.bind(Date),deadline=cause==='expiration'?f.plan.identity.expiresAt:f.plan.identity.verifiedAt+300000;
+   // Time advances only AFTER the durable about-to-invoke marker exists. The
+   // runner's earlier freshness check has passed, reproducing the reviewed gap.
+   clock=t.mock.method(Date,'now',()=>existsSync(marker)?deadline:realNow());
+   const r=await f.run();
+   // Restore before querying Miniflare: its own internal request credentials must
+   // not inherit the synthetic future clock used only for the final send guard.
+   clock.mock.restore();clock=undefined;
+   assert.equal(r.status,'STOPPED_BEFORE_SEND');assert.equal(r.errorCode,'bootstrap_identity_stale');
+   assert.equal(r.intentionRecorded,true);assert.equal(r.requestInvocationRecorded,true);
+   assert.equal(r.requestActuallyInvoked,false);assert.equal(r.requiresReadOnlyReconciliation,false);
+   assert.equal(f.writes,0);assert.equal(f.transport.diagnostics().filter(d=>d.operation==='bootstrap_batch').length,0);
+   assert.equal(existsSync(marker),true);assert.equal(existsSync(resolve(f.directory,'bootstrap-'+f.executionId+'.intent.json')),true);
+   assert.equal((await f.db.prepare('SELECT COUNT(*) AS n FROM administrator_roles').first()).n,0);
+   assert.notEqual((await f.run()).status,'PASS');assert.equal(f.writes,0);
+  }finally{clock?.mock.restore();f.transport.dispose();await f.mf.dispose();}
+ }
+});
+
+
+9. PINS LOCALES PARA REVISION — NO AUTORIZAN EJECUCION
+{
+  "purpose": "single-operator-first-super-admin-only",
+  "environment": "development",
+  "executionId": null,
+  "approved": false,
+  "target": {
+    "account": "7a8bcd7992a3de359d2aff87df2fb693",
+    "id": "c5cfbe44-4fd0-4c2a-83c1-b833935534ba",
+    "name": "kuwago-admin-db-development"
+  },
+  "authorizationReference": null,
+  "sourceSetSha256": null,
+  "batchSha256": null,
+  "identitySha256": null,
+  "baselineFingerprint": "1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5",
+  "stageSixBackupEvidenceSha256": "24d82b43a54732dbbd369f3f429852f50af9bc74e1c4b241b1c3f3d276978ab2",
+  "stageSixBackupOperationId": "1098a954-90fc-4366-b82c-808fd047262a",
+  "stageSixBackupCipherSha256": "06813068357b65049988cca2e6fa3b2d0b4de9eef247faae78af9bf8b9114d23",
+  "stage": 6,
+  "maximumBatches": 1,
+  "migrationsAllowed": false,
+  "exportsAllowed": false,
+  "deploymentsAllowed": false
+}
+
+10. INFORME DEPURADO DEL RESPALDO
+# D1 DEV — respaldo completo de etapa 6
+
+27/10/2026 · America/Costa_Rica. **PASS. Permiso consumido y bloqueado. Bootstrap no ejecutado.**
+
+## Autorización y revisión previa
+
+- Autorización exclusiva: `17fe22b3-a7bf-4a86-954b-f4d7c35a7db6`.
+- Destino fijo: `kuwago-admin-db-development`, UUID `c5cfbe44-4fd0-4c2a-83c1-b833935534ba`, cuenta `7a8bcd7992a3de359d2aff87df2fb693`.
+- Se comprobó que no existían attempt/result del ID ni lock de backup pendiente.
+- Los 23 archivos del manifiesto del adjunto revisado coincidían; SHA del adjunto: `aa701c492ae1e7865d66df64fca2f49371489d013457bcad6347ef17e774a75f`.
+- ACL, hashes de las seis migraciones y cierre durable de etapa 6 verificados localmente antes de la captura.
+- Se habilitaron solo `stageSixBackupApproved` y el `approved` del perfil específico. Bootstrap, migraciones y despliegues permanecieron bloqueados.
+- Token temporal D1 y clave de recuperación existente entraron por WinForms oculto y pipe privado. No se necesitó JWT Access ni se generó otra clave.
+
+## Resultado remoto
+
+**Operation ID del respaldo:** `1098a954-90fc-4366-b82c-808fd047262a`.
+
+275 peticiones API, todas HTTP 200: 5 metadatos, 265 consultas de lectura, 4 bookmarks y **1 inicio de export**. El export terminó en la respuesta inicial; no hubo polls ni segundo inicio. La descarga firmada se gestionó por el flujo existente sin API Authorization y no se conservó su URL.
+
+Preflight confirmado: identidad del recurso, 32 tablas de aplicación, historial exacto `0001–0006`, integridad, semillas/estado vacío de usuarios y contenido, fingerprint y bookmarks estables. No se ejecutaron SQL de escritura ni migraciones.
+
+- Fingerprint esperado y restaurado: `1e2216c73853f32ccb46aa94e1b9ec1ee16e1ad71f51779db4d319d567545bf5`.
+- Bookmarks antes del export: primera lectura `2026-10-27T21:04:49.147Z`, intermedia `21:04:56.199Z`, última `21:05:03.144Z` (15:04:49–15:05:03 Costa Rica).
+- Igualdad primera/intermedia y media/última: true; snapshots completos iguales: true.
+- El flujo también exigió igualdad de snapshot y bookmark tras exportar; `verified` acredita ese control. No se publican valores de bookmark.
+- Evidencia de cifrado creada `2026-10-27T21:05:14.231Z` (15:05:14.231 Costa Rica).
+- Archivo de resultado completo observado con timestamp UTC `2026-10-27T21:05:15.5238178Z`.
+- Restauración SQLite aislada: **34 tablas totales y 56 filas**, incluyendo historial/secuencia; comparación exacta PASS.
+
+## Custodia e integridad
+
+Carpeta fuera del repositorio:
+
+```text
+C:\Users\JV\AppData\Local\Kuwago\D1Backups\development\1098a954-90fc-4366-b82c-808fd047262a
+```
+
+| Evidencia | SHA-256 |
+|---|---|
+| `backup.kwgbak` | `06813068357b65049988cca2e6fa3b2d0b4de9eef247faae78af9bf8b9114d23` |
+| `evidence.json` | `24d82b43a54732dbbd369f3f429852f50af9bc74e1c4b241b1c3f3d276978ab2` |
+| `backup-once-17fe22b3-a7bf-4a86-954b-f4d7c35a7db6.result.json` | `a0c16fd3e2386475d565891f3c87d3a860f8f54915126d202bd68576bb996de3` |
+
+AES-256-GCM existente, DPAPI y recuperación independiente con la clave introducida: descifrado y comparación PASS. El SQL solo se manejó en memoria y en restauración aislada. El flujo promovió únicamente el archivo cifrado tras verificarlo.
+
+Se volvió a cargar el ciphertext con `loadBootstrapRecovery`, comprobando sus pins, descifrado, restauración SQLite y proyección local Miniflare: PASS, mismo fingerprint. Esta comprobación adicional no hizo llamadas remotas. El respaldo completo anterior de etapa 4 también se volvió a verificar y sigue intacto; no fue reemplazado por checkpoints.
+
+## Cierre
+
+`cleanupComplete=true`, `credentialDisposed=true`, sin `backup-only.lock`. El proceso del formulario y sus hijos terminaron; no hay token en el entorno actual. Los campos/referencias se vaciaron por el flujo existente. No se afirma borrado físico absoluto de RAM ni limpieza de historiales/sincronizaciones externos del portapapeles.
+
+Se restauraron ambos gates del backup a false. El status local informa `alreadyUsed=true`; el ID no puede reintentarse. La autorización de Cloudflare del token no se modificó ni se revocó remotamente; la credencial fue descartada por el proceso.
+
+`next-stage/bootstrap-authorization.json` registra operation ID y hashes del respaldo 6, **con `approved=false` y `executionId=null`**. `development-plan.json` registra disponibilidad real del respaldo de etapa 6. Son datos para revisión posterior, no autorización de alta.
+
+Pendientes para bootstrap: revisar corrección de vigencia JWT; autorización específica de un único lote/UUID/hashes; JWT fresco capturado privadamente en ese momento y nuevo preflight/bookmark contra el respaldo 6. El PASS histórico JWT del 26/10 no se reutiliza. No hace falta otro export preventivo por esta preparación; cualquier cambio lógico posterior obligaría a detenerse y revisar recuperación.
+
+No hubo Super Admin, usuarios/roles remotos, cambios de aprobación comercial/multimedia, Access, Hostinger, producción, deploy, commit o push.
+
+
+FIN. Bootstrap, usuarios/roles y despliegues NO ejecutados. Sin commit ni push.
