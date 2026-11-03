@@ -19,3 +19,8 @@ window.KUWAGO_CATALOG_API = {
 window.KUWAGO_PAGES = {
   conciergeMarketplace: { path: "/concierge-marketplace.html", enabled: true },
 };
+
+// Account panel destination; Cloudflare Access protects the DEV portal.
+window.KUWAGO_ACCESS = {
+  admin: "https://kuwago-admin-api-development.ch-jesus-99.workers.dev/",
+};
