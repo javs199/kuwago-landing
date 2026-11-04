@@ -80,3 +80,32 @@ export function toMarketplaceCard(service, mediaBase = '') {
   };
 }
 
+
+const PER_PERSON_UNITS = new Set(['person']);
+
+/**
+ * Estimated cart totals from the loaded catalog (never from prices stored in the cart).
+ * Visual estimate only: no taxes, nothing is sent or charged.
+ * @param {CatalogCartItem[]} cart @param {PublicCatalog|null} catalog @param {Date} [now]
+ */
+export function cartTotals(cart, catalog, now = new Date()) {
+  const lines = cart.map(item => {
+    if (cartAvailability(item, catalog) !== 'available') return { status:'pending' };
+    const service = catalog.services.find(row => row.id === item.id);
+    const option = service.options.find(row => row.id === item.optionId);
+    if (service.referencePrice || !option.price || option.price.kind === 'quote') return { status:'quote' };
+    const quantity = PER_PERSON_UNITS.has(option.price.unit) ? item.travelers : 1;
+    const discount = activeDiscount(service.discount ?? null, now);
+    const unitMinor = discount ? discountedMinor(option.price.amountMinor, discount.percent) : option.price.amountMinor;
+    return { status:'priced', kind:option.price.kind, currency:option.price.currency, unitMinor, quantity, totalMinor:unitMinor * quantity };
+  });
+  const priced = lines.filter(line => line.status === 'priced');
+  const currencies = new Set(priced.map(line => line.currency));
+  const unpriced = lines.length - priced.length;
+  if (!priced.length || currencies.size > 1) return { lines, status: lines.length ? 'pending' : 'empty', subtotalMinor:null, currency:null, isMinimum:false, unpriced };
+  return {
+    lines, status: unpriced ? 'partial' : 'priced', currency: priced[0].currency,
+    subtotalMinor: priced.reduce((sum, line) => sum + line.totalMinor, 0),
+    isMinimum: priced.some(line => line.kind === 'from'), unpriced,
+  };
+}

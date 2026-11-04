@@ -1,4 +1,4 @@
-import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailability, salePrice } from './catalog-adapter.js';
+import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailability, salePrice, cartTotals } from './catalog-adapter.js';
 
 (() => {
   // With a configured public API the page shows only published services (or an error/empty state), never Stitch examples.
@@ -24,7 +24,7 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
   };
   const money = price => new Intl.NumberFormat(lang(), { style:'currency', currency:price.currency, currencyDisplay:'code' }).format(price.amountMinor / 100);
   // Builds the visible price: optional "-N %" tag, crossed-out regular price and discounted price, then duration.
-  const priceView = (item, parent = null, forceFrom = false) => {
+  const priceView = (item, parent = null, forceFrom = false, withDuration = true) => {
     const view = document.createDocumentFragment();
     const discount = item?.discount ?? parent?.discount ?? null;
     const price = item?.referencePrice || parent?.referencePrice;
@@ -38,7 +38,7 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
           el('span', `${t('discountedPrice')}: `, 'mp-sr-only'), el('strong', money(reduced), 'mp-sale-price'), ` ${t(item.price.unit)}`);
       } else view.append(`${prefix}${money(item.price)} ${t(item.price.unit)}`);
     } else view.append(t('quote'));
-    view.append(` · ${item?.durationMinutes ?? parent?.durationMinutes ?? '—'} ${t('minutes')}`);
+    if (withDuration) view.append(` · ${item?.durationMinutes ?? parent?.durationMinutes ?? '—'} ${t('minutes')}`);
     return view;
   };
   const cardPrice = service => {
@@ -47,7 +47,22 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
     if (!priced.length) return priceView(service);
     // The same percent applies to every option, so the lowest regular price is also the lowest discounted price.
     const lowest = priced.reduce((min, curr) => curr.price.amountMinor < min.price.amountMinor ? curr : min, priced[0]);
-    return priceView({ ...lowest, durationMinutes: lowest.durationMinutes ?? service.durationMinutes }, service, true);
+    // Options differ in length, so the "From" price carries no duration; the meta line shows the range.
+    return priceView(lowest, service, true, false);
+  };
+  const durationText = service => {
+    const values = (service.options?.length > 1 ? service.options.map(o => o.durationMinutes) : [service.durationMinutes]).filter(Number.isInteger);
+    if (!values.length) return `— ${t('minutes')}`;
+    const min = Math.min(...values), max = Math.max(...values);
+    return `${min === max ? min : `${min}–${max}`} ${t('minutes')}`;
+  };
+  const renderSummary = totals => {
+    const subtotal = $('mp-subtotal'), total = $('mp-total-value');
+    if (!subtotal || !total) return;
+    if (totals.subtotalMinor === null) { subtotal.textContent = t('pending'); total.textContent = t('pending'); return; }
+    const amount = `${totals.isMinimum ? `${t('from')} ` : ''}${money({currency:totals.currency,amountMinor:totals.subtotalMinor})}`;
+    subtotal.textContent = totals.unpriced ? `${amount} ${t('plusQuote')}` : amount;
+    total.textContent = `${amount} ${t('plusTaxes')}`;
   };
   const updateDialogMeta = opt => {
     $('mp-dialog-meta').replaceChildren(`${t(activeService.source === 'stitch_reference' ? 'reference' : 'details')}: `, priceView(opt, activeService));
@@ -120,7 +135,7 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
       media.append(image,el('span',categoryName(service.category),'mp-badge'));
       const content = el('div','','mp-service-content');
       const modality = `${t(service.experienceType === 'private' ? 'privateType' : service.experienceType || 'unspecified')} · ${t(service.venue || 'unspecified')}`;
-      content.append(el('h3',service[lang()].title),el('p',service[lang()].description),el('p',`${service.durationMinutes ?? '—'} ${t('minutes')} · ${modality}`,'mp-meta'));
+      content.append(el('h3',service[lang()].title),el('p',service[lang()].description),el('p',`${durationText(service)} · ${modality}`,'mp-meta'));
       if (service.source === 'stitch_reference') content.append(el('small',t('reference'),'mp-reference'));
       const price = el('p','','mp-price'); price.append(cardPrice(service)); content.append(price);
       const actions = el('div','','mp-actions');
@@ -132,6 +147,7 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
   function renderCart() {
     $('mp-count').textContent = String(cart.length); $('mp-cart-items').replaceChildren();
     if (!cart.length) $('mp-cart-items').append(el('p',t('empty')));
+    const totals = cartTotals(cart,catalog); renderSummary(totals);
     cart.forEach((item,index) => {
       const availability = cartAvailability(item,catalog);
       const service = data.services.find(row => row.id === item.id);
@@ -144,6 +160,12 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
       if (optionName) content.append(el('p', optionName, 'mp-cart-option'));
       if (availability === 'available') content.append(el('p',`${item.date ? new Intl.DateTimeFormat(lang(),{dateStyle:'medium',timeZone:'UTC'}).format(new Date(`${item.date}T12:00:00Z`)) : t('noDate')} · ${item.travelers} ${t('travelers')}`));
       else content.append(el('p',t(availability),'mp-reference'));
+      const line = totals.lines[index];
+      if (line.status === 'priced') {
+        const unit = money({currency:line.currency,amountMinor:line.unitMinor});
+        const amount = `${line.kind === 'from' ? `${t('from')} ` : ''}${line.quantity > 1 ? `${unit} × ${line.quantity} = ` : ''}${money({currency:line.currency,amountMinor:line.totalMinor})}`;
+        content.append(el('p',amount,'mp-cart-amount'));
+      } else if (line.status === 'quote' && availability === 'available') content.append(el('p',t('quote'),'mp-cart-amount'));
       const actions = el('div','','mp-actions');
       if (service && ['available','changed'].includes(availability)) {
         const edit = button(t('edit'),() => openOptions(service,index),'mp-text-button');
