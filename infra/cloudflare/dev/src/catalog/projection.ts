@@ -34,6 +34,7 @@ export async function projectCatalog(db:CatalogDatabase,override?:LoadedService)
     db.prepare(`SELECT rm.revision_id,rm.sort_order,ma.* FROM revision_media rm JOIN media_assets ma ON ma.id=rm.media_id WHERE rm.revision_id IN (${selected})`),
     db.prepare(`SELECT * FROM revision_media_translations WHERE revision_id IN (${selected})`),
     db.prepare(`SELECT * FROM commercial_approvals WHERE revision_id IN (${selected}) AND revoked_at IS NULL`),
+    db.prepare(`SELECT * FROM revision_discounts WHERE revision_id IN (${selected})`),
   ]);
   const all=result.map(r=>r.results);const services=all.shift()!;
   if(services.length>1000)throw new ApiFailure(422,'catalog_capacity_exceeded');

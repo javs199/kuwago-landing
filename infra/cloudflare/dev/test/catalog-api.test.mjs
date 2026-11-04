@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {Miniflare,convertV4MiniflareOptions} from 'miniflare';
 import {createWorker,commitCatalogMutation} from '../.wrangler/build/security.js';
 import publicWorker from '../.wrangler/build/public.js';
-import {PublicCatalogSchema} from '../../../../packages/contracts/dist/public.js';
+import {PublicCatalogSchema,discountedMinor,costaRicaDay} from '../../../../packages/contracts/dist/public.js';
 import {issuer,audience,origin,signingFixture,jwksFetcher,request,localDatabase,seedAdministrators,localBarrier} from './auth-fixtures.mjs';
 
 const categoryData={slug:'test-only-category',active:true,translations:{es:{name:'Categoría de prueba'},en:{name:'Test-only category'}}};
@@ -225,6 +225,45 @@ test('local administrative catalog workflow and isolated public projection',asyn
         assert.equal(result.status,200);assert.equal(await (await store.get('catalog/v1/current.json')).text(),text);
         assert.equal((await pub()).status,200);
       }finally{await store.put('catalog/v1/current.json',text);}
+    });
+    await t.test('service discounts: validated, sealed with the revision and hidden outside Costa Rica dates',async()=>{
+      const day=offset=>costaRicaDay(new Date(Date.now()+offset*86400000));
+      const priced=(discount)=>{const payload=draft(categoryId,'approved-test-media');payload.options=[
+        {...payload.options[0],id:crypto.randomUUID(),price:{kind:'fixed',amountMinor:9000,currency:'USD',unit:'service'}},
+        {...payload.options[0],id:crypto.randomUUID()}];return {...payload,discount};};
+      for(const discount of [{percent:0,startsOn:null,endsOn:null},{percent:91,startsOn:null,endsOn:null},{percent:15.5,startsOn:null,endsOn:null},
+        {percent:15,startsOn:'2026-02-30',endsOn:null},{percent:15,startsOn:day(2),endsOn:day(1)},{percent:15,startsOn:null}])
+        assert.equal((await call('POST','/services',priced(discount))).status,422,JSON.stringify(discount));
+      const publish=async payload=>{
+        let fixture=await call('POST','/services',payload);assert.equal(fixture.status,201,JSON.stringify(fixture));
+        const id=fixture.data.service.id;const revisionId=fixture.data.service.workingRevisionId;
+        fixture=await call('POST',`/services/${id}/approve`,{revisionId,confirmCommercialApproval:true},fixture.version,'subject-admin');assert.equal(fixture.status,200,JSON.stringify(fixture));
+        fixture=await call('POST',`/services/${id}/publish`,{revisionId},fixture.version,'subject-admin');assert.equal(fixture.status,200,JSON.stringify(fixture));
+        return fixture;
+      };
+      const payload=priced({percent:15,startsOn:day(0),endsOn:day(0)});
+      let active=await publish(payload);const id=active.data.service.id;const publishedRevision=active.data.service.publishedRevisionId;
+      assert.deepEqual(active.data.revisions.find(r=>r.id===publishedRevision).discount,payload.discount);
+      let detail=(await pub('/v1/services/'+id)).body.service;
+      assert.deepEqual(detail.discount,payload.discount);
+      assert.equal(discountedMinor(detail.options[0].price.amountMinor,detail.discount.percent),7650);
+      assert.equal(detail.options[1].price.kind,'quote');
+      PublicCatalogSchema.parse((await pub()).body);
+      await assert.rejects(db.prepare('UPDATE revision_discounts SET percent=50 WHERE revision_id=?').bind(publishedRevision).run(),/sealed_revision_immutable/);
+      await assert.rejects(db.prepare('DELETE FROM revision_discounts WHERE revision_id=?').bind(publishedRevision).run(),/sealed_revision_immutable/);
+      const edited=await call('PATCH','/services/'+id,{...payload,discount:{percent:20,startsOn:null,endsOn:null}},active.version);assert.equal(edited.status,200,JSON.stringify(edited));
+      assert.notEqual(edited.data.service.workingRevisionId,publishedRevision);
+      assert.equal(edited.data.revisions.find(r=>r.id===edited.data.service.workingRevisionId).commercialApproval.status,'pending');
+      assert.equal((await pub('/v1/services/'+id)).body.service.discount.percent,15);
+      const translated=await call('PATCH',`/services/${id}/translations`,{translations:payload.translations},edited.version);assert.equal(translated.status,200);
+      assert.deepEqual(translated.data.revisions.find(r=>r.id===translated.data.service.workingRevisionId).discount,{percent:20,startsOn:null,endsOn:null});
+      const cleared=await call('PATCH','/services/'+id,{...payload,discount:null},translated.version);assert.equal(cleared.status,200);
+      assert.equal(cleared.data.revisions.find(r=>r.id===cleared.data.service.workingRevisionId).discount,null);
+      for(const discount of [{percent:30,startsOn:day(-10),endsOn:day(-1)},{percent:30,startsOn:day(1),endsOn:null}]){
+        const fixture=await publish(priced(discount));const service=(await pub('/v1/services/'+fixture.data.service.id)).body.service;
+        assert.equal(service.discount,undefined,JSON.stringify(discount));assert.equal(service.options[0].price.amountMinor,9000);
+      }
+      const plain=await publish(priced(undefined));assert.ok(!('discount' in (await pub('/v1/services/'+plain.data.service.id)).body.service));
     });
   } finally {await mf.dispose();}
 });

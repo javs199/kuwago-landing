@@ -1,5 +1,5 @@
 import { ServiceRevisionSchema, CategorySchema } from '../../../../../packages/contracts/src/admin.js';
-import type { ServiceRevision, Category } from '../../../../../packages/contracts/src/models.js';
+import type { ServiceRevision, ServiceDiscount, Category } from '../../../../../packages/contracts/src/models.js';
 import { ApiFailure } from './errors.js';
 export { ApiFailure } from './errors.js';
 export function record(value:unknown,keys:readonly string[]):Record<string,unknown> {
@@ -26,10 +26,10 @@ export function identifier(value:string):string {
   if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$/.test(value))throw new ApiFailure(422,'invalid_identifier');return value;
 }
 export type DraftInput = Pick<ServiceRevision,'slug'|'categoryId'|'translations'|'options'> & {
-  media:{id:string;sortOrder:number;alt:{es:string;en:string}}[];internalNotes:string;
+  media:{id:string;sortOrder:number;alt:{es:string;en:string}}[];internalNotes:string;discount:ServiceDiscount|null;
 };
 export function draftInput(input:unknown):DraftInput {
-  const row=record(input,['slug','categoryId','translations','options','media','internalNotes']);
+  const row=record(input,['slug','categoryId','translations','options','media','internalNotes','discount']);
   if(typeof row.internalNotes!=='string'||row.internalNotes.length>10000||!Array.isArray(row.media))throw new ApiFailure(422,'invalid_input');
   const media=row.media.map(value=>{
     const entry=record(value,['id','sortOrder','alt']);
@@ -37,11 +37,11 @@ export function draftInput(input:unknown):DraftInput {
   });
   // Build only server-owned revision metadata; clients cannot supply approvals, URLs or provenance.
   const parsed=ServiceRevisionSchema.safeParse({id:'validation-only',serviceId:'validation-only',number:1,createdAt:'2026-01-01T00:00:00.000Z',
-    slug:row.slug,categoryId:row.categoryId,translations:row.translations,options:row.options,media,
+    slug:row.slug,categoryId:row.categoryId,translations:row.translations,options:row.options,media,discount:row.discount??null,
     commercialApproval:{status:'pending',revisionId:null}});
   if(!parsed.success)throw new ApiFailure(422,'invalid_draft');
   return {slug:parsed.data.slug,categoryId:parsed.data.categoryId,translations:parsed.data.translations,options:parsed.data.options,
-    media:parsed.data.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt})),internalNotes:row.internalNotes};
+    media:parsed.data.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt})),internalNotes:row.internalNotes,discount:parsed.data.discount??null};
 }
 export function categoryInput(input:unknown,id:string):Category {
   const row=record(input,['slug','active','translations']);const result=CategorySchema.safeParse({id,...row});

@@ -36,12 +36,13 @@ export async function loadService(db:CatalogDatabase,id:string,extraRevision='')
     select(`SELECT rm.revision_id,rm.sort_order,ma.* FROM revision_media rm JOIN media_assets ma ON ma.id=rm.media_id WHERE rm.revision_id IN (${selected}) ORDER BY rm.sort_order`),
     select(`SELECT * FROM revision_media_translations WHERE revision_id IN (${selected})`),
     select(`SELECT * FROM commercial_approvals WHERE revision_id IN (${selected}) AND revoked_at IS NULL`),
+    select(`SELECT * FROM revision_discounts WHERE revision_id IN (${selected})`),
   ]);
   const data=result.map(r=>r.results);const s=data.shift()![0];
   if(!s)throw new ApiFailure(404,'service_not_found');
   return hydrateService(s,data);
 }
-export function hydrateService(s:Row,[revisions,translations,options,names,prices,media,alts,approvals]:Row[][]):LoadedService {
+export function hydrateService(s:Row,[revisions,translations,options,names,prices,media,alts,approvals,discounts]:Row[][]):LoadedService {
   const mapped=revisions!.map(r=>{
     const optionRows=options!.filter(o=>o.revision_id===r.id).map(o=>{
       const p=prices!.find(p=>p.revision_id===r.id&&p.option_id===o.option_id);
@@ -53,6 +54,7 @@ export function hydrateService(s:Row,[revisions,translations,options,names,price
       translations:Object.fromEntries(translations!.filter(t=>t.revision_id===r.id).map(t=>[t.locale,{title:t.title,description:t.description}])),
       options:optionRows,media:media!.filter(m=>m.revision_id===r.id).map(m=>({id:m.id,url:`/api/v1/media/${m.id}`,sortOrder:m.sort_order,
         provenance:m.provenance,usageApproval:m.usage_approval,alt:Object.fromEntries(alts!.filter(a=>a.revision_id===r.id&&a.media_id===m.id).map(a=>[a.locale,a.alt_text]))})),
+      discount:(d=>d?{percent:d.percent,startsOn:d.starts_on,endsOn:d.ends_on}:null)((discounts??[]).find(d=>d.revision_id===r.id)),
       commercialApproval:{status:approvals!.some(a=>a.revision_id===r.id)?'approved':'pending',revisionId:approvals!.some(a=>a.revision_id===r.id)?r.id:null}};
   });
   return {version:s.row_version as number,revisions:revisions!,media:media!,approvals:approvals!,admin:AdminServiceSchema.parse({
