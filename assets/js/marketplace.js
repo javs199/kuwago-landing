@@ -22,21 +22,62 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
   const button = (label, action, className = 'mp-button mp-secondary') => {
     const node = el('button', label, className); node.type = 'button'; node.addEventListener('click', action); return node;
   };
-  const reference = service => {
-    const price = service.referencePrice;
+  const reference = (item, parent = null) => {
+    const price = item?.referencePrice || parent?.referencePrice;
     let label = t('quote');
     if (price) label = `${t('from')} ${price.symbol}${price.amount} ${t(price.unit)}`;
-    else if (service.price && service.price.kind !== 'quote') {
-      label = `${service.price.kind === 'from' ? t('from') + ' ' : ''}${new Intl.NumberFormat(lang(), { style:'currency', currency:service.price.currency, currencyDisplay:'code' }).format(service.price.amountMinor / 100)} ${t(service.price.unit)}`;
+    else if (item?.price && item.price.kind !== 'quote') {
+      label = `${item.price.kind === 'from' ? t('from') + ' ' : ''}${new Intl.NumberFormat(lang(), { style:'currency', currency:item.price.currency, currencyDisplay:'code' }).format(item.price.amountMinor / 100)} ${t(item.price.unit)}`;
     }
-    return `${label} · ${service.durationMinutes ?? '—'} ${t('minutes')}`;
+    const duration = item?.durationMinutes ?? parent?.durationMinutes ?? '—';
+    return `${label} · ${duration} ${t('minutes')}`;
   };
+  const cardPrice = service => {
+    if (!service.options || service.options.length <= 1) return reference(service);
+    const priced = service.options.filter(o => o.price && (o.price.kind === 'fixed' || o.price.kind === 'from'));
+    if (!priced.length) return reference(service);
+    const lowest = priced.reduce((min, curr) => curr.price.amountMinor < min.price.amountMinor ? curr : min, priced[0]);
+    const formatted = new Intl.NumberFormat(lang(), { style:'currency', currency:lowest.price.currency, currencyDisplay:'code' }).format(lowest.price.amountMinor / 100);
+    const label = `${t('from')} ${formatted} ${t(lowest.price.unit)}`;
+    const duration = lowest.durationMinutes ?? service.durationMinutes ?? '—';
+    return `${label} · ${duration} ${t('minutes')}`;
+  };
+  const updateDialogMeta = opt => {
+    $('mp-dialog-meta').textContent = `${t(activeService.source === 'stitch_reference' ? 'reference' : 'details')}: ${reference(opt, activeService)}`;
+  };
+  function renderOptionChoices(service, selectedId) {
+    const fieldset = $('mp-option-choices');
+    if (!fieldset) return;
+    fieldset.replaceChildren();
+    const legend = el('legend', t('chooseOption'));
+    legend.setAttribute('data-i18n', 'mp.chooseOption');
+    fieldset.append(legend);
+    const options = service.options || [];
+    for (const opt of options) {
+      const label = el('label', '', 'mp-option-choice');
+      const radio = document.createElement('input');
+      radio.type = 'radio'; radio.name = 'mp-selected-option'; radio.value = opt.id;
+      radio.checked = opt.id === selectedId; radio.required = true;
+      radio.addEventListener('change', () => {
+        if (radio.checked) updateDialogMeta(opt);
+      });
+      const info = el('div', '', 'mp-option-info');
+      const name = el('span', opt[lang()]?.name || opt.translations?.[lang()]?.name || opt.id, 'mp-option-name');
+      const meta = el('span', reference(opt, service), 'mp-option-meta');
+      info.append(name, meta);
+      label.append(radio, info);
+      fieldset.append(label);
+    }
+  }
   function openOptions(service, index = null) {
     if (loadState !== 'ready' || !data.services.some(row => row.id === service.id && row.revisionId === service.revisionId)) return;
     activeService = service; editing = index;
     $('mp-dialog-title').textContent = service[lang()].title;
     $('mp-dialog-desc').textContent = service[lang()].description;
-    $('mp-dialog-meta').textContent = `${t(service.source === 'stitch_reference' ? 'reference' : 'details')}: ${reference(service)}`;
+    const selectedOptionId = index !== null ? cart[index].optionId : service.options[0]?.id;
+    renderOptionChoices(service, selectedOptionId);
+    const chosenOption = service.options?.find(o => o.id === selectedOptionId) || service.options?.[0] || service;
+    updateDialogMeta(chosenOption);
     $('mp-option-date').value = index === null ? $('mp-date').value : cart[index].date;
     $('mp-option-travelers').value = index === null ? $('mp-travelers').value : cart[index].travelers;
     $('mp-options').querySelector('[type="submit"]').textContent = t(index === null ? 'add' : 'save');
@@ -74,7 +115,7 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
       const modality = `${t(service.experienceType === 'private' ? 'privateType' : service.experienceType || 'unspecified')} · ${t(service.venue || 'unspecified')}`;
       content.append(el('h3',service[lang()].title),el('p',service[lang()].description),el('p',`${service.durationMinutes ?? '—'} ${t('minutes')} · ${modality}`,'mp-meta'));
       if (service.source === 'stitch_reference') content.append(el('small',t('reference'),'mp-reference'));
-      content.append(el('p',reference(service),'mp-price'));
+      content.append(el('p',cardPrice(service),'mp-price'));
       const actions = el('div','','mp-actions');
       actions.append(button(t('details'),() => openOptions(service)),button(t('options'),() => openOptions(service),'mp-button'));
       content.append(actions); card.append(media,content); $('mp-cards').append(card);
@@ -91,6 +132,9 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
       if (service) { const image = el('img'); image.src = service.image; image.alt = ''; image.width = 64; image.height = 64; row.append(image); }
       const title = service?.[lang()].title || item.id;
       content.append(el('h3',title));
+      const option = service?.options?.find(row => row.id === item.optionId);
+      const optionName = option ? (option[lang()]?.name || option.translations?.[lang()]?.name || '') : '';
+      if (optionName) content.append(el('p', optionName, 'mp-cart-option'));
       if (availability === 'available') content.append(el('p',`${item.date ? new Intl.DateTimeFormat(lang(),{dateStyle:'medium',timeZone:'UTC'}).format(new Date(`${item.date}T12:00:00Z`)) : t('noDate')} · ${item.travelers} ${t('travelers')}`));
       else content.append(el('p',t(availability),'mp-reference'));
       const actions = el('div','','mp-actions');
@@ -117,7 +161,9 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
   $('mp-options').addEventListener('submit',event => {
     event.preventDefault();
     if (!activeService || !$('mp-options').reportValidity()) return;
-    const item = {id:activeService.id,revisionId:activeService.revisionId,optionId:activeService.optionId,date:$('mp-option-date').value,travelers:Number($('mp-option-travelers').value)};
+    const selectedRadio = $('mp-option-choices')?.querySelector('input[name="mp-selected-option"]:checked');
+    const optionId = selectedRadio ? selectedRadio.value : activeService.options[0]?.id;
+    const item = {id:activeService.id,revisionId:activeService.revisionId,optionId,date:$('mp-option-date').value,travelers:Number($('mp-option-travelers').value)};
     if (cartAvailability(item,catalog) !== 'available') { $('mp-dialog').close(); $('mp-results').textContent = t('changed'); return; }
     if (editing === null) cart.push(item); else cart[editing] = item;
     $('mp-dialog').close(); renderCart(); if (editing !== null) $('mp-cart-title').focus();
@@ -127,7 +173,11 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
     if ($('mp-dialog').open && activeService) {
       $('mp-dialog-title').textContent = activeService[lang()].title;
       $('mp-dialog-desc').textContent = activeService[lang()].description;
-      $('mp-dialog-meta').textContent = `${t(activeService.source === 'stitch_reference' ? 'reference' : 'details')}: ${reference(activeService)}`;
+      const selectedRadio = $('mp-option-choices')?.querySelector('input[name="mp-selected-option"]:checked');
+      const selectedId = selectedRadio ? selectedRadio.value : activeService.options[0]?.id;
+      renderOptionChoices(activeService, selectedId);
+      const chosenOption = activeService.options?.find(o => o.id === selectedId) || activeService.options?.[0] || activeService;
+      updateDialogMeta(chosenOption);
       $('mp-options').querySelector('[type="submit"]').textContent = t(editing === null ? 'add' : 'save');
     }
   });

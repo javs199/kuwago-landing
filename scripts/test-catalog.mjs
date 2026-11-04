@@ -15,6 +15,8 @@ test('static adapter preserves IDs, translations, images, durations and ambiguou
   assert.deepEqual(cards.map(row=>[row.referencePrice.amount,row.referencePrice.symbol,row.referencePrice.currency,row.durationMinutes,row.unit]),[['120','$',null,90,'person'],['350','$',null,180,'dinner']]);
   assert.equal(cards[0].es.title,'Yoga privado al atardecer'); assert.equal(cards[1].en.title,'Gourmet Private Chef');
   assert.deepEqual(cards.map(row=>row.image),['assets/images/marketplace/yoga.jpg','assets/images/marketplace/chef.jpg']);
+  assert.equal(cards[0].options[0].id,'yoga-default'); assert.equal(cards[0].options[0].es.name,'Yoga privado al atardecer'); assert.equal(cards[0].options[0].en.name,'Private Sunset Yoga');
+  assert.equal(cards[0].options[0].durationMinutes,90); assert.equal(cards[0].options[0].experienceType,'private'); assert.equal(cards[0].options[0].venue,'in_property');
   result.catalog.services[0].translations.es.title='changed';
   assert.notEqual((await createStaticCatalogAdapter().load()).services[0].translations.es.title,'changed');
 });
@@ -71,6 +73,104 @@ test('public UI preserves selection, category filters, modal editing, removal an
     const water=[...doc.querySelectorAll('#mp-filters button')].find(button=>button.textContent==='Aventuras acuáticas'); water.click();
     assert.equal(doc.querySelectorAll('#mp-cards article').length,0); assert.match(doc.querySelector('#mp-results').textContent,/No hay experiencias/);
     doc.querySelector('#mp-cart-items button:last-child').click(); assert.equal(doc.querySelector('#mp-count').textContent,'0');
+  } finally {
+    for (const [key,value] of Object.entries(original)) { if (value===undefined) delete globalThis[key]; else globalThis[key]=value; }
+    dom.window.close();
+  }
+});
+test('service with multiple options draws radios, updates dialog meta, preserves chosen option in cart, and shows From/Desde lowest price on card', async () => {
+  const require=createRequire(new URL('../apps/admin/package.json',import.meta.url));
+  const {JSDOM}=require('jsdom');
+  const dom=new JSDOM(readFileSync('concierge-marketplace.html','utf8'),{url:'http://127.0.0.1/concierge-marketplace.html',runScripts:'outside-only'});
+  const original={window:globalThis.window,document:globalThis.document,location:globalThis.location,fetch:globalThis.fetch};
+  globalThis.window=dom.window; globalThis.document=dom.window.document; globalThis.location=dom.window.location;
+
+  const mockCatalog = {
+    schemaVersion: 1, source: 'api',
+    categories: [{ id: 'wellness', slug: 'wellness', translations: { es: { name: 'Bienestar' }, en: { name: 'Wellness' } } }],
+    services: [
+      {
+        id: 'massage', revisionId: 'massage-v1', slug: 'massage', categoryId: 'wellness', source: 'published',
+        translations: {
+          en: { title: 'Massage Session', description: 'Personalized massage experience' },
+          es: { title: 'Sesión de Masaje', description: 'Experiencia de masaje personalizado' },
+        },
+        options: [
+          { id: 'opt-130', translations: { es: { name: 'Relajante 90 min' }, en: { name: 'Relaxing 90 min' } }, durationMinutes: 90, experienceType: 'private', venue: 'in_property', price: { kind: 'fixed', currency: 'USD', amountMinor: 13000, unit: 'person' } },
+          { id: 'opt-90', translations: { es: { name: 'Relajante 60 min' }, en: { name: 'Relaxing 60 min' } }, durationMinutes: 60, experienceType: 'private', venue: 'in_property', price: { kind: 'fixed', currency: 'USD', amountMinor: 9000, unit: 'person' } },
+          { id: 'opt-stones', translations: { es: { name: 'Piedras calientes 60 min' }, en: { name: 'Hot stones 60 min' } }, durationMinutes: 60, experienceType: 'private', venue: 'in_property', price: { kind: 'fixed', currency: 'USD', amountMinor: 11000, unit: 'person' } },
+        ],
+        media: [{ id: 'img-massage', url: 'assets/images/marketplace/yoga.jpg', sortOrder: 0, alt: { es: 'Masaje', en: 'Massage' } }],
+        referencePrice: null,
+      }
+    ]
+  };
+
+  dom.window.KUWAGO_CATALOG_API = { baseUrl: 'https://api.example.com' };
+  globalThis.fetch = async (url) => {
+    if (String(url).endsWith('/v1/catalog')) {
+      return { ok: true, status: 200, json: async () => structuredClone(mockCatalog) };
+    }
+    throw new Error(`Unexpected fetch: ${url}`);
+  };
+
+  try {
+    dom.window.eval('var i18n = {en:{},es:{}};');
+    dom.window.eval(readFileSync('assets/js/marketplace-data.js','utf8'));
+    dom.window.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
+    dom.window.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+
+    await import(`../assets/js/marketplace.js?test=${Date.now()}`);
+    await new Promise(resolve=>setImmediate(resolve));
+    const doc=dom.window.document;
+
+    // Switch to Spanish to test "Desde USD 90" (lowest option price)
+    doc.dispatchEvent(new dom.window.CustomEvent('kuwago:language',{detail:{lang:'es'}}));
+    const cardPriceText = doc.querySelector('#mp-cards .mp-price').textContent;
+    assert.match(cardPriceText, /Desde/);
+    assert.match(cardPriceText, /90/);
+    assert.match(cardPriceText, /USD/);
+
+    // Open options dialog
+    doc.querySelector('#mp-cards .mp-button').click();
+    assert(doc.querySelector('#mp-dialog').open);
+
+    // 3 options draw 3 radios
+    const radios = doc.querySelectorAll('#mp-option-choices input[type="radio"]');
+    assert.equal(radios.length, 3);
+    assert.equal(radios[0].value, 'opt-130');
+    assert.equal(radios[1].value, 'opt-90');
+    assert.equal(radios[2].value, 'opt-stones');
+
+    // 1st option is selected by default
+    assert.equal(radios[0].checked, true);
+    assert.match(doc.querySelector('#mp-dialog-meta').textContent, /130/);
+
+    // Choosing 2nd radio updates meta and submitting saves 2nd option in cart
+    radios[1].checked = true;
+    radios[1].dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    assert.match(doc.querySelector('#mp-dialog-meta').textContent, /90/);
+
+    doc.querySelector('#mp-options').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    assert.equal(doc.querySelector('#mp-count').textContent, '1');
+
+    // Cart shows option name under service title
+    const cartText = doc.querySelector('#mp-cart-items').textContent;
+    assert.match(cartText, /Sesión de Masaje/);
+    assert.match(cartText, /Relajante 60 min/);
+
+    // Editing item opens dialog with 2nd option marked
+    doc.querySelector('#mp-cart-items button').click();
+    assert(doc.querySelector('#mp-dialog').open);
+    const editRadios = doc.querySelectorAll('#mp-option-choices input[type="radio"]');
+    assert.equal(editRadios[1].checked, true);
+    assert.equal(editRadios[0].checked, false);
+    assert.match(doc.querySelector('#mp-dialog-meta').textContent, /90/);
+
+    // Language change updates option choices
+    doc.dispatchEvent(new dom.window.CustomEvent('kuwago:language', { detail: { lang: 'en' } }));
+    assert.match(doc.querySelector('#mp-option-choices').textContent, /Relaxing 60 min/);
+    assert.match(doc.querySelector('#mp-cart-items').textContent, /Relaxing 60 min/);
   } finally {
     for (const [key,value] of Object.entries(original)) { if (value===undefined) delete globalThis[key]; else globalThis[key]=value; }
     dom.window.close();

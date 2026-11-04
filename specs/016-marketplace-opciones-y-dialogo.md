@@ -38,16 +38,17 @@ El `<style>` en línea de `concierge-marketplace.html` (línea 11) tiene `main >
 - **Deploy de la landing solo con permiso explícito de JV** (ZIP de `dist/` a Hostinger, conservar `public_html/menu`).
 
 ## Criterio de verificación
-- [ ] `npm run build`, `npm run check`, `npm run test:catalog`, `npm run test:assets` y `npm run lint:catalog` pasan.
-- [ ] Prueba: un servicio con 3 opciones dibuja 3 radios; al elegir la 2.ª y enviar, el carrito guarda el `optionId` de la 2.ª.
-- [ ] Prueba: editar ese ítem abre el diálogo con la 2.ª opción marcada.
-- [ ] Prueba: la tarjeta de un servicio con opciones de $90 y $130 muestra "Desde USD 90".
+- [x] `npm run build`, `npm run check`, `npm run test:catalog`, `npm run test:assets` y `npm run lint:catalog` pasan.
+- [x] Prueba: un servicio con 3 opciones dibuja 3 radios; al elegir la 2.ª y enviar, el carrito guarda el `optionId` de la 2.ª.
+- [x] Prueba: editar ese ítem abre el diálogo con la 2.ª opción marcada.
+- [x] Prueba: la tarjeta de un servicio con opciones de $90 y $130 muestra "Desde USD 90".
 - [ ] Manual (`npm run dev`, catálogo real o el estático): a 1440×900 y 390×844 el diálogo queda centrado (distancia arriba ≈ distancia abajo, ±2 px), ES/EN, claro/oscuro.
 - [ ] Manual: con teclado, Tab llega a los radios, las flechas cambian de opción y Esc cierra el diálogo.
 
 ## Decisiones
 - No hay pantalla de Stitch para el selector. Se usan radios dentro del diálogo existente porque mantiene el flujo actual (tarjeta → Opciones → carrito) y es accesible por teclado (regla 9).
 - La opción predeterminada es la primera del admin, así el orden del admin manda.
+- Se cambió la regla CSS a `main > :last-child:not(dialog)` (en lugar de mover `<dialog>` fuera de `<main>`), preservando la estructura del DOM y restaurando el centrado nativo modal (`margin: auto`).
 - Los descuentos (pedido 3 de JV) quedan fuera: requieren cambios en contrato, D1 y admin. Van en otra spec.
 
 ## Resultado de la revisión

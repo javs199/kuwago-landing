@@ -53,12 +53,18 @@ export function cartAvailability(item, catalog) {
 /** @param {import('../../packages/contracts/dist/public.js').PublicCatalogService} service */
 export function toMarketplaceCard(service, mediaBase = '') {
   const option = service.options[0], image = [...service.media].sort((a,b) => a.sortOrder-b.sortOrder)[0];
+  const options = (service.options || []).map(opt => ({
+    id: opt.id, translations: opt.translations,
+    es: opt.translations?.es || { name: '' }, en: opt.translations?.en || { name: '' },
+    durationMinutes: opt.durationMinutes, experienceType: opt.experienceType, venue: opt.venue, price: opt.price,
+  }));
   return {
     id:service.id, revisionId:service.revisionId, optionId:option.id, category:service.categoryId,
     image:mediaBase && image.url.startsWith('/v1/') ? mediaBase + image.url : image.url, alt:image.alt, es:service.translations.es, en:service.translations.en,
     durationMinutes:option.durationMinutes, experienceType:option.experienceType, venue:option.venue,
     price:option.price, referencePrice:service.referencePrice, source:service.source,
     unit:service.referencePrice?.unit || option.price?.unit || 'service',
+    options,
   };
 }
 
