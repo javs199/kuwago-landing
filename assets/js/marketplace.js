@@ -1,4 +1,4 @@
-import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailability } from './catalog-adapter.js';
+import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMarketplaceCard, cartAvailability, salePrice } from './catalog-adapter.js';
 
 (() => {
   // With a configured public API the page shows only published services (or an error/empty state), never Stitch examples.
@@ -22,28 +22,35 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
   const button = (label, action, className = 'mp-button mp-secondary') => {
     const node = el('button', label, className); node.type = 'button'; node.addEventListener('click', action); return node;
   };
-  const reference = (item, parent = null) => {
+  const money = price => new Intl.NumberFormat(lang(), { style:'currency', currency:price.currency, currencyDisplay:'code' }).format(price.amountMinor / 100);
+  // Builds the visible price: optional "-N %" tag, crossed-out regular price and discounted price, then duration.
+  const priceView = (item, parent = null, forceFrom = false) => {
+    const view = document.createDocumentFragment();
+    const discount = item?.discount ?? parent?.discount ?? null;
     const price = item?.referencePrice || parent?.referencePrice;
-    let label = t('quote');
-    if (price) label = `${t('from')} ${price.symbol}${price.amount} ${t(price.unit)}`;
+    if (price) view.append(`${t('from')} ${price.symbol}${price.amount} ${t(price.unit)}`);
     else if (item?.price && item.price.kind !== 'quote') {
-      label = `${item.price.kind === 'from' ? t('from') + ' ' : ''}${new Intl.NumberFormat(lang(), { style:'currency', currency:item.price.currency, currencyDisplay:'code' }).format(item.price.amountMinor / 100)} ${t(item.price.unit)}`;
-    }
-    const duration = item?.durationMinutes ?? parent?.durationMinutes ?? '—';
-    return `${label} · ${duration} ${t('minutes')}`;
+      const prefix = forceFrom || item.price.kind === 'from' ? `${t('from')} ` : '';
+      const reduced = salePrice(item.price, discount);
+      if (reduced) {
+        view.append(el('span', `${t('discount')}: `, 'mp-sr-only'), el('span', `-${discount.percent}${lang() === 'es' ? '\u00a0' : ''}%`, 'mp-discount-tag'), ` ${prefix}`,
+          el('span', `${t('regularPrice')}: `, 'mp-sr-only'), el('s', money(item.price), 'mp-regular-price'), ' ',
+          el('span', `${t('discountedPrice')}: `, 'mp-sr-only'), el('strong', money(reduced), 'mp-sale-price'), ` ${t(item.price.unit)}`);
+      } else view.append(`${prefix}${money(item.price)} ${t(item.price.unit)}`);
+    } else view.append(t('quote'));
+    view.append(` · ${item?.durationMinutes ?? parent?.durationMinutes ?? '—'} ${t('minutes')}`);
+    return view;
   };
   const cardPrice = service => {
-    if (!service.options || service.options.length <= 1) return reference(service);
+    if (!service.options || service.options.length <= 1) return priceView(service);
     const priced = service.options.filter(o => o.price && (o.price.kind === 'fixed' || o.price.kind === 'from'));
-    if (!priced.length) return reference(service);
+    if (!priced.length) return priceView(service);
+    // The same percent applies to every option, so the lowest regular price is also the lowest discounted price.
     const lowest = priced.reduce((min, curr) => curr.price.amountMinor < min.price.amountMinor ? curr : min, priced[0]);
-    const formatted = new Intl.NumberFormat(lang(), { style:'currency', currency:lowest.price.currency, currencyDisplay:'code' }).format(lowest.price.amountMinor / 100);
-    const label = `${t('from')} ${formatted} ${t(lowest.price.unit)}`;
-    const duration = lowest.durationMinutes ?? service.durationMinutes ?? '—';
-    return `${label} · ${duration} ${t('minutes')}`;
+    return priceView({ ...lowest, durationMinutes: lowest.durationMinutes ?? service.durationMinutes }, service, true);
   };
   const updateDialogMeta = opt => {
-    $('mp-dialog-meta').textContent = `${t(activeService.source === 'stitch_reference' ? 'reference' : 'details')}: ${reference(opt, activeService)}`;
+    $('mp-dialog-meta').replaceChildren(`${t(activeService.source === 'stitch_reference' ? 'reference' : 'details')}: `, priceView(opt, activeService));
   };
   function renderOptionChoices(service, selectedId) {
     const fieldset = $('mp-option-choices');
@@ -63,7 +70,7 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
       });
       const info = el('div', '', 'mp-option-info');
       const name = el('span', opt[lang()]?.name || opt.translations?.[lang()]?.name || opt.id, 'mp-option-name');
-      const meta = el('span', reference(opt, service), 'mp-option-meta');
+      const meta = el('span', '', 'mp-option-meta'); meta.append(priceView(opt, service));
       info.append(name, meta);
       label.append(radio, info);
       fieldset.append(label);
@@ -115,7 +122,7 @@ import { createApiCatalogAdapter, createStaticCatalogAdapter, loadCatalog, toMar
       const modality = `${t(service.experienceType === 'private' ? 'privateType' : service.experienceType || 'unspecified')} · ${t(service.venue || 'unspecified')}`;
       content.append(el('h3',service[lang()].title),el('p',service[lang()].description),el('p',`${service.durationMinutes ?? '—'} ${t('minutes')} · ${modality}`,'mp-meta'));
       if (service.source === 'stitch_reference') content.append(el('small',t('reference'),'mp-reference'));
-      content.append(el('p',cardPrice(service),'mp-price'));
+      const price = el('p','','mp-price'); price.append(cardPrice(service)); content.append(price);
       const actions = el('div','','mp-actions');
       actions.append(button(t('details'),() => openOptions(service)),button(t('options'),() => openOptions(service),'mp-button'));
       content.append(actions); card.append(media,content); $('mp-cards').append(card);

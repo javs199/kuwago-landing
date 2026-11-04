@@ -1,4 +1,4 @@
-import { PublicCatalogSchema } from './contracts/public.js';
+import { PublicCatalogSchema, activeDiscount, discountedMinor } from './contracts/public.js';
 import { staticReferenceCatalog } from './catalog-static.js';
 
 /** @typedef {import('../../packages/contracts/dist/public.js').CatalogAdapter} CatalogAdapter */
@@ -49,6 +49,16 @@ export function cartAvailability(item, catalog) {
   return 'available';
 }
 
+/**
+ * Discounted copy of a fixed/"from" price; null for quotes, missing prices or no discount.
+ * @param {import('../../packages/contracts/dist/public.js').ServicePrice|null|undefined} price
+ * @param {import('../../packages/contracts/dist/public.js').ServiceDiscount|null|undefined} discount
+ */
+export function salePrice(price, discount) {
+  if (!discount || !price || price.kind === 'quote') return null;
+  return { ...price, amountMinor: discountedMinor(price.amountMinor, discount.percent) };
+}
+
 // This is a presentation adapter, not a commercial price calculation.
 /** @param {import('../../packages/contracts/dist/public.js').PublicCatalogService} service */
 export function toMarketplaceCard(service, mediaBase = '') {
@@ -64,6 +74,8 @@ export function toMarketplaceCard(service, mediaBase = '') {
     durationMinutes:option.durationMinutes, experienceType:option.experienceType, venue:option.venue,
     price:option.price, referencePrice:service.referencePrice, source:service.source,
     unit:service.referencePrice?.unit || option.price?.unit || 'service',
+    // The public API already hides out-of-date discounts; re-check so an open page does not keep one past midnight (Costa Rica).
+    discount:activeDiscount(service.discount ?? null),
     options,
   };
 }
