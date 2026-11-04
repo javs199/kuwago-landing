@@ -1,6 +1,6 @@
 import {MediaLibrary} from './MediaLibrary';
-import {useEffect,useRef,useState} from 'react';
-import {currencies,type ServiceRevision,type ServiceOption} from '@kuwago/contracts';
+import {useEffect,useId,useRef,useState} from 'react';
+import {currencies,discountedMinor,type ServiceRevision,type ServiceOption,type ServiceDiscount} from '@kuwago/contracts';
 import {adminApi,ApiError,draftFromDocument,newDraft,type CategoryDocument,type DraftInput,type RevisionSummary,type ServiceDocument,type SyncStatus} from '../../api/admin-client';
 import {useSession} from '../../api/session';
 import {usePreferences} from '../../preferences';
@@ -68,7 +68,8 @@ export function ApiServiceEditor({id,categories,previewOnly}:{id:string|null;cat
         <SelectField label={`${c.currency} ${index+1}`} value={row.price?.currency??''} onChange={v=>{if(row.price)option(index,{price:{...row.price,currency:v||null} as ServiceOption['price']});}}><option value="">—</option>{currencies.map(value=><option key={value}>{value}</option>)}</SelectField>
         <SelectField label={`${c.unit} ${index+1}`} value={row.price?.unit??'service'} onChange={v=>{if(row.price)option(index,{price:{...row.price,unit:v as NonNullable<ServiceOption['price']>['unit']}});}}>{(['service','person','group','dinner'] as const).map(value=><option key={value} value={value}>{c[value]}</option>)}</SelectField>
         <div className="media-actions"><Button variant="quiet" disabled={readonly||draft.options.length>=100} onClick={()=>insertOption(row,index+1)}>{c.duplicateOption}</Button><Button variant="quiet" disabled={readonly||draft.options.length<=1} onClick={()=>removeOption(row.id)}>{c.removeOption}</Button></div>
-      </fieldset>)}<Button disabled={readonly||draft.options.length>=100} onClick={()=>insertOption()}>{c.addOption}</Button>{draft.options.length>=100&&<p role="status">{c.optionLimit}</p>}</Panel>
+      </fieldset>)}<Button disabled={readonly||draft.options.length>=100} onClick={()=>insertOption()}>{c.addOption}</Button>{draft.options.length>=100&&<p role="status">{c.optionLimit}</p>}
+        <DiscountFields key={`discount:${doc?.version??0}:${reload}`} discount={draft.discount} options={draft.options} disabled={readonly} onChange={discount=>change({discount})}/></Panel>
       <MediaLibrary media={draft.media} onChange={media=>change({media})} disabled={readonly}/></div>
       <aside className="publication-sidebar"><Panel className="publication-panel"><h2>{c.publication}</h2><p>{c.readiness}</p><p>{c.publicationNote}</p><p>v{doc?.version??'—'} · {doc?.data.service.workingRevisionId??'—'}</p><div className="publication-actions">
         <Button onClick={()=>setPreview(v=>!v)} aria-expanded={preview}>{c.preview}</Button>
@@ -84,11 +85,31 @@ export function ApiServiceEditor({id,categories,previewOnly}:{id:string|null;cat
       {preview&&<Panel className="inline-preview"><h2>{c.preview}</h2><ContentPreview draft={draft}/></Panel>}
       <div className="editor-save-bar"><span>{dirty?c.unsaved:message}</span><Button type="submit" variant="primary" disabled={busy||!writable||(!dirty&&!!doc)}>{c.save}</Button></div>
     </form>
-    {!!history.length&&<Panel className="form-panel"><h2>{c.history}</h2><ul>{history.map(row=><li key={row.id}><Button disabled={busy} onClick={()=>void perform(async signal=>{if(id)setHistorical(await adminApi.revision(id,row.id,signal));})}>{c.review} {row.number}</Button> {row.createdAt} {row.sealedAt?'✓':''}</li>)}</ul>{historyCursor&&<Button disabled={busy} onClick={()=>void revisions(true)}>{c.historyMore}</Button>}{historical&&<div><h3>{c.reviewNote} · {historical.number}</h3><ContentPreview draft={{...historical,internalNotes:'',media:historical.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt}))}}/></div>}</Panel>}
+    {!!history.length&&<Panel className="form-panel"><h2>{c.history}</h2><ul>{history.map(row=><li key={row.id}><Button disabled={busy} onClick={()=>void perform(async signal=>{if(id)setHistorical(await adminApi.revision(id,row.id,signal));})}>{c.review} {row.number}</Button> {row.createdAt} {row.sealedAt?'✓':''}</li>)}</ul>{historyCursor&&<Button disabled={busy} onClick={()=>void revisions(true)}>{c.historyMore}</Button>}{historical&&<div><h3>{c.reviewNote} · {historical.number}</h3><ContentPreview draft={{...historical,discount:historical.discount??null,internalNotes:'',media:historical.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt}))}}/></div>}</Panel>}
     {critical&&<ConfirmDialog title={c.confirmTitle} description={<p>{critical==='approve'&&session.identity?.role==='super_admin'?(language==='es'?'Confirmo la aprobación de esta revisión. Si soy su autor, autorizo expresamente la autoaprobación como Super Admin; quedará registrada en auditoría.':'I confirm approval of this revision. If I am its author, I explicitly authorize self-approval as Super Admin; this will be audited.'):c.confirmText}</p>} confirm={c.confirm} cancel={c.cancel} onCancel={()=>setCritical(null)} onConfirm={()=>{const action=critical;setCritical(null);void act(action);}}/>}
   </>;
 }
 function ContentPreview({draft}:{draft:DraftInput}){const {language}=usePreferences();const c=useApiCopy();return <article className="service-preview-card"><div className="preview-content"><h3>{draft.translations[language].title||'—'}</h3><p>{draft.translations[language].description||'—'}</p><ul>{draft.options.map(option=><li key={option.id}>{option.translations[language].name} · {option.durationMinutes??'—'} min · {option.price?c[option.price.kind]:'—'} · {option.price?.currency??'—'}</li>)}</ul><p>{draft.media.length} · {c.media}</p></div></article>;}
+function money(minor:number,currency:string,language:'es'|'en'){return `${currency} ${(minor/100).toLocaleString(language==='es'?'es-CR':'en-US',{minimumFractionDigits:minor%100?2:0,maximumFractionDigits:2})}`;}
+export function DiscountFields({discount,options,disabled,onChange}:{discount:ServiceDiscount|null;options:ServiceOption[];disabled:boolean;onChange:(discount:ServiceDiscount|null)=>void}){
+  const c=useApiCopy(),{language}=usePreferences(),id=useId();
+  const [raw,setRaw]=useState(()=>discount?String(discount.percent):'');
+  const [enabled,setEnabled]=useState(!!discount);
+  const percent=/^[1-9][0-9]?$/.test(raw)&&Number(raw)<=90?Number(raw):NaN;
+  const value=discount??{percent:Number.isNaN(percent)?15:percent,startsOn:null,endsOn:null};
+  const datesInvalid=!!(value.startsOn&&value.endsOn&&value.endsOn<value.startsOn);
+  const sample=options.find(o=>o.price&&o.price.kind!=='quote')?.price;
+  function update(patch:Partial<ServiceDiscount>){onChange({...value,...patch});}
+  return <fieldset className="form-grid api-discount" disabled={disabled}><legend>{c.discount}</legend>
+    <div className="service-field"><label htmlFor={`${id}-on`}><input id={`${id}-on`} type="checkbox" checked={enabled} onChange={event=>{setEnabled(event.target.checked);if(!event.target.checked)onChange(null);else{const start=Number.isNaN(percent)?15:percent;setRaw(String(start));onChange({...value,percent:start});}}}/> {c.applyDiscount}</label><small>{c.discountNote}</small></div>
+    {enabled&&<>
+      <TextField label={c.discountPercent} value={raw} inputMode="numeric" maxLength={2} error={Number.isNaN(percent)?c.discountPercentInvalid:undefined} onChange={next=>{setRaw(next);const n=/^[1-9][0-9]?$/.test(next)&&Number(next)<=90?Number(next):NaN;onChange({...value,percent:Number.isNaN(n)?0:n});}}/>
+      <div className="service-field"><label htmlFor={`${id}-from`}>{c.discountFrom}</label><input id={`${id}-from`} type="date" value={value.startsOn??''} onChange={event=>update({startsOn:event.target.value||null})}/></div>
+      <div className="service-field"><label htmlFor={`${id}-to`}>{c.discountTo}</label><input id={`${id}-to`} type="date" value={value.endsOn??''} aria-invalid={datesInvalid} aria-describedby={datesInvalid?`${id}-to-error`:undefined} onChange={event=>update({endsOn:event.target.value||null})}/>{datesInvalid&&<small className="field-error" id={`${id}-to-error`}>{c.discountDatesInvalid}</small>}</div>
+      <p className="discount-sample" aria-live="polite">{sample&&sample.kind!=='quote'&&!Number.isNaN(percent)?`${c.discountSample}: ${money(sample.amountMinor,sample.currency,language)} → ${money(discountedMinor(sample.amountMinor,percent),sample.currency,language)}`:c.discountNoPrice}</p>
+    </>}
+  </fieldset>;
+}
 export function PriceAmountField({label,initialMinor,onChange}:{label:string;initialMinor:number;onChange:(minor:number)=>void}){
   const c=useApiCopy();const [raw,setRaw]=useState(()=>Number.isSafeInteger(initialMinor)?(initialMinor/100).toString():'');
   function parse(value:string):number{if(!/^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,2})?$/.test(value))return NaN;const [whole='',fraction='']=value.split('.');const amount=Number(whole)*100+Number(fraction.padEnd(2,'0'));return Number.isSafeInteger(amount)?amount:NaN;}

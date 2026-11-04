@@ -1,10 +1,10 @@
-import {AdminServiceSchema,CategorySchema,ServiceRevisionSchema,ServicePriceSchema,type AdminService,type Category,type ServiceRevision} from '@kuwago/contracts';
+import {AdminServiceSchema,CategorySchema,ServiceRevisionSchema,ServicePriceSchema,type AdminService,type Category,type ServiceRevision,type ServiceDiscount} from '@kuwago/contracts';
 export type MediaDocument={id:string;state:'quarantine'|'validated'|'approved'|'rejected'|'retired'|'deleted';version:number;validationCode:string;mimeType:string|null;width:number|null;height:number|null;byteSize:number|null;usageApproval:'pending'|'approved';uploadedBy:string};
 function mediaDocument(value:unknown):MediaDocument{const row=object(value);if(integer(row.version)<1)throw new ApiError(502,'invalid_response');if(!['quarantine','validated','approved','rejected','retired','deleted'].includes(text(row.state))||!['pending','approved'].includes(text(row.usageApproval)))throw new ApiError(502,'invalid_response');return {id:text(row.id),state:row.state as MediaDocument['state'],version:integer(row.version),validationCode:text(row.validationCode),mimeType:row.mimeType===null?null:text(row.mimeType),width:row.width===null?null:integer(row.width),height:row.height===null?null:integer(row.height),byteSize:row.byteSize===null?null:integer(row.byteSize),usageApproval:row.usageApproval as MediaDocument['usageApproval'],uploadedBy:text(row.uploadedBy)};}
 function mediaEnvelope(value:unknown,response:Response):MediaDocument{const result=mediaDocument(object(value).media);if(etag(response)!==`"${result.version}"`)throw new ApiError(502,'invalid_response');return result;}
 export type Permission='admin:read'|'drafts:write'|'translations:write'|'services:publish'|'services:unpublish'|'services:archive'|'audit:read'|'media:prepare'|'media:read-private'|'admins:manage';
 export type Identity={id:string;role:'editor'|'admin'|'super_admin';permissions:Permission[]};
-export type DraftInput=Pick<ServiceRevision,'slug'|'categoryId'|'translations'|'options'>&{internalNotes:string;media:Pick<ServiceRevision['media'][number],'id'|'sortOrder'|'alt'>[]};
+export type DraftInput=Pick<ServiceRevision,'slug'|'categoryId'|'translations'|'options'>&{discount:ServiceDiscount|null;internalNotes:string;media:Pick<ServiceRevision['media'][number],'id'|'sortOrder'|'alt'>[]};
 export type ServiceDocument={data:AdminService;version:number;delivery?:'visible'|'pending'|'superseded';synchronization?:{epoch:string;generation:number;state:string}};
 export type CategoryDocument={category:Category;version:number};
 export type ServiceSummary={id:string;status:'draft'|'published'|'archived';version:number;modifiedAt:string;categoryId:string|null;titleEs:string;titleEn:string;slug:string;prices:{optionId:string;price:unknown}[]};
@@ -83,7 +83,7 @@ export class AdminClient{
 export const adminApi=new AdminClient();
 export function draftFromDocument(doc:ServiceDocument):DraftInput{
   const revision=doc.data.revisions.find(r=>r.id===doc.data.service.workingRevisionId)!;
-  return {slug:revision.slug,categoryId:revision.categoryId,translations:structuredClone(revision.translations),options:structuredClone(revision.options),internalNotes:doc.data.internalNotes,media:revision.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt:structuredClone(alt)}))};
+  return {slug:revision.slug,categoryId:revision.categoryId,translations:structuredClone(revision.translations),options:structuredClone(revision.options),discount:revision.discount?structuredClone(revision.discount):null,internalNotes:doc.data.internalNotes,media:revision.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt:structuredClone(alt)}))};
 }
-export function newDraft():DraftInput{return {slug:'',categoryId:null,translations:{es:{title:'',description:''},en:{title:'',description:''}},internalNotes:'',options:[{id:crypto.randomUUID(),translations:{es:{name:''},en:{name:''}},durationMinutes:null,experienceType:'private',venue:'in_property',price:{kind:'quote',currency:null,unit:'service'}}],media:[]};}
+export function newDraft():DraftInput{return {slug:'',categoryId:null,translations:{es:{title:'',description:''},en:{title:'',description:''}},internalNotes:'',options:[{id:crypto.randomUUID(),translations:{es:{name:''},en:{name:''}},durationMinutes:null,experienceType:'private',venue:'in_property',price:{kind:'quote',currency:null,unit:'service'}}],discount:null,media:[]};}
 

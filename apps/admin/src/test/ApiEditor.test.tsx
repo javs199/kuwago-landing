@@ -1,4 +1,4 @@
-import {render,screen,within,waitFor} from '@testing-library/react';
+import {render,screen,within,waitFor,fireEvent} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {it,expect,vi,beforeEach,afterEach} from 'vitest';
 import {ApiServiceEditor,PriceAmountField} from '../features/services/ApiServiceEditor';
@@ -68,4 +68,31 @@ it('uses English option controls and confirmation',async()=>{
 
 it.each(['es','en'])('explains normalized image size errors in %s without generic decoder diagnostics',async language=>{
   localStorage.setItem('kuwago-admin-language',language);vi.spyOn(adminApi,'uploadMedia').mockRejectedValue(new ApiError(422,'normalized_image_too_large'));const user=userEvent.setup();editor();await user.upload(screen.getByLabelText(language==='es'?'Seleccionar archivo multimedia':'Select media file'),new File(['image'],'test.png',{type:'image/png'}));expect(await screen.findByRole('alert')).toHaveTextContent(language==='es'?'La imagen convertida supera 2 MiB. Reduce su resolución (por ejemplo, a 1200 px de ancho) y súbela de nuevo.':'The converted image exceeds 2 MiB. Reduce its resolution (e.g. 1200 px wide) and upload it again.');
+});
+
+const pricedDraft=(discount:DraftInput['discount']=null)=>{const draft=newDraft();draft.options[0]!.price={kind:'fixed',amountMinor:9000,currency:'USD',unit:'service'};draft.discount=discount;return draft;};
+it('applies a dated percent discount, previews the first priced option and saves it',async()=>{
+  const user=userEvent.setup(),save=savedDraft();editor(pricedDraft());await screen.findByLabelText('Importe 1');
+  const toggle=screen.getByRole('checkbox',{name:'Aplicar descuento'});expect(toggle).not.toBeChecked();expect(screen.queryByLabelText('Porcentaje (1–90)')).not.toBeInTheDocument();
+  await user.click(toggle);const percent=screen.getByLabelText('Porcentaje (1–90)');await user.clear(percent);await user.type(percent,'15');
+  expect(screen.getByText(/USD 90 → USD 76,50/)).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Desde (opcional)'),{target:{value:'2026-12-01'}});fireEvent.change(screen.getByLabelText('Hasta (opcional)'),{target:{value:'2026-12-31'}});
+  await user.click(screen.getByRole('button',{name:'Guardar borrador'}));await waitFor(()=>expect(save).toHaveBeenCalledTimes(1));
+  expect(save.mock.calls[0]![0].discount).toEqual({percent:15,startsOn:'2026-12-01',endsOn:'2026-12-31'});
+  expect(await screen.findByRole('checkbox',{name:'Aplicar descuento'})).toBeChecked();expect(screen.getByLabelText('Porcentaje (1–90)')).toHaveValue('15');
+});
+it('loads an existing discount, flags invalid input and removes it with the checkbox',async()=>{
+  const user=userEvent.setup(),save=savedDraft();editor(pricedDraft({percent:20,startsOn:null,endsOn:null}));await screen.findByLabelText('Importe 1');
+  const toggle=screen.getByRole('checkbox',{name:'Aplicar descuento'});expect(toggle).toBeChecked();expect(screen.getByLabelText('Porcentaje (1–90)')).toHaveValue('20');
+  const percent=screen.getByLabelText('Porcentaje (1–90)');await user.clear(percent);await user.type(percent,'95');expect(percent).toHaveAttribute('aria-invalid','true');expect(screen.getByText('Escribe un número entero del 1 al 90.')).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText('Desde (opcional)'),{target:{value:'2026-12-10'}});fireEvent.change(screen.getByLabelText('Hasta (opcional)'),{target:{value:'2026-12-01'}});
+  expect(screen.getByText('La fecha final debe ser igual o posterior a la inicial.')).toBeInTheDocument();
+  await user.click(toggle);expect(screen.queryByLabelText('Porcentaje (1–90)')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button',{name:'Guardar borrador'}));await waitFor(()=>expect(save).toHaveBeenCalledTimes(1));expect(save.mock.calls[0]![0].discount).toBeNull();
+});
+it('uses English discount copy and explains quote-only services',async()=>{
+  localStorage.setItem('kuwago-admin-language','en');const user=userEvent.setup();editor();
+  await user.click(await screen.findByRole('checkbox',{name:'Apply discount'}));expect(screen.getByLabelText('Percentage (1–90)')).toHaveValue('15');
+  expect(screen.getByText('No option has a fixed or starting price; the discount will not change any price.')).toBeInTheDocument();
+  localStorage.removeItem('kuwago-admin-language');
 });
