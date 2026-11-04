@@ -22,6 +22,8 @@ export type ServiceOption = {
   venue: 'in_property' | 'off_property' | null;
   price: ServicePrice | null;
 };
+// Percent off every priced option. Dates are Costa Rica calendar days (UTC-6); null means open-ended.
+export type ServiceDiscount = { percent: number; startsOn: string | null; endsOn: string | null };
 export type Service = {
   id: string; provenance: Provenance; status: PublicationStatus;
   workingRevisionId: string; publishedRevisionId: string | null; modifiedAt: string;
@@ -30,6 +32,7 @@ export type ServiceRevision = {
   id: string; serviceId: string; slug: string; number: number; createdAt: string;
   categoryId: string | null; translations: Localized<ServiceTranslation>;
   options: ServiceOption[]; media: MediaAsset[];
+  discount?: ServiceDiscount | null;
   commercialApproval: { status: 'pending' | 'approved'; revisionId: string | null };
 };
 export type AdminService = { service: Service; revisions: ServiceRevision[]; internalNotes: string };
@@ -40,6 +43,7 @@ export type PublicCatalogService = {
   source: 'published' | 'stitch_reference';
   translations: Localized<ServiceTranslation>; options: ServiceOption[];
   media: PublicMediaAsset[]; referencePrice: ReferencePrice | null;
+  discount?: ServiceDiscount | null;
 };
 export type PublicCatalog = {
   schemaVersion: 1; source: 'api' | 'static_reference';

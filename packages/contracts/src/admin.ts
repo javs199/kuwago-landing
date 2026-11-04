@@ -1,7 +1,7 @@
 import type { AdminService, Category, Service, ServiceRevision, MediaAsset, PublicCatalogService, PublicCatalog } from './models.js';
 import { publicationStatuses } from './models.js';
 import { schema, object, text, id, slug, enumeration, integer, list, unique, translations, date, url, issue, type Issue } from './validation-core.js';
-import { validateCategory, validateTranslation, validateOption, PublicCatalogSchema, ServiceOptionSchema, ServiceTranslationSchema } from './public.js';
+import { validateCategory, validateTranslation, validateOption, validateDiscount, PublicCatalogSchema, ServiceOptionSchema, ServiceTranslationSchema } from './public.js';
 
 function validateService(value: unknown, issues: Issue[], path: string) {
   const row = object(value, ['id','provenance','status','workingRevisionId','publishedRevisionId','modifiedAt'], issues, path);
@@ -23,7 +23,7 @@ function validateMedia(value: unknown, issues: Issue[], path: string) {
   enumeration(row.usageApproval,['pending','approved'],issues,`${path}.usageApproval`);
 }
 function validateRevision(value: unknown, issues: Issue[], path: string) {
-  const row = object(value,['id','serviceId','slug','number','createdAt','categoryId','translations','options','media','commercialApproval'],issues,path);
+  const row = object(value,['id','serviceId','slug','number','createdAt','categoryId','translations','options','media','discount','commercialApproval'],issues,path);
   slug(row.slug,issues,`${path}.slug`,false);
   id(row.id,issues,`${path}.id`); id(row.serviceId,issues,`${path}.serviceId`);
   integer(row.number,1,Number.MAX_SAFE_INTEGER,issues,`${path}.number`); date(row.createdAt,issues,`${path}.createdAt`);
@@ -31,6 +31,7 @@ function validateRevision(value: unknown, issues: Issue[], path: string) {
   translations(row.translations,(v,i,p) => validateTranslation(v,i,p,false),issues,`${path}.translations`);
   const options = list(row.options,validateOption,issues,`${path}.options`,100); unique(options,'id',issues,`${path}.options`);
   const media = list(row.media,validateMedia,issues,`${path}.media`,8); unique(media,'id',issues,`${path}.media`); unique(media,'sortOrder',issues,`${path}.media`);
+  validateDiscount(row.discount,issues,`${path}.discount`);
   const approval = object(row.commercialApproval,['status','revisionId'],issues,`${path}.commercialApproval`);
   enumeration(approval.status,['pending','approved'],issues,`${path}.commercialApproval.status`);
   if (approval.status === 'approved' && approval.revisionId !== row.id) issue(issues,`${path}.commercialApproval`,'approval_revision_mismatch');
@@ -100,6 +101,8 @@ export function projectPublicCatalog(inputs: readonly AdminService[], categories
     const revision = admin.revisions.find(row => row.id === revisionId)!;
     services.push({ id:service.id, slug:revision.slug, revisionId, source:'published', categoryId:revision.categoryId!,
       translations:structuredClone(revision.translations), options:structuredClone(revision.options), referencePrice:null,
+      // Omitted when absent so services without a discount keep the pre-0008 public shape.
+      ...(revision.discount ? {discount:structuredClone(revision.discount)} : {}),
       media:revision.media.map(({id,url,alt,sortOrder}) => ({id,url,alt:structuredClone(alt),sortOrder})).sort((a,b) => a.sortOrder-b.sortOrder),
     });
   }

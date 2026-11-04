@@ -16,6 +16,8 @@ function revisionStatements(db:CatalogDatabase,serviceId:string,revisionId:strin
     for(const locale of ['es','en'] as const)statements.push(db.prepare('INSERT INTO option_translations VALUES (?,?,?,?)').bind(revisionId,option.id,locale,option.translations[locale].name));
     if(option.price)statements.push(db.prepare('INSERT INTO option_prices VALUES (?,?,?,?,?,?)').bind(revisionId,option.id,option.price.kind,option.price.kind==='quote'?null:option.price.amountMinor,option.price.currency,option.price.unit));
   });
+  if(input.discount)statements.push(db.prepare('INSERT INTO revision_discounts(revision_id,percent,starts_on,ends_on) VALUES (?,?,?,?)')
+    .bind(revisionId,input.discount.percent,input.discount.startsOn,input.discount.endsOn));
   for(const media of input.media){
     statements.push(db.prepare('INSERT INTO revision_media VALUES (?,?,?)').bind(revisionId,media.id,media.sortOrder));
     for(const locale of ['es','en'] as const)statements.push(db.prepare('INSERT INTO revision_media_translations VALUES (?,?,?,?)').bind(revisionId,media.id,locale,media.alt[locale]));

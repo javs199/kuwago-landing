@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import { createStaticCatalogAdapter, loadCatalog, cartAvailability, toMarketplaceCard } from '../assets/js/catalog-adapter.js';
+import { createStaticCatalogAdapter, loadCatalog, cartAvailability, toMarketplaceCard, salePrice } from '../assets/js/catalog-adapter.js';
 import { staticReferenceCatalog } from '../assets/js/catalog-static.js';
-import { PublicCatalogSchema } from '../packages/contracts/dist/public.js';
+import { PublicCatalogSchema, activeDiscount, costaRicaDay } from '../packages/contracts/dist/public.js';
 const clone = () => structuredClone(staticReferenceCatalog);
 const item = () => ({id:'yoga',revisionId:'reference-yoga-v1',optionId:'yoga-default',date:'',travelers:2});
 
@@ -171,6 +171,77 @@ test('service with multiple options draws radios, updates dialog meta, preserves
     doc.dispatchEvent(new dom.window.CustomEvent('kuwago:language', { detail: { lang: 'en' } }));
     assert.match(doc.querySelector('#mp-option-choices').textContent, /Relaxing 60 min/);
     assert.match(doc.querySelector('#mp-cart-items').textContent, /Relaxing 60 min/);
+  } finally {
+    for (const [key,value] of Object.entries(original)) { if (value===undefined) delete globalThis[key]; else globalThis[key]=value; }
+    dom.window.close();
+  }
+});
+
+const discountService = (discount) => ({
+  id:'massage', revisionId:'massage-v1', slug:'massage', categoryId:'wellness', source:'published',
+  translations:{en:{title:'Massage Session',description:'Personalized massage'},es:{title:'Sesión de Masaje',description:'Masaje personalizado'}},
+  options:[
+    {id:'opt-90',translations:{es:{name:'Relajante 60 min'},en:{name:'Relaxing 60 min'}},durationMinutes:60,experienceType:'private',venue:'in_property',price:{kind:'fixed',currency:'USD',amountMinor:9000,unit:'person'}},
+    {id:'opt-quote',translations:{es:{name:'Sesión a medida'},en:{name:'Custom session'}},durationMinutes:90,experienceType:'private',venue:'in_property',price:{kind:'quote',currency:null,unit:'service'}},
+  ],
+  media:[{id:'img-massage',url:'assets/images/marketplace/yoga.jpg',sortOrder:0,alt:{es:'Masaje',en:'Massage'}}],
+  referencePrice:null, ...(discount === undefined ? {} : {discount}),
+});
+const discountCatalog = (discount) => ({schemaVersion:1,source:'api',categories:[{id:'wellness',slug:'wellness',translations:{es:{name:'Bienestar'},en:{name:'Wellness'}}}],services:[discountService(discount)]});
+test('discount contract: optional, 1-90 %, real calendar dates, end not before start, never on reference prices', () => {
+  assert(PublicCatalogSchema.safeParse(discountCatalog(undefined)).success);
+  assert(PublicCatalogSchema.safeParse(discountCatalog(null)).success);
+  assert(PublicCatalogSchema.safeParse(discountCatalog({percent:15,startsOn:'2026-12-01',endsOn:'2026-12-31'})).success);
+  for (const bad of [{percent:0,startsOn:null,endsOn:null},{percent:91,startsOn:null,endsOn:null},{percent:12.5,startsOn:null,endsOn:null},{percent:15,startsOn:'2026-02-30',endsOn:null},{percent:15,startsOn:'2026-12-31',endsOn:'2026-12-01'},{percent:15,startsOn:null},{percent:15,startsOn:null,endsOn:null,code:'x'}])
+    assert.equal(PublicCatalogSchema.safeParse(discountCatalog(bad)).success,false,JSON.stringify(bad));
+  const reference=clone(); reference.services[0].discount={percent:10,startsOn:null,endsOn:null};
+  assert.equal(PublicCatalogSchema.safeParse(reference).success,false);
+});
+test('discount validity uses the Costa Rica calendar day (UTC-6) and rounds minor units', () => {
+  assert.equal(costaRicaDay(new Date('2026-12-02T05:59:59Z')),'2026-12-01');
+  assert.equal(costaRicaDay(new Date('2026-12-02T06:00:00Z')),'2026-12-02');
+  const window={percent:15,startsOn:'2026-12-01',endsOn:'2026-12-01'};
+  assert.equal(activeDiscount(window,new Date('2026-12-01T06:00:00Z'))?.percent,15);
+  assert.equal(activeDiscount(window,new Date('2026-12-02T05:59:59Z'))?.percent,15);
+  assert.equal(activeDiscount(window,new Date('2026-12-01T05:59:59Z')),null);
+  assert.equal(activeDiscount(window,new Date('2026-12-02T06:00:00Z')),null);
+  assert.equal(salePrice({kind:'fixed',currency:'USD',amountMinor:9000,unit:'person'},{percent:15})?.amountMinor,7650);
+  assert.equal(salePrice({kind:'from',currency:'USD',amountMinor:999,unit:'person'},{percent:15})?.amountMinor,849);
+  assert.equal(salePrice({kind:'quote',currency:null,unit:'service'},{percent:15}),null);
+  assert.equal(salePrice({kind:'fixed',currency:'USD',amountMinor:9000,unit:'person'},null),null);
+  const today=costaRicaDay();
+  assert.equal(toMarketplaceCard(discountService({percent:15,startsOn:today,endsOn:today})).discount.percent,15);
+  assert.equal(toMarketplaceCard(discountService({percent:15,startsOn:'2020-01-01',endsOn:'2020-01-31'})).discount,null);
+  assert.equal(toMarketplaceCard(discountService(undefined)).discount,null);
+});
+test('marketplace shows -15 %, crossed regular price and USD 76.50 for a USD 90 option, and no discount on quotes', async () => {
+  const require=createRequire(new URL('../apps/admin/package.json',import.meta.url));
+  const {JSDOM}=require('jsdom');
+  const dom=new JSDOM(readFileSync('concierge-marketplace.html','utf8'),{url:'http://127.0.0.1/concierge-marketplace.html',runScripts:'outside-only'});
+  const original={window:globalThis.window,document:globalThis.document,location:globalThis.location,fetch:globalThis.fetch};
+  globalThis.window=dom.window; globalThis.document=dom.window.document; globalThis.location=dom.window.location;
+  dom.window.KUWAGO_CATALOG_API={baseUrl:'https://api.example.com'};
+  globalThis.fetch=async url=>{ if (String(url).endsWith('/v1/catalog')) return {ok:true,status:200,json:async()=>discountCatalog({percent:15,startsOn:null,endsOn:null})}; throw new Error(`Unexpected fetch: ${url}`); };
+  try {
+    dom.window.eval('var i18n = {en:{},es:{}};'); dom.window.eval(readFileSync('assets/js/marketplace-data.js','utf8'));
+    dom.window.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
+    dom.window.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+    await import(`../assets/js/marketplace.js?test=${Date.now()}`);
+    await new Promise(resolve=>setImmediate(resolve));
+    const doc=dom.window.document, card=doc.querySelector('#mp-cards .mp-price');
+    assert.equal(card.querySelector('.mp-discount-tag').textContent,'-15%');
+    assert.match(card.querySelector('s.mp-regular-price').textContent,/USD\s90\.00/);
+    assert.match(card.querySelector('.mp-sale-price').textContent,/USD\s76\.50/);
+    assert.match(card.textContent,/^Discount: -15% From Regular price: USD\s90\.00 Discounted price: USD\s76\.50 \/ person · 60 mins$/);
+    doc.querySelector('#mp-cards .mp-button').click();
+    const choices=doc.querySelectorAll('#mp-option-choices .mp-option-meta');
+    assert(choices[0].querySelector('.mp-discount-tag')); assert.equal(choices[1].querySelector('.mp-discount-tag'),null); assert.equal(choices[1].querySelector('s'),null);
+    assert.match(doc.querySelector('#mp-dialog-meta .mp-sale-price').textContent,/76\.50/);
+    doc.dispatchEvent(new dom.window.CustomEvent('kuwago:language',{detail:{lang:'es'}}));
+    const es=doc.querySelector('#mp-cards .mp-price');
+    assert.equal(es.querySelector('.mp-discount-tag').textContent,'-15\u00a0%');
+    assert.match(es.querySelector('.mp-sale-price').textContent,/76,50/);
+    assert.match(es.textContent,/Precio normal/);
   } finally {
     for (const [key,value] of Object.entries(original)) { if (value===undefined) delete globalThis[key]; else globalThis[key]=value; }
     dom.window.close();

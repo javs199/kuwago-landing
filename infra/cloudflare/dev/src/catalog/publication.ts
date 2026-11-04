@@ -15,7 +15,9 @@ function canonical(value:unknown):string {
 async function contentHash(loaded:LoadedService,revisionId:string):Promise<string> {
   const revision=loaded.admin.revisions.find(r=>r.id===revisionId)!;
   const content={slug:revision.slug,categoryId:revision.categoryId,translations:revision.translations,options:revision.options,
-    media:revision.media.map(({id,url,sortOrder,alt})=>({id,url,sortOrder,alt}))};
+    media:revision.media.map(({id,url,sortOrder,alt})=>({id,url,sortOrder,alt})),
+    // Only present when set, so hashes of revisions sealed before 0008 stay identical.
+    ...(revision.discount?{discount:revision.discount}:{})};
   const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical(content)));
   return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }

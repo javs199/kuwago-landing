@@ -2,6 +2,7 @@ import type { PublicationStore } from './catalog/types.js';
 import { manifestKey, parseSnapshot } from './catalog/snapshot.js';
 import { ApiFailure } from './catalog/errors.js';
 import { readBarrier,sha256,type BarrierBinding } from './catalog/head.js';
+import { activeDiscount } from '../../../../packages/contracts/src/public.js';
 export default {
   async fetch(request:Request,env:{APP_ENV:string;PUBLICATION:PublicationStore;CATALOG_BARRIER?:BarrierBinding;ALLOWED_ORIGINS?:string}):Promise<Response> {
     const headers:Record<string,string>={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Vary':'Origin'};
@@ -21,7 +22,10 @@ export default {
       if(snapshot.epoch!==head.epoch||snapshot.generation!==head.generation||await sha256(text)!==head.payloadHash)throw new ApiFailure(503,'catalog_unavailable');
       const verified=await readBarrier(env.CATALOG_BARRIER);
       if(JSON.stringify(verified)!==JSON.stringify(head))throw new ApiFailure(503,'catalog_unavailable');
-      const {catalog}=snapshot;
+      // Discount validity is evaluated per request (Costa Rica day), so an expired discount disappears without republishing.
+      const catalog={...snapshot.catalog,services:snapshot.catalog.services.map(({discount,...service})=>{
+        const active=activeDiscount(discount);return active?{...service,discount:active}:service;
+      })};
       if(media){
         if(!catalog.services.some(service=>service.media.some(image=>image.url===url.pathname)))throw new ApiFailure(404,'not_found');
         const object=await env.PUBLICATION.get('media/'+media[1]);if(!object?.arrayBuffer)throw new ApiFailure(503,'catalog_unavailable');const bytes=await object.arrayBuffer();

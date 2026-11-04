@@ -71,7 +71,7 @@ export async function handleCatalog(request:Request,env:CatalogEnvironment,actor
   if(route.action==='translations'){
     const patch=record(input,['translations']);const current=await loadService(env.DB,id);const revision=working(current);
     return adminResponse(await editDraft(env.DB,actor,id,version,{slug:revision.slug,categoryId:revision.categoryId,translations:patch.translations,options:revision.options,
-      media:revision.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt})),internalNotes:current.admin.internalNotes},requestId,'translations:write'));
+      media:revision.media.map(({id,sortOrder,alt})=>({id,sortOrder,alt})),internalNotes:current.admin.internalNotes,discount:revision.discount??null},requestId,'translations:write'));
   }
   if(route.action==='approve')return adminResponse(await approve(env,actor,id,version,input,requestId));
   if(route.action==='validate'){

@@ -1,6 +1,6 @@
-import { currencies, type ServicePrice, type ServiceTranslation, type PublicCategory, type ServiceOption, type PublicCatalogService, type PublicCatalog, type PublicMediaAsset, type PublicationStatus, publicationStatuses } from './models.js';
+import { currencies, type ServiceDiscount, type ServicePrice, type ServiceTranslation, type PublicCategory, type ServiceOption, type PublicCatalogService, type PublicCatalog, type PublicMediaAsset, type PublicationStatus, publicationStatuses } from './models.js';
 import { schema, object, text, id, slug, enumeration, integer, list, unique, translations, url, issue, type Issue } from './validation-core.js';
-export type { Currency, Locale, Localized, ServicePrice, ServiceTranslation, PublicCategory, ServiceOption, PublicCatalogService, PublicCatalog, PublicMediaAsset, CatalogAdapter, HttpCatalogAdapter, CatalogLoadState, CatalogCartItem, CartAvailability, PublicationStatus } from './models.js';
+export type { Currency, Locale, Localized, ServiceDiscount, ServicePrice, ServiceTranslation, PublicCategory, ServiceOption, PublicCatalogService, PublicCatalog, PublicMediaAsset, CatalogAdapter, HttpCatalogAdapter, CatalogLoadState, CatalogCartItem, CartAvailability, PublicationStatus } from './models.js';
 export { currencies, publicationStatuses } from './models.js';
 export { ContractError } from './validation-core.js';
 export type { Issue, Result, Schema } from './validation-core.js';
@@ -34,6 +34,33 @@ export function validateOption(value: unknown, issues: Issue[], path: string, co
   enumeration(row.venue, complete ? ['in_property','off_property'] : ['in_property','off_property',null], issues, `${path}.venue`);
   if (row.price !== null || complete) validatePrice(row.price, issues, `${path}.price`);
 }
+function calendarDay(value: unknown, issues: Issue[], path: string) {
+  if (value === null) return;
+  const valid = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0,10) === value;
+  if (!valid) issue(issues, path, 'invalid_date');
+}
+export function validateDiscount(value: unknown, issues: Issue[], path: string) {
+  if (value === null || value === undefined) return;
+  const row = object(value, ['percent','startsOn','endsOn'], issues, path);
+  integer(row.percent, 1, 90, issues, `${path}.percent`);
+  calendarDay(row.startsOn, issues, `${path}.startsOn`); calendarDay(row.endsOn, issues, `${path}.endsOn`);
+  if (typeof row.startsOn === 'string' && typeof row.endsOn === 'string' && row.endsOn < row.startsOn) issue(issues, `${path}.endsOn`, 'discount_ends_before_start');
+}
+const COSTA_RICA_OFFSET_MS = 6 * 60 * 60 * 1000;
+// Costa Rica has no daylight saving time: calendar day = UTC - 6 h.
+export function costaRicaDay(now: Date = new Date()): string {
+  return new Date(now.getTime() - COSTA_RICA_OFFSET_MS).toISOString().slice(0,10);
+}
+export function activeDiscount(discount: ServiceDiscount | null | undefined, now: Date = new Date()): ServiceDiscount | null {
+  if (!discount) return null;
+  const today = costaRicaDay(now);
+  if (discount.startsOn !== null && today < discount.startsOn) return null;
+  if (discount.endsOn !== null && today > discount.endsOn) return null;
+  return { ...discount };
+}
+export function discountedMinor(amountMinor: number, percent: number): number {
+  return Math.round(amountMinor * (100 - percent) / 100);
+}
 export function validatePublicMedia(value: unknown, issues: Issue[], path: string) {
   const row = object(value, ['id','url','alt','sortOrder'], issues, path);
   id(row.id, issues, `${path}.id`); url(row.url, issues, `${path}.url`);
@@ -41,7 +68,7 @@ export function validatePublicMedia(value: unknown, issues: Issue[], path: strin
   integer(row.sortOrder, 0, 7, issues, `${path}.sortOrder`);
 }
 function validatePublicService(value: unknown, issues: Issue[], path: string) {
-  const row = object(value, ['id','revisionId','slug','categoryId','source','translations','options','media','referencePrice'], issues, path);
+  const row = object(value, ['id','revisionId','slug','categoryId','source','translations','options','media','referencePrice','discount'], issues, path);
   for (const key of ['id','revisionId','categoryId']) id(row[key], issues, `${path}.${key}`);
   slug(row.slug, issues, `${path}.slug`);
   enumeration(row.source, ['published','stitch_reference'], issues, `${path}.source`);
@@ -52,6 +79,8 @@ function validatePublicService(value: unknown, issues: Issue[], path: string) {
   const media = list(row.media, validatePublicMedia, issues, `${path}.media`, 8);
   if (!media.length) issue(issues, `${path}.media`, 'image_required');
   unique(media, 'id', issues, `${path}.media`); unique(media, 'sortOrder', issues, `${path}.media`);
+  validateDiscount(row.discount, issues, `${path}.discount`);
+  if (row.source === 'stitch_reference' && row.discount != null) issue(issues, `${path}.discount`, 'reference_is_not_money');
   if (row.source === 'stitch_reference') {
     const price = object(row.referencePrice, ['amount','symbol','currency','unit'], issues, `${path}.referencePrice`);
     if (typeof price.amount !== 'string' || !/^\d{1,9}(?:\.\d{1,2})?$/.test(price.amount)) issue(issues, `${path}.referencePrice.amount`, 'invalid_reference_amount');
@@ -62,6 +91,7 @@ function validatePublicService(value: unknown, issues: Issue[], path: string) {
   } else if (row.referencePrice !== null) issue(issues, `${path}.referencePrice`, 'reference_forbidden');
 }
 export const PublicationStatusSchema = schema<PublicationStatus>((v,i,p) => enumeration(v, publicationStatuses, i,p));
+export const ServiceDiscountSchema = schema<ServiceDiscount>((v,i,p) => { if (v === null || v === undefined) issue(i,p,'object_required'); else validateDiscount(v,i,p); });
 export const ServicePriceSchema = schema<ServicePrice>(validatePrice);
 export const ServiceTranslationSchema = schema<ServiceTranslation>(validateTranslation);
 export const PublicCategorySchema = schema<PublicCategory>(validateCategory);
