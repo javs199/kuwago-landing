@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import { createStaticCatalogAdapter, loadCatalog, cartAvailability, toMarketplaceCard, salePrice } from '../assets/js/catalog-adapter.js';
+import { createStaticCatalogAdapter, loadCatalog, cartAvailability, toMarketplaceCard, salePrice, cartTotals } from '../assets/js/catalog-adapter.js';
 import { staticReferenceCatalog } from '../assets/js/catalog-static.js';
 import { PublicCatalogSchema, activeDiscount, costaRicaDay } from '../packages/contracts/dist/public.js';
 const clone = () => structuredClone(staticReferenceCatalog);
@@ -232,7 +232,7 @@ test('marketplace shows -15 %, crossed regular price and USD 76.50 for a USD 90 
     assert.equal(card.querySelector('.mp-discount-tag').textContent,'-15%');
     assert.match(card.querySelector('s.mp-regular-price').textContent,/USD\s90\.00/);
     assert.match(card.querySelector('.mp-sale-price').textContent,/USD\s76\.50/);
-    assert.match(card.textContent,/^Discount: -15% From Regular price: USD\s90\.00 Discounted price: USD\s76\.50 \/ person · 60 mins$/);
+    assert.match(card.textContent,/^Discount: -15% From Regular price: USD\s90\.00 Discounted price: USD\s76\.50 \/ person$/);
     doc.querySelector('#mp-cards .mp-button').click();
     const choices=doc.querySelectorAll('#mp-option-choices .mp-option-meta');
     assert(choices[0].querySelector('.mp-discount-tag')); assert.equal(choices[1].querySelector('.mp-discount-tag'),null); assert.equal(choices[1].querySelector('s'),null);
@@ -242,6 +242,64 @@ test('marketplace shows -15 %, crossed regular price and USD 76.50 for a USD 90 
     assert.equal(es.querySelector('.mp-discount-tag').textContent,'-15\u00a0%');
     assert.match(es.querySelector('.mp-sale-price').textContent,/76,50/);
     assert.match(es.textContent,/Precio normal/);
+  } finally {
+    for (const [key,value] of Object.entries(original)) { if (value===undefined) delete globalThis[key]; else globalThis[key]=value; }
+    dom.window.close();
+  }
+});
+
+test('cart totals: price x travelers per person, x1 per service, discount, from, quote, mixed and reference', () => {
+  const now=new Date('2026-11-04T12:00:00Z');
+  const line=(optionId,travelers=2)=>({id:'massage',revisionId:'massage-v1',optionId,date:'',travelers});
+  const base=discountCatalog(undefined);
+  let totals=cartTotals([line('opt-90')],base,now);
+  assert.equal(totals.status,'priced'); assert.equal(totals.subtotalMinor,18000); assert.equal(totals.currency,'USD'); assert.equal(totals.isMinimum,false);
+  totals=cartTotals([line('opt-90')],discountCatalog({percent:15,startsOn:null,endsOn:null}),now);
+  assert.equal(totals.subtotalMinor,15300); assert.equal(totals.lines[0].unitMinor,7650);
+  totals=cartTotals([line('opt-90')],discountCatalog({percent:15,startsOn:'2026-12-01',endsOn:null}),now);
+  assert.equal(totals.subtotalMinor,18000);
+  const perService=structuredClone(base); perService.services[0].options[0].price={kind:'from',currency:'USD',amountMinor:20000,unit:'service'};
+  totals=cartTotals([line('opt-90',3)],perService,now);
+  assert.equal(totals.subtotalMinor,20000); assert.equal(totals.lines[0].quantity,1); assert.equal(totals.isMinimum,true);
+  totals=cartTotals([line('opt-90'),line('opt-quote')],base,now);
+  assert.equal(totals.status,'partial'); assert.equal(totals.subtotalMinor,18000); assert.equal(totals.unpriced,1);
+  totals=cartTotals([line('opt-quote')],base,now);
+  assert.equal(totals.status,'pending'); assert.equal(totals.subtotalMinor,null);
+  const mixed=structuredClone(base); mixed.services.push({...structuredClone(mixed.services[0]),id:'other',slug:'other'}); mixed.services[1].options[0].price.currency='CRC';
+  assert.equal(cartTotals([line('opt-90'),{...line('opt-90'),id:'other'}],mixed,now).subtotalMinor,null);
+  assert.equal(cartTotals([line('opt-90')],{...base,services:[]},now).status,'pending');
+  assert.equal(cartTotals([],base,now).status,'empty');
+  assert.equal(cartTotals([item()],clone(),now).subtotalMinor,null);
+});
+test('cart summary shows subtotal, total + taxes, line amount and keeps pending for quotes and Stitch reference', async () => {
+  const require=createRequire(new URL('../apps/admin/package.json',import.meta.url));
+  const {JSDOM}=require('jsdom');
+  const dom=new JSDOM(readFileSync('concierge-marketplace.html','utf8'),{url:'http://127.0.0.1/concierge-marketplace.html',runScripts:'outside-only'});
+  const original={window:globalThis.window,document:globalThis.document,location:globalThis.location,fetch:globalThis.fetch};
+  globalThis.window=dom.window; globalThis.document=dom.window.document; globalThis.location=dom.window.location;
+  dom.window.KUWAGO_CATALOG_API={baseUrl:'https://api.example.com'};
+  globalThis.fetch=async url=>{ if (String(url).endsWith('/v1/catalog')) return {ok:true,status:200,json:async()=>discountCatalog(undefined)}; throw new Error(`Unexpected fetch: ${url}`); };
+  try {
+    dom.window.eval('var i18n = {en:{},es:{}};'); dom.window.eval(readFileSync('assets/js/marketplace-data.js','utf8'));
+    dom.window.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};
+    dom.window.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+    await import(`../assets/js/marketplace.js?test=${Date.now()}`);
+    await new Promise(resolve=>setImmediate(resolve));
+    const doc=dom.window.document, submit=()=>doc.querySelector('#mp-options').dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true}));
+    assert.match(doc.querySelector('#mp-cards .mp-meta').textContent,/^60–90 mins/);
+    assert.equal(doc.querySelector('#mp-subtotal').textContent,'To be confirmed');
+    doc.querySelector('#mp-cards .mp-button').click(); doc.querySelector('#mp-option-travelers').value='2'; submit();
+    assert.match(doc.querySelector('#mp-subtotal').textContent,/^USD\s180\.00$/);
+    assert.match(doc.querySelector('#mp-total-value').textContent,/^USD\s180\.00 \+ taxes$/);
+    assert.match(doc.querySelector('.mp-cart-amount').textContent,/USD\s90\.00 × 2 = USD\s180\.00/);
+    doc.querySelector('#mp-cards .mp-button').click();
+    const quote=doc.querySelectorAll('#mp-option-choices input')[1]; quote.checked=true; submit();
+    assert.match(doc.querySelector('#mp-subtotal').textContent,/^USD\s180\.00 \+ items to be quoted$/);
+    doc.dispatchEvent(new dom.window.CustomEvent('kuwago:language',{detail:{lang:'es'}}));
+    assert.match(doc.querySelector('#mp-total-value').textContent,/^180,00\sUSD \+ impuestos$|^USD\s180,00 \+ impuestos$/);
+    doc.querySelector('#mp-cart-items .mp-cart-item:first-child button:last-child').click();
+    assert.equal(doc.querySelector('#mp-subtotal').textContent,'Por confirmar');
+    assert.equal(doc.querySelector('#mp-total-value').textContent,'Por confirmar');
   } finally {
     for (const [key,value] of Object.entries(original)) { if (value===undefined) delete globalThis[key]; else globalThis[key]=value; }
     dom.window.close();
