@@ -28,6 +28,10 @@
     {
       "file": "0007_single_operator_approval.sql",
       "sha256": "9faa376529152202d4df5f2c052c0fcaf2f8849cb6513c1e0b904188731074d9"
+    },
+    {
+      "file": "0008_service_discounts.sql",
+      "sha256": "586bef43b22f5ce6e8e53c048e19bc9aedf2080270af6ad61a3079131d7949d0"
     }
   ]
 }
