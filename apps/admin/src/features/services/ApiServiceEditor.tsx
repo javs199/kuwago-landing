@@ -15,6 +15,8 @@ export function ApiServiceEditor({id,categories,previewOnly}:{id:string|null;cat
   const c=useApiCopy(),{language}=usePreferences(),session=useSession();const identityId=session.identity?.id;
   const [doc,setDoc]=useState<ServiceDocument|null>(null),[draft,setDraft]=useState<DraftInput>(newDraft),[owner,setOwner]=useState(identityId??''),[dirty,setDirty]=useState(false),[busy,setBusy]=useState(false),[loading,setLoading]=useState(!!id),[error,setError]=useState<ApiError|null>(null),[message,setMessage]=useState(''),[reload,setReload]=useState(0),[critical,setCritical]=useState<Action|null>(null),[preview,setPreview]=useState(previewOnly),[history,setHistory]=useState<RevisionSummary[]>([]),[historyCursor,setHistoryCursor]=useState<string|null>(null),[historical,setHistorical]=useState<ServiceRevision|null>(null),[sync,setSync]=useState<SyncStatus|null>(null);
   const operation=useRef<AbortController|null>(null);const reject=session.reject;
+  const optionFields=useRef(new Map<string,HTMLFieldSetElement>()),focusOption=useRef<string|null>(null);
+  useEffect(()=>{if(focusOption.current){optionFields.current.get(focusOption.current)?.querySelector('input')?.focus();focusOption.current=null;}},[draft.options]);
   useUnsaved(dirty);
   useEffect(()=>()=>operation.current?.abort(),[]);
   useEffect(()=>{
@@ -40,6 +42,12 @@ export function ApiServiceEditor({id,categories,previewOnly}:{id:string|null;cat
   async function revisions(more=false){if(!id)return;await perform(async signal=>{const result=await adminApi.revisions(id,more?historyCursor??'':'',signal);setHistory(old=>more?[...old,...result.items]:result.items);setHistoryCursor(result.nextCursor);});}
   async function refresh(){if(dirty&&!confirm(c.discard))return;setDirty(false);setLoading(true);setReload(v=>v+1);}
   const readonly=busy||!writable;
+  function insertOption(source?:ServiceOption,index=draft.options.length){
+    if(readonly||draft.options.length>=100)return;
+    const row=source?{...structuredClone(source),id:crypto.randomUUID()}:newDraft().options[0]!;
+    const options=[...draft.options];options.splice(index,0,row);focusOption.current=row.id;change({options});
+  }
+  function removeOption(id:string){if(!readonly&&draft.options.length>1&&confirm(c.removeOptionConfirm))change({options:draft.options.filter(row=>row.id!==id)});}
   return <><div className="editor-heading"><a className="button button-quiet" href="#services">{c.back}</a><div className="editor-title"><div><p className="section-eyebrow">{c.editor}</p><h1>{id?draft.translations[language].title||c.editor:c.newDraft}</h1></div><span className={`publication-badge publication-${doc?.data.service.status??'draft'}`}>{doc?.data.service.status==='published'?c.publishedState:doc?.data.service.status==='archived'?c.archivedState:c.draft}</span></div></div>
     <ErrorNotice error={error}/>{(message||doc&&!dirty)&&<p className="demo-feedback" role="status">{message||(doc?.data.revisions.find(r=>r.id===doc.data.service.workingRevisionId)?.commercialApproval.status==='approved'?c.approved:c.saved)}</p>}{loading&&<p role="status">{c.loading}</p>}
     {id&&<Button disabled={busy||!session.identity} onClick={()=>void refresh()}>{c.refresh}</Button>}
@@ -50,7 +58,7 @@ export function ApiServiceEditor({id,categories,previewOnly}:{id:string|null;cat
         <SelectField label={c.category} value={draft.categoryId??''} onChange={v=>change({categoryId:v||null})}><option value="">{c.choose}</option>{categories.map(({category})=><option key={category.id} value={category.id}>{category.translations[language].name}{category.active?'':` · ${c.inactive}`}</option>)}</SelectField>
         <TextField label={c.slug} maxLength={80} value={draft.slug} onChange={v=>change({slug:v})}/>
       </fieldset></Panel>
-      <Panel className="form-panel"><h2>{c.commercial}</h2><p>{c.optionNote}</p>{draft.options.map((row,index)=><fieldset className="form-grid api-option" disabled={readonly} key={row.id}><legend>{index+1}</legend>
+      <Panel className="form-panel"><h2>{c.commercial}</h2><p>{c.optionNote}</p>{draft.options.map((row,index)=><fieldset ref={node=>{if(node)optionFields.current.set(row.id,node);else optionFields.current.delete(row.id);}} className="form-grid api-option" disabled={readonly} key={row.id}><legend>{index+1}</legend>
         <TextField label={`${c.optionEs} ${index+1}`} value={row.translations.es.name} maxLength={100} onChange={v=>option(index,{translations:{...row.translations,es:{name:v}}})}/><TextField label={`${c.optionEn} ${index+1}`} value={row.translations.en.name} maxLength={100} onChange={v=>option(index,{translations:{...row.translations,en:{name:v}}})}/>
         <TextField label={`${c.duration} ${index+1}`} value={row.durationMinutes?.toString()??''} inputMode="numeric" onChange={v=>option(index,{durationMinutes:v===''?null:Number(v)})}/>
         <SelectField label={`${c.privacy} ${index+1}`} value={row.experienceType??''} onChange={v=>option(index,{experienceType:v as ServiceOption['experienceType']})}><option value="">—</option><option value="private">{c.private}</option><option value="shared">{c.shared}</option></SelectField>
@@ -59,7 +67,8 @@ export function ApiServiceEditor({id,categories,previewOnly}:{id:string|null;cat
         {row.price&&row.price.kind!=='quote'&&<PriceAmountField key={`${row.id}:${doc?.version??0}:${reload}`} label={`${c.amount} ${index+1}`} initialMinor={row.price.amountMinor} onChange={amountMinor=>{if(row.price&&row.price.kind!=='quote')option(index,{price:{...row.price,amountMinor}});}}/>}
         <SelectField label={`${c.currency} ${index+1}`} value={row.price?.currency??''} onChange={v=>{if(row.price)option(index,{price:{...row.price,currency:v||null} as ServiceOption['price']});}}><option value="">—</option>{currencies.map(value=><option key={value}>{value}</option>)}</SelectField>
         <SelectField label={`${c.unit} ${index+1}`} value={row.price?.unit??'service'} onChange={v=>{if(row.price)option(index,{price:{...row.price,unit:v as NonNullable<ServiceOption['price']>['unit']}});}}>{(['service','person','group','dinner'] as const).map(value=><option key={value} value={value}>{c[value]}</option>)}</SelectField>
-      </fieldset>)}</Panel>
+        <div className="media-actions"><Button variant="quiet" disabled={readonly||draft.options.length>=100} onClick={()=>insertOption(row,index+1)}>{c.duplicateOption}</Button><Button variant="quiet" disabled={readonly||draft.options.length<=1} onClick={()=>removeOption(row.id)}>{c.removeOption}</Button></div>
+      </fieldset>)}<Button disabled={readonly||draft.options.length>=100} onClick={()=>insertOption()}>{c.addOption}</Button>{draft.options.length>=100&&<p role="status">{c.optionLimit}</p>}</Panel>
       <MediaLibrary media={draft.media} onChange={media=>change({media})} disabled={readonly}/></div>
       <aside className="publication-sidebar"><Panel className="publication-panel"><h2>{c.publication}</h2><p>{c.readiness}</p><p>{c.publicationNote}</p><p>v{doc?.version??'—'} · {doc?.data.service.workingRevisionId??'—'}</p><div className="publication-actions">
         <Button onClick={()=>setPreview(v=>!v)} aria-expanded={preview}>{c.preview}</Button>

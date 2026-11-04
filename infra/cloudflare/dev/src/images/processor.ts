@@ -27,6 +27,7 @@ function matchingInfo(info:Awaited<ReturnType<ImagesBinding['info']>>,source:Ima
 }
 async function checkedOutput(response:Response,source:ImageHeader){
   try{const bytes=await readImage(response.body);await validatePngData(bytes);return sanitizePng(bytes,source);}catch(error){
+    if(error instanceof ApiFailure&&error.code==='file_too_large')throw new ApiFailure(422,'normalized_image_too_large');
     if(error instanceof ApiFailure&&error.code==='decoder_orientation_mismatch')throw error;
     throw new ApiFailure(503,'decoder_invalid_response');
   }
