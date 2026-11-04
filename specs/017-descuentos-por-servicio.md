@@ -54,15 +54,15 @@ Un administrador puede poner en un servicio un **descuento en porcentaje** que s
 - Sin dependencias nuevas. ES/EN, claro y oscuro, 390 px.
 
 ## Criterio de verificación
-- [ ] Migración local: `npm --prefix infra/cloudflare/dev run migrate:local` aplica la 0008 sin errores y el hash está en `migrations.sha256.json`.
-- [ ] `npm run test:contracts` pasa (contratos regenerados).
-- [ ] Admin: `typecheck`, `lint`, `test`, `build` y `verify:isolation` pasan.
-- [ ] Backend: `typecheck`, `lint` y las pruebas de catálogo/público (con `--test-force-exit`) pasan. Los 59 fallos previos de `migration_list_mismatch` no cuentan, salvo que esta spec los cambie (anotarlo).
-- [ ] Landing: `npm run build`, `check`, `test:catalog` y `lint:catalog` pasan.
-- [ ] Prueba: un descuento del 15 % sobre USD 90 da USD 76,50 en la API pública y en la tarjeta.
-- [ ] Prueba: con `endsOn` en el pasado, la API pública devuelve `discount: null`; con `startsOn` en el futuro, también.
-- [ ] Prueba: una opción "Por cotizar" no muestra descuento.
-- [ ] Prueba: cambiar el descuento de un servicio publicado crea una revisión nueva que requiere aprobación; la publicada no cambia hasta publicarla.
+- [x] Migración local: `npm --prefix infra/cloudflare/dev run migrate:local` aplica la 0008 sin errores y el hash está en `migrations.sha256.json`.
+- [x] `npm run test:contracts` pasa (contratos regenerados).
+- [x] Admin: `typecheck`, `lint`, `test`, `build` y `verify:isolation` pasan.
+- [x] Backend: `typecheck`, `lint` y las pruebas de catálogo/público (con `--test-force-exit`) pasan. Los 59 fallos previos de `migration_list_mismatch` no cuentan, salvo que esta spec los cambie (anotarlo).
+- [x] Landing: `npm run build`, `check`, `test:catalog` y `lint:catalog` pasan.
+- [x] Prueba: un descuento del 15 % sobre USD 90 da USD 76,50 en la API pública y en la tarjeta.
+- [x] Prueba: con `endsOn` en el pasado, la API pública devuelve `discount: null`; con `startsOn` en el futuro, también.
+- [x] Prueba: una opción "Por cotizar" no muestra descuento.
+- [x] Prueba: cambiar el descuento de un servicio publicado crea una revisión nueva que requiere aprobación; la publicada no cambia hasta publicarla.
 - [ ] Manual local (`dev:admin-test` + admin + landing): poner 20 % de hoy a mañana en un servicio, aprobar, publicar y ver el precio tachado en el marketplace.
 
 ## Decisiones
@@ -71,6 +71,17 @@ Un administrador puede poner en un servicio un **descuento en porcentaje** que s
 - Tope del 90 % para evitar errores de tipeo (por ejemplo, 100 % o 150 %).
 - El descuento es parte de la revisión, así que pasa por la aprobación comercial como cualquier cambio de precio.
 - No hay pantalla de Stitch. Se usa el patrón habitual de precio tachado más etiqueta, con los tokens de marca (regla 9).
+- **Implementación (2026-11-04, Claude Code, porque Codex no estaba disponible):**
+  - `discount` es **opcional** en el contrato. La API pública **omite la clave** cuando no hay descuento o no está vigente (en vez de enviar `null`). Así un servicio sin descuento conserva exactamente la forma JSON anterior a la 0008.
+  - **Orden de despliegue corregido:** 1) landing, 2) respaldo y 0008 remota, 3) Worker. La landing en producción (v1.2) rechaza claves desconocidas, así que debe llevar el contrato nuevo **antes** de que exista un descuento vigente. El Worker no puede ir antes de la 0008 porque consulta `revision_discounts`.
+  - Se tocaron 3 archivos que la spec no listaba, porque sin ellos el descuento se perdía o se rompía la aprobación:
+    - `catalog/publication.ts`: el hash de aprobación incluye `discount` solo si existe. Los hashes de revisiones ya selladas no cambian.
+    - `catalog/routes.ts`: la edición solo de traducciones conserva el descuento.
+    - `assets/js/marketplace-data.js`: ahí viven las claves `mp.*`; `assets/js/i18n.js` no las tiene.
+  - Las pruebas de contrato del descuento están en `scripts/test-catalog.mjs`, que la spec sí lista; `packages/contracts/test/` no se tocó.
+  - La landing vuelve a comprobar la vigencia con `activeDiscount`. Así una página abierta no sigue mostrando un descuento después de la medianoche de Costa Rica.
+  - `scripts/safe-d1/policy.mjs` no se tocó: la verificación local no lo exige. **Para aplicar la 0008 en remoto hay que actualizar esa política en una spec aparte**; hoy ya está desfasada respecto a la 0007.
+  - Suite completa del backend: los mismos 84 fallos que `main` (pruebas de Windows/DPAPI/PowerShell que no corren en Linux) y ningún fallo nuevo. La prueba de catálogo pasa 24/24, una más que en `main`.
 
 ## Resultado de la revisión
 <!-- La herramienta revisora pega aquí su veredicto: OK / Cambios requeridos + lista. -->
