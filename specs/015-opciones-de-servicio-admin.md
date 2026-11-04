@@ -32,13 +32,13 @@ En el editor de servicios del admin (`#services/<id>/edit` y `#services/new`), q
 - **Deploy solo con permiso explícito de JV** (regla 3 y tabla de comandos de `AGENTS.md`). El admin y la API están en el mismo Worker, así que un deploy cubre las dos partes.
 
 ## Criterio de verificación
-- [ ] `npm --prefix apps/admin run typecheck`, `run lint`, `test` y `run build` pasan.
-- [ ] `npm --prefix apps/admin run verify:isolation` pasa.
-- [ ] `npm --prefix infra/cloudflare/dev run typecheck`, `run lint` y `test` pasan.
-- [ ] Prueba: en un borrador con 1 opción, "Agregar opción" deja 2 y "Quitar" está desactivado cuando queda 1.
-- [ ] Prueba: "Duplicar" crea una opción con `id` distinto y mismos nombre, duración, experiencia, lugar y precio.
-- [ ] Prueba: al guardar, el cuerpo enviado a `adminApi.save` contiene todas las opciones en el orden de la pantalla.
-- [ ] Prueba: con 100 opciones, "Agregar" y "Duplicar" están desactivados.
+- [x] `npm --prefix apps/admin run typecheck`, `run lint`, `test` y `run build` pasan.
+- [x] `npm --prefix apps/admin run verify:isolation` pasa.
+- [x] `npm --prefix infra/cloudflare/dev run typecheck`, `run lint` y `test` pasan.
+- [x] Prueba: en un borrador con 1 opción, "Agregar opción" deja 2 y "Quitar" está desactivado cuando queda 1.
+- [x] Prueba: "Duplicar" crea una opción con `id` distinto y mismos nombre, duración, experiencia, lugar y precio.
+- [x] Prueba: al guardar, el cuerpo enviado a `adminApi.save` contiene todas las opciones en el orden de la pantalla.
+- [x] Prueba: con 100 opciones, "Agregar" y "Duplicar" están desactivados.
 - [ ] Manual (`npm --prefix infra/cloudflare/dev run dev:admin-test` + `npm --prefix apps/admin run dev`): crear un borrador con 3 opciones, guardar, recargar y ver las 3; quitar 1, guardar, recargar y ver 2.
 - [ ] Manual en remoto (después del deploy autorizado): abrir `masajes-en-la-villa`, agregar una opción, guardar, recargar y comprobar que sigue ahí.
 
@@ -49,4 +49,21 @@ En el editor de servicios del admin (`#services/<id>/edit` y `#services/new`), q
 - El error de foto grande se corrige en el Worker porque es el Worker quien convierte `file_too_large` en `decoder_invalid_response` (`processor.ts:28-31`).
 
 ## Resultado de la revisión
-<!-- La herramienta revisora pega aquí su veredicto: OK / Cambios requeridos + lista. -->
+
+**Veredicto:** `OK`
+
+- **Cumplimiento del objetivo y restricciones:**
+  - `apps/admin/src/features/services/ApiServiceEditor.tsx:18-19,45-50,61-71`: implementa `insertOption` (agregar al final con los valores por defecto de `newDraft().options[0]` o duplicar debajo con `structuredClone` e `id: crypto.randomUUID()`), `removeOption` (con confirmación `c.removeOptionConfirm`, deshabilitado cuando queda 1 opción), límite de 100 opciones con aviso `role="status"` (`c.optionLimit`), traslado de foco al primer `input` de la opción nueva/duplicada y respeto de `readonly`.
+  - `apps/admin/src/features/services/api-copy.ts:4,20`: añade `addOption`, `duplicateOption`, `removeOption`, `removeOptionConfirm` y `optionLimit` en EN y ES.
+  - `infra/cloudflare/dev/src/images/processor.ts:30`: convierte `ApiFailure` con código `file_too_large` en `checkedOutput` a `ApiFailure(422, 'normalized_image_too_large')`, que `multimedia.ts:110` registra como `rejected`.
+  - `apps/admin/src/features/services/MediaLibrary.tsx:25`: añade el mensaje claro en ES/EN para `normalized_image_too_large`.
+- **Archivos tocados (`git status --short`):** `apps/admin/src/features/services/ApiServiceEditor.tsx`, `apps/admin/src/features/services/MediaLibrary.tsx`, `apps/admin/src/features/services/api-copy.ts`, `apps/admin/src/test/ApiEditor.test.tsx`, `infra/cloudflare/dev/src/images/processor.ts` e `infra/cloudflare/dev/test/multimedia.test.mjs` (todos dentro de la lista de la spec; `services.css` no requirió cambios al reutilizar `.media-actions`). Nota: los cambios están aún sin commit en el árbol de trabajo de `spec/015-opciones-de-servicio`, y `?? menu/` es un remanente sin seguimiento de la spec 001 cancelada.
+- **Verificación ejecutada:**
+  - `npm --prefix apps/admin run typecheck` → PASS (exit 0).
+  - `npm --prefix apps/admin run lint` → PASS, 0 warnings (exit 0).
+  - `npm --prefix apps/admin test` → PASS, 5 archivos / 42 tests pasando (`ApiEditor.test.tsx`: 11/11 tests, incluyendo agregar, duplicar, quitar con confirmación, orden en `adminApi.save`, límite de 100 opciones, modos `readonly`, idioma EN y mensaje `normalized_image_too_large` en ES/EN).
+  - `npm --prefix apps/admin run build` → PASS, `built in 464ms` (exit 0).
+  - `npm --prefix apps/admin run verify:isolation` → PASS (`Isolation passed: separate outputs; no admin/private files in landing; local servers bind to 127.0.0.1.`).
+  - `npm --prefix infra/cloudflare/dev run build` (incluye `typecheck`) → PASS (`Local Worker and security module built; no upload.`).
+  - `npm --prefix infra/cloudflare/dev run lint` → PASS, 0 warnings (exit 0).
+  - `node --test --test-force-exit --test-timeout=60000 infra/cloudflare/dev/test/multimedia.test.mjs` → PASS, 24/24 tests pasando (incluido `normalized PNG over 2 MiB returns a specific error and is rejected without approval`).
