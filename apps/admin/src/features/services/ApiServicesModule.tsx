@@ -5,6 +5,7 @@ import {Button,Panel} from '../../components/ui';
 import type {AdminRoute} from '../../routing';
 import {usePreferences} from '../../preferences';
 import {useApiCopy} from './api-copy';
+import {cloudflareDevelopment} from '../../deployment';
 import {ErrorNotice,LocalTestIdentity,useUnsaved} from './api-support';
 import {SelectField,TextField} from './components/Fields';
 import {ApiServiceEditor} from './ApiServiceEditor';
@@ -19,8 +20,8 @@ export function ApiServicesModule({route}:{route:Extract<AdminRoute,{page:'servi
   const c=useApiCopy(),session=useSession();const [categories,setCategories]=useState<CategoryDocument[]>([]),[categoryError,setCategoryError]=useState<ApiError|null>(null),[revision,setRevision]=useState(0);
   const identityId=session.identity?.id;
   useEffect(()=>{if(!identityId)return;const abort=new AbortController();adminApi.categories(abort.signal).then(value=>{setCategories(value);setCategoryError(null);}).catch((reason:unknown)=>{if(!abort.signal.aborted)setCategoryError(failure(reason));});return()=>abort.abort();},[identityId,revision]);
-  return <div className="services-module"><div className="demo-disclaimer" role="note"><div><strong>{c.api}</strong><p>{c.notice}</p></div></div><LocalTestIdentity/>
-    <Panel className="api-session"><strong>{c.session}: {session.identity?`${session.identity.id} · ${session.identity.role}`:'—'}</strong>{session.loading?<p role="status">{c.loading}</p>:!session.identity?<p>{c.noSession}</p>:<small>{session.identity.permissions.join(' · ')}</small>}<ErrorNotice error={session.error}/>{!session.identity&&<Button onClick={session.refresh}>{c.retry}</Button>}</Panel>
+  return <div className="services-module">{!cloudflareDevelopment&&<div className="demo-disclaimer" role="note"><div><strong>{c.api}</strong><p>{c.notice}</p></div></div>}<LocalTestIdentity/>
+    {(!cloudflareDevelopment||!session.identity||!!session.error)&&<Panel className="api-session"><strong>{c.session}: {session.identity?`${session.identity.id} · ${session.identity.role}`:'—'}</strong>{session.loading?<p role="status">{c.loading}</p>:!session.identity?<p>{c.noSession}</p>:<small>{session.identity.permissions.join(' · ')}</small>}<ErrorNotice error={session.error}/>{!session.identity&&<Button onClick={session.refresh}>{c.retry}</Button>}</Panel>}
     <ErrorNotice error={categoryError}/>{categoryError&&<Button onClick={()=>setRevision(v=>v+1)}>{c.retry}</Button>}
     {route.mode==='list'?<ApiList key={session.generation} categories={categories} reloadCategories={()=>setRevision(v=>v+1)}/>:<ApiServiceEditor key={session.generation+':'+('id'in route?route.id:'new')} id={'id'in route?route.id:null} categories={categories} previewOnly={route.mode==='preview'}/>}
   </div>;
