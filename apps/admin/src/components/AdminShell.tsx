@@ -8,7 +8,7 @@ import { IconButton, StatusBadge } from './ui';
 import { LanguageSwitcher, ThemeToggle } from './preferences-controls';
 import { useAdminRoute } from '../routing';
 import {useOptionalSession} from '../api/session';
-import {cloudflareDevelopment,developmentNotice,signOutToPublicSite} from '../deployment';
+import {cloudflareDevelopment,signOutToPublicSite} from '../deployment';
 
 function Brand() {
   const { theme, t } = usePreferences();
@@ -71,7 +71,7 @@ export function MobileNavigation() {
 export function AdminShell({ children }: { children: ReactNode }) {
   const { t,language } = usePreferences();const session=useOptionalSession();
   return <><a className="skip-link" href="#main-content" onClick={event => { event.preventDefault(); document.getElementById('main-content')?.focus(); }}>{t('skip')}</a><DesktopSidebar /><div className="admin-workspace"><AdminHeader />
-    <main id="main-content" tabIndex={-1}><div className="local-notice" role="note"><LockKeyhole size={16} aria-hidden="true" /><StatusBadge tone="accent">{cloudflareDevelopment?'CLOUDFLARE DEV':t('local')}</StatusBadge><p>{cloudflareDevelopment?developmentNotice[language]:session?(language==='es'?'Servicios conectados a la API local. Los demás módulos siguen sin datos operativos.':'Services use the local API. Other modules still have no operational data.'):t('localNote')}</p></div>{children}<footer className="admin-footer">{t('footer')}</footer></main>
+    <main id="main-content" tabIndex={-1}>{!cloudflareDevelopment&&<div className="local-notice" role="note"><LockKeyhole size={16} aria-hidden="true" /><StatusBadge tone="accent">{t('local')}</StatusBadge><p>{session?(language==='es'?'Servicios conectados a la API local. Los demás módulos siguen sin datos operativos.':'Services use the local API. Other modules still have no operational data.'):t('localNote')}</p></div>}{children}<footer className="admin-footer">{t('footer')}</footer></main>
   </div><MobileNavigation /></>;
 }
 
