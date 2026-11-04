@@ -65,6 +65,14 @@ test('media: protected local lifecycle, publication and recovery with actual ima
       const response=await call('/media','POST',png,undefined,'subject-editor',{IMAGE_NORMALIZER:{fetch:async()=>new Response(bomb,{headers:{'X-Image-Normalized':'1','X-Image-Width':'1','X-Image-Height':'1'}})}});assert.equal(response.status,503);
       const uncertain=await db.prepare("SELECT a.state,a.usage_approval,a.derivative_object_key FROM media_assets a JOIN media_processing p ON p.media_id=a.id WHERE p.validation_code='decoder_invalid_response'").first();assert.equal(uncertain.state,'quarantine');assert.equal(uncertain.usage_approval,'pending');assert.equal(uncertain.derivative_object_key,null);
     });
+    await t.test('normalized PNG over 2 MiB returns a specific error and is rejected without approval',async()=>{
+      const source=await sharp({create:{width:1024,height:1024,channels:3,background:'#3B0C5B'}}).png().toBuffer();
+      const output=await sharp(source).png({compressionLevel:0}).toBuffer();assert.ok(source.length<2097152);assert.ok(output.length>2097152);
+      const response=await call('/media','POST',source,undefined,'subject-editor',{IMAGE_NORMALIZER:{fetch:async()=>new Response(output,{headers:{'X-Image-Normalized':'1','X-Image-Width':'1024','X-Image-Height':'1024'}})}});
+      assert.equal(response.status,422);assert.equal((await response.json()).error,'normalized_image_too_large');
+      const rejected=await db.prepare("SELECT a.state,a.usage_approval,a.derivative_object_key FROM media_assets a JOIN media_processing p ON p.media_id=a.id WHERE p.validation_code='normalized_image_too_large'").first();
+      assert.equal(rejected.state,'rejected');assert.equal(rejected.usage_approval,'pending');assert.equal(rejected.derivative_object_key,null);
+    });
     await t.test('rate limits cover upload and private metadata/preview reads',async()=>{
       await db.prepare('INSERT OR REPLACE INTO media_upload_limits VALUES (?,?,30)').bind('fixture-editor',Math.floor(Date.now()/3600000)).run();assert.equal((await call('/media','POST',png)).status,429);
       await db.prepare('INSERT OR REPLACE INTO media_read_limits VALUES (?,?,300)').bind('fixture-editor',Math.floor(Date.now()/60000)).run();assert.equal((await call('/media')).status,429);
