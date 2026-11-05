@@ -9,6 +9,7 @@ import { ServicesModule } from './features/services/ServicesModule';
 import {ApiServicesModule} from './features/services/ApiServicesModule';
 import {AdminSessionProvider} from './api/session';
 import './features/services/services.css';
+import { PropertiesModule } from './features/properties/PropertiesModule';
 
 function AdminContent({source}:{source:'api'|'demo'}) {
   const route = useAdminRoute();
@@ -18,7 +19,7 @@ function AdminContent({source}:{source:'api'|'demo'}) {
     document.getElementById('main-content')?.focus({ preventScroll: true });
     window.scrollTo({ top: 0 });
   }, [routeKey]);
-  return <AdminShell>{route.page === 'services' ? source==='demo'&&(import.meta.env.DEV||import.meta.env.MODE==='test')?<ServicesModule route={route} />:<ApiServicesModule route={route}/> : route.page === 'missing' ? <Panel><h1>{language === 'es' ? 'Página no disponible' : 'Page unavailable'}</h1><a className="button button-quiet" href="#overview">{t('overview')}</a></Panel> : <Dashboard />}</AdminShell>;
+  return <AdminShell>{route.page==='properties'?<PropertiesModule id={route.id}/>:route.page === 'services' ? source==='demo'&&(import.meta.env.DEV||import.meta.env.MODE==='test')?<ServicesModule route={route} />:<ApiServicesModule route={route}/> : route.page === 'missing' ? <Panel><h1>{language === 'es' ? 'Página no disponible' : 'Page unavailable'}</h1><a className="button button-quiet" href="#overview">{t('overview')}</a></Panel> : <Dashboard />}</AdminShell>;
 }
 
 export default function App({source='api'}:{source?:'api'|'demo'}={}) {
