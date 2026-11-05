@@ -16,7 +16,14 @@ Un administrador ve en el admin la lista de propiedades de Grupo Kuwago (Carabao
 - Acceso de propietarios ("Propietarios · Próximamente" en la landing) y del panel de resumen.
 - Cambios visuales en la landing (ubicación, capacidad, etc. en la tarjeta): requieren pantalla en `design/` (spec 004).
 
-## Modelo
+## Hoja de ruta de propiedades (JV, 2026-11-05)
+La propiedad es la entidad base de todo lo que sigue; por eso va primero.
+1. **020 (esta):** propiedades en el admin y en el home público. `kind = rental` marca las que están disponibles para estadía y `airbnb_url` es el enlace para reservar.
+2. **010:** calendario de disponibilidad (iCal de Airbnb) en la landing y en el admin.
+3. **Información para huéspedes** (wifi, códigos, horarios de piscinero, instrucciones): campos privados por propiedad, con acceso por reserva o enlace con vencimiento. Reemplaza `/menu/` (spec 011).
+4. **Portal de propietarios:** un rol de propietario limitado a sus propiedades, con contratos, calendario, facturas y proyectos.
+5. **Reserva directa con pago** (procesador en evaluación, probablemente ONVO): solo cuando estén la 2 y el procesador.
+
 Tabla `properties` (una fila por propiedad; sin revisiones selladas como en servicios):
 
 | Campo | Tipo | Público | Notas |
