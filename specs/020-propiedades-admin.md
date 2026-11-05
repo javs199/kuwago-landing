@@ -1,6 +1,6 @@
 # Spec 020 — Propiedades en el portal admin (datos y publicación)
 
-- **Estado:** borrador (espera aprobación de JV)
+- **Estado:** en curso
 - **Ejecuta:** Codex (migración, API, admin, adaptador de la landing). Aplicar la 0009 en D1 remota y desplegar: solo JV o con su autorización explícita por operación (regla 10).
 - **Revisa:** Antigravity (`/revisar-diff`)
 - **Diseño:** n/a para la landing (no cambia lo que se ve). Admin: sin pantalla en `design/`; se reutilizan los componentes y el patrón del módulo de servicios (ver Decisiones).
@@ -95,6 +95,11 @@ Publicación simple: al publicar, el Worker valida y copia el estado actual a `p
 - [ ] Prueba: con `show_on_landing = 0`, la tarjeta desaparece de la landing; con la API caída, la landing muestra las 4 tarjetas estáticas de hoy.
 - [ ] Prueba: un editor (`editor`) no puede publicar; un `admin` sí.
 - [ ] Manual local (`dev:admin-test` + admin + landing): cambiar el orden de Villa Maya al primer lugar, publicar y verlo en la landing.
+
+## Decisiones
+- **Aprobación:** JV aprobó esta spec al fusionar PR #14 el 2026-11-05. Implementación local autorizada; sin migraciones remotas ni despliegues.
+- **Baños:** REAL nullable en unidades de 0,5. Se conserva el texto exacto existente: ES «Propiedad administrada», EN «Managed Property», y «Casa Bella Mia» sin añadir acentos.
+- **Publicación:** visibilidad y orden publicados se leen del snapshot; editar show_on_landing u orden no afecta al público hasta publicar. Se añade row_version para concurrencia optimista y slug_locked para impedir cambiar el slug incluso tras despublicar.
 
 ## Decisiones
 - **Lectura elegida (Claude, 2026-11-05):** "propiedades" = módulo para gestionar las propiedades que muestra la landing más sus datos internos, análogo a servicios pero más simple. No incluye reservas, calendario ni portal de propietarios.
