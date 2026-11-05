@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Libre+Bodoni:ital,wght@0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "dark-gold": "#8F691F", "surface-container-highest": "#edddf1", "surface-container-lowest": "#ffffff", "on-secondary-container": "#785a1b", "primary-fixed-dim": "#e2b6ff", "on-tertiary-fixed-variant": "#4a4451", "tertiary": "#140f1a", "primary": "#200037", "bright-gold": "#D1AD66", "surface-variant": "#edddf1", "on-primary-fixed": "#2e004d", "secondary-fixed-dim": "#e9c178", "dark-elevated": "#302039", "secondary-container": "#fed489", "dark-bg": "#160B1D", "surface-dim": "#e5d5e9", "inverse-on-surface": "#fcecff", "on-primary-container": "#a97acb", "on-surface": "#211826", "primary-fixed": "#f3daff", "outline": "#7d7480", "on-primary-fixed-variant": "#5e337e", "tertiary-container": "#292430", "tertiary-fixed": "#e9dfef", "on-error-container": "#93000a", "tertiary-fixed-dim": "#cdc3d3", "surface-container-high": "#f3e3f7", "on-tertiary": "#ffffff", "inverse-surface": "#372d3c", "on-error": "#ffffff", "warm-off-white": "#F8F6FA", "error-container": "#ffdad6", "on-tertiary-container": "#928a99", "outline-variant": "#cec3d0", "error": "#ba1a1a", "pure-white": "#FFFFFF", "on-tertiary-fixed": "#1e1925", "on-secondary-fixed-variant": "#5d4202", "surface-container": "#f9e9fd", "primary-container": "#3b0c5b", "inverse-primary": "#e2b6ff", "on-secondary": "#ffffff", "surface-bright": "#fff7fc", "secondary": "#775a1a", "secondary-fixed": "#ffdea5", "on-surface-variant": "#4c444f", "on-primary": "#ffffff", "surface": "#fff7fc", "surface-tint": "#784b98", "dark-text-secondary": "#CFC4D2", "on-secondary-fixed": "#271900", "dark-surface": "#24172C", "surface-container-low": "#fdefff", "background": "#fff7fc", "on-background": "#211826" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-width": "280px", "gutter": "24px", "margin-desktop": "40px", "unit": "8px", "margin-mobile": "16px", "max-content-width": "1440px" }, "fontFamily": { "display-lg": [ "Hanken Grotesk" ], "title-lg": [ "Hanken Grotesk" ], "headline-md": [ "Hanken Grotesk" ], "headline-lg": [ "Hanken Grotesk" ], "label-md": [ "Hanken Grotesk" ], "label-sm": [ "Hanken Grotesk" ], "body-md": [ "Hanken Grotesk" ], "headline-lg-mobile": [ "Hanken Grotesk" ], "body-lg": [ "Hanken Grotesk" ] }, "fontSize": { "display-lg": [ "48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "title-lg": [ "20px", { "lineHeight": "28px", "fontWeight": "500" } ], "headline-md": [ "24px", { "lineHeight": "32px", "fontWeight": "600" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "label-md": [ "14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" } ], "label-sm": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" } ], "body-md": [ "16px", { "lineHeight": "24px", "fontWeight": "400" } ], "headline-lg-mobile": [ "28px", { "lineHeight": "36px", "fontWeight": "600" } ], "body-lg": [ "18px", { "lineHeight": "28px", "fontWeight": "400" } ] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-container-low border-r border-outline-variant/30 flex flex-col z-50 shadow-[0_1px_8px_rgba(0,0,0,0.03)]"><div class="h-20 flex items-center gap-3 px-6 border-b border-outline-variant/20"><img alt="4e553809-ba64-406a-85a3-b41d750770f8_Logo-Kuwago.webp" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1V-Tkgxi3vUxLiWbcVeVcccQ0A77aogsVlbO9m4cNxl52RLpoB_ALuDR5V-oah6J7cDmW-sXXha3cr4_NRiB07_mGct0FW07hQwaq7p9tpzDc46rAPt4ZJcUzqVnimakR9Fz0HbQI3iQ-uLs-0P0dfVqw9EkVBHtcJHsP4o3Ly3Rki5PC4dC3blDB1VSnja2eTomRJPrn6F1dQHmPOzU6gtSiztllyvMkR55x9RABxOaRQbrSNKUgN_nLiaYtR8kvWSFZe_gk8Szg"/><div class="flex flex-col"><span class="font-['Libre_Bodoni'] text-[19px] tracking-[0.22em] font-semibold text-primary leading-none">KUWAGO</span><span class="font-label-sm text-label-sm text-dark-gold uppercase tracking-[0.14em] mt-1">Sanctuary &amp; Estate</span></div></div><div class="flex-1 overflow-y-auto px-4 py-5"><nav class="space-y-1" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm ring-1 ring-bright-gold/30"><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="resumen" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">grid_view</span><span>Resumen</span></div></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="servicios" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">room_service</span><span>Servicios</span></div></a><a aria-current="page" class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all bg-primary-container text-on-primary font-semibold shadow-sm ring-1 ring-bright-gold/30" data-path="propiedades" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">villa</span><span>Propiedades</span></div><span class="h-2 w-2 rounded-full bg-bright-gold"></span></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="accesos" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">vpn_key</span><span>Accesos</span></div><span class="px-2 py-0.5 rounded-full text-[10px] font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant/80 border border-outline-variant/30">Pronto</span></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="ventas-concierge" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">concierge</span><span>Ventas concierge</span></div></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="facturas" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">receipt_long</span><span>Facturas</span></div></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="calendario" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">calendar_month</span><span>Calendario</span></div></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="contratos" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">history_edu</span><span>Contratos</span></div><span class="px-2 py-0.5 rounded-full text-[10px] font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant/80 border border-outline-variant/30">Pronto</span></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="proyectos" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">domain</span><span>Proyectos</span></div><span class="px-2 py-0.5 rounded-full text-[10px] font-label-sm text-label-sm bg-surface-container-highest text-on-surface-variant/80 border border-outline-variant/30">Pronto</span></a><a class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="documentos" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px] text-outline group-hover:text-primary transition-colors">folder_open</span><span>Documentos</span></div></a></nav></div><div class="p-4 border-t border-outline-variant/20 bg-surface-container/40"><div class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-surface-container-lowest border border-outline-variant/40 shadow-sm"><div class="flex items-center gap-2.5"><div class="h-2 w-2 rounded-full bg-bright-gold animate-pulse"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-primary font-semibold">Nodo Central</span><span class="text-[11px] font-body-md text-on-surface-variant">Sovereign Secure</span></div></div><span class="material-symbols-outlined text-[18px] text-dark-gold">verified_user</span></div></div></aside><div class="pl-sidebar-width min-h-screen flex flex-col bg-surface"><header class="fixed top-0 left-sidebar-width right-0 h-20 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/25 z-40 px-gutter flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.02)]"><div class="flex items-center gap-3"><img alt="4e553809-ba64-406a-85a3-b41d750770f8_Logo-Kuwago.webp" class="h-7 w-auto object-contain md:hidden" src="https://lh3.googleusercontent.com/aida/AEtjO1V-Tkgxi3vUxLiWbcVeVcccQ0A77aogsVlbO9m4cNxl52RLpoB_ALuDR5V-oah6J7cDmW-sXXha3cr4_NRiB07_mGct0FW07hQwaq7p9tpzDc46rAPt4ZJcUzqVnimakR9Fz0HbQI3iQ-uLs-0P0dfVqw9EkVBHtcJHsP4o3Ly3Rki5PC4dC3blDB1VSnja2eTomRJPrn6F1dQHmPOzU6gtSiztllyvMkR55x9RABxOaRQbrSNKUgN_nLiaYtR8kvWSFZe_gk8Szg"/><div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant"><span class="text-dark-gold uppercase tracking-wider font-semibold">Portal Interno</span><span class="text-outline-variant">/</span><span class="text-on-surface">Administración Ejecutiva</span></div></div><div class="flex items-center gap-4"><div class="inline-flex items-center rounded-full bg-surface-container-high p-0.5 border border-outline-variant/30 text-on-surface-variant font-label-sm text-label-sm"><button class="px-2.5 py-1 rounded-full bg-primary-container text-on-primary font-semibold shadow-xs" type="button">ES</button><button class="px-2.5 py-1 rounded-full text-on-surface-variant hover:text-on-surface transition-colors" type="button">EN</button></div><button aria-label="Cambiar tema" class="h-9 w-9 rounded-full bg-surface-container border border-outline-variant/30 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" type="button"><span class="material-symbols-outlined text-[19px]">light_mode</span></button><div class="h-5 w-px bg-outline-variant/40"></div><div class="flex items-center gap-3 pl-1 pr-3 py-1 rounded-full bg-surface-container-lowest border border-outline-variant/40 shadow-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-label-sm text-label-sm text-primary font-semibold leading-tight">Super Admin</span><span class="text-[11px] font-body-md text-dark-gold leading-tight">Kuwago Staff</span></div><span class="material-symbols-outlined text-[18px] text-outline">expand_more</span></div></div></header><main class="w-full pt-20 flex-1 px-gutter py-6 bg-surface"><div class="flex flex-col w-full">
+<div class="flex flex-col gap-8 pb-16 max-w-max-content-width mx-auto w-full">
+<!-- Top Action Breadcrumb & Title Bar -->
+<section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex flex-col gap-1.5">
+<nav class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant">
+<a class="hover:text-primary transition-colors flex items-center gap-1.5" href="#">
+<span class="material-symbols-outlined text-[18px]">villa</span>
+<span>Propiedades</span>
+</a>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-semibold">Carabao Villa</span>
+</nav>
+<div class="flex flex-wrap items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Editar: Carabao Villa</h1>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-800 font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+            Publicada
+          </span>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container font-label-sm text-label-sm text-dark-gold uppercase tracking-wider">
+            ID: CRB-094
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-3 self-start md:self-auto">
+<a class="h-11 px-4 rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container-high transition-all flex items-center gap-2 font-label-md text-label-md shadow-sm" href="#" target="_blank">
+<span>Ver en web pública</span>
+<span class="material-symbols-outlined text-[18px] text-dark-gold">north_east</span>
+</a>
+</div>
+</section>
+<!-- Main Workspace Layout Grid: 70% Editor vs 30% Sticky Publication Panel -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- LEFT COLUMN: Tabs + Bilingual Content (8 of 12 cols ~ 67-70%) -->
+<main class="lg:col-span-8 flex flex-col gap-6">
+<!-- Navigation Tabs Bar -->
+<div class="bg-surface-container-lowest p-2 rounded-2xl shadow-sm flex items-center gap-2 overflow-x-auto">
+<!-- Active Tab: General -->
+<button class="relative flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-all flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px] text-bright-gold">article</span>
+<span>General</span>
+<span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-bright-gold rounded-full"></span>
+</button>
+<!-- Tab: Datos -->
+<button class="flex items-center gap-2 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px] text-outline">tune</span>
+<span>Datos</span>
+</button>
+<!-- Tab: Fotos (12) -->
+<button class="flex items-center gap-2 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px] text-outline">photo_library</span>
+<span>Fotos (12)</span>
+</button>
+<!-- Tab: Huéspedes (Locked) -->
+<button class="flex items-center gap-1.5 px-4 py-3 rounded-xl text-on-surface-variant/70 hover:bg-surface-container-high transition-colors font-label-md text-label-md flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[17px] text-outline">lock</span>
+<span>Huéspedes</span>
+<span class="ml-1 px-1.5 py-0.5 rounded-full bg-surface-container-highest text-[10px] text-on-surface-variant uppercase font-semibold">Pronto</span>
+</button>
+<!-- Tab: Propietario (Sovereign Shield) -->
+<button class="flex items-center gap-2 px-4 py-3 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px] text-dark-gold">shield_person</span>
+<span>Propietario</span>
+</button>
+<!-- Tab: Calendario -->
+<button class="flex items-center gap-1.5 px-4 py-3 rounded-xl text-on-surface-variant/70 hover:bg-surface-container-high transition-colors font-label-md text-label-md flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[17px] text-outline">calendar_month</span>
+<span>Calendario</span>
+<span class="ml-1 px-1.5 py-0.5 rounded-full bg-surface-container-highest text-[10px] text-on-surface-variant uppercase font-semibold">Pronto</span>
+</button>
+</div>
+<!-- Hero Estate Visual Snippet Card -->
+<div class="relative bg-surface-container-lowest rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col md:flex-row gap-6 items-center">
+<div class="relative w-full md:w-64 h-40 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A modern luxury clifftop teak villa cantilevered over lush emerald jungle overlooking a calm Pacific ocean at dramatic sunset, reflecting inside a volcanic black stone infinity pool" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp9s3B92pvbFGU8U31EE7wUfvaO-p_Qt5Ofqrbq0eonfXIpETrRHQXPhSOhlV9sh5EZXkZSzQ3-CZtB0o6OLz9Sis0C_ppjnByIVy4ouyBi8LSiTyIIJ1ctYfkGXhoyS1nskOHnGhvA-qTIyjCh9luE2UaTFwKsaxEsDOX4-dLqlEAT57uS77jUrzAWz2wjkMzIkXH4rljqPogmFsxt2rCYfFT1APxIyiQqu0zkKs"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/70 via-transparent to-transparent"></div>
+<div class="absolute bottom-2.5 left-3 flex items-center gap-1.5 text-on-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-bright-gold">location_on</span>
+<span>Uvita, Costa Rica</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 w-full">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-dark-gold uppercase tracking-wider font-semibold">Resumen General de Propiedad</span>
+<span class="text-[12px] font-label-sm text-on-surface-variant">Modificado: Hoy 14:32</span>
+</div>
+<p class="font-headline-md text-headline-md text-primary">Carabao Sanctuary Master Suite</p>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">
+              Arquitectura en voladizo sobre la bahía con piscina de borde infinito, acabados en teca madura y vista franca hacia la cola de ballena de Uvita.
+            </p>
+<div class="flex items-center gap-4 pt-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-dark-gold">bed</span> 4 Suites</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-dark-gold">bathtub</span> 5.5 Baños</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-dark-gold">square_foot</span> 640 m²</span>
+</div>
+</div>
+</div>
+<!-- Section: Bilingual Title & Tagline -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col gap-8">
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">translate</span>
+</div>
+<div class="flex flex-col">
+<h2 class="font-title-lg text-title-lg text-primary">Identidad &amp; Denominación</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Textos visibles en catálogos y encabezados de reserva</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-primary font-semibold">
+              Bilingüe Sincronizado
+            </span>
+</div>
+<!-- Bilingual Grid: Nombre de la Villa -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Español -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-dark-gold"></span>
+                  Nombre en Español *
+                </label>
+<span class="font-label-sm text-label-sm text-on-surface-variant">ES</span>
+</div>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl bg-warm-off-white text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary transition-all" type="text" value="Carabao Villa"/>
+</div>
+<span class="text-[12px] font-body-md text-on-surface-variant">Aparecerá en el portal principal en español.</span>
+</div>
+<!-- English -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-bright-gold"></span>
+                  Name in English *
+                </label>
+<span class="font-label-sm text-label-sm text-on-surface-variant">EN</span>
+</div>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-xl bg-warm-off-white text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary transition-all" type="text" value="Carabao Villa Luxury Estate"/>
+</div>
+<span class="text-[12px] font-body-md text-on-surface-variant">Visible for international luxury clientele.</span>
+</div>
+</div>
+<!-- Bilingual Grid: Frase Corta / Tagline -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+<!-- Español Tagline -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-primary font-semibold">Frase corta / Lema</label>
+<span class="font-label-sm text-label-sm text-dark-gold font-medium">83 / 120 caracteres</span>
+</div>
+<input class="w-full h-12 px-4 rounded-xl bg-warm-off-white text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary transition-all" maxlength="120" type="text" value="Santuario tropical con vistas panorámicas al océano Pacífico y privacidad absoluta."/>
+<div class="w-full bg-surface-container rounded-full h-1 overflow-hidden mt-1">
+<div class="bg-dark-gold h-1 rounded-full" style="width: 69%"></div>
+</div>
+</div>
+<!-- English Tagline -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-primary font-semibold">Tagline / Short Phrase</label>
+<span class="font-label-sm text-label-sm text-dark-gold font-medium">77 / 120 characters</span>
+</div>
+<input class="w-full h-12 px-4 rounded-xl bg-warm-off-white text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary transition-all" maxlength="120" type="text" value="Tropical luxury sanctuary overlooking the Pacific mist with absolute serenity."/>
+<div class="w-full bg-surface-container rounded-full h-1 overflow-hidden mt-1">
+<div class="bg-bright-gold h-1 rounded-full" style="width: 64%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Rich Textarea Descriptions (ES & EN) -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-primary">Descripción Detallada</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Formato enriquecido para experiencias y narrativa de la residencia</p>
+</div>
+</div>
+</div>
+<!-- Bilingual Rich Columns -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Columna ES -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-semibold">Español</span>
+<!-- Rich Editor Mini Toolbar -->
+<div class="flex items-center gap-1 bg-surface-container p-1 rounded-lg">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Negrita" type="button"><span class="material-symbols-outlined text-[16px]">format_bold</span></button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Cursiva" type="button"><span class="material-symbols-outlined text-[16px]">format_italic</span></button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Lista con viñetas" type="button"><span class="material-symbols-outlined text-[16px]">format_list_bulleted</span></button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Párrafo" type="button"><span class="material-symbols-outlined text-[16px]">notes</span></button>
+</div>
+</div>
+<textarea class="w-full p-4 rounded-xl bg-warm-off-white text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary leading-relaxed transition-all resize-y" rows="9">Elevada sobre la exuberante selva tropical de Uvita, Carabao Villa redefine el descanso soberano mediante una arquitectura vanguardista suspendida en voladizo.
+
+La terraza principal de teca madura se funde sin fisuras con una piscina infinita de basalto volcánico que parece desbordarse directamente hacia el océano Pacífico. Diseñada para huéspedes de alta distinción que exigen discreción inquebrantable, cuenta con servicio exclusivo de mayordomo privado y chef residente coordinados por el equipo concierge de Kuwago.</textarea>
+<span class="text-[12px] font-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-emerald-700">check_circle</span>
+                528 palabras • Lectura estimada: 2 min
+              </span>
+</div>
+<!-- Columna EN -->
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-semibold">English</span>
+<!-- Rich Editor Mini Toolbar -->
+<div class="flex items-center gap-1 bg-surface-container p-1 rounded-lg">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Bold" type="button"><span class="material-symbols-outlined text-[16px]">format_bold</span></button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Italic" type="button"><span class="material-symbols-outlined text-[16px]">format_italic</span></button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Bulleted list" type="button"><span class="material-symbols-outlined text-[16px]">format_list_bulleted</span></button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-primary" title="Paragraph" type="button"><span class="material-symbols-outlined text-[16px]">notes</span></button>
+</div>
+</div>
+<textarea class="w-full p-4 rounded-xl bg-warm-off-white text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary leading-relaxed transition-all resize-y" rows="9">Suspended gracefully over the lush rainforest canopy of Uvita, Carabao Villa exemplifies sovereign modernist architecture designed for effortless tranquility.
+
+Its signature cantilevered teak sun-deck seamlessly converges into a volcanic stone infinity pool merging into the distant Pacific horizon. Handcrafted for discerning guests seeking uncompromising seclusion, every stay is enriched with dedicated private butler presence and bespoke culinary artistry orchestrated by Kuwago Concierge.</textarea>
+<span class="text-[12px] font-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-emerald-700">check_circle</span>
+                480 words • Est. read time: 2 min
+              </span>
+</div>
+</div>
+</div>
+<!-- Previews & Secondary Tabs Modules (Compact contextual cards) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Fotos Summary Module -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[20px] text-dark-gold">collections</span>
+<span class="font-title-lg text-title-lg text-primary">Galería de Imágenes</span>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-primary font-semibold">12 fotos activas</span>
+</div>
+<div class="grid grid-cols-4 gap-2">
+<div class="h-16 rounded-lg bg-cover bg-center shadow-xs" data-alt="Cantilevered teak wooden deck overlooking jungle canopy in luxury Costa Rica villa" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB6674k_-HvbRLpIlGW9SXwekWsLQcbb6bOlazc5EGZ-fVbQIQgiaTP7T9oZH-ande7pdrYd7ELzuxemisLK1ZDkW_E43CE6VMws_A0PXKEadQ0t3x4AE485M_6i3f8S_Yny0nU7DqLdtW3hFHl53V2P5gLIXpQaADXmW7rjX28Jrhu8xjWbu3xQ0YmEmU0REY7WTEzBUOi6ij2J19IIl2JOiyCmBQMAnyDG9M2O5g')"></div>
+<div class="h-16 rounded-lg bg-cover bg-center shadow-xs" data-alt="Infinity pool illuminated at dusk reflecting purple sunset and modern glass estate" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBzmIf4hZhs8F88SDyeEWWZlQBHUWB9sFwWVJOg4KfOLup_FS-f6q2L2Z7_-GI8RXtLi4_UTASz-80PuA5_TUzeblcAMHLy_4xtYt4iZfqBz23a90_SGbIAkvGYVKmvjN8wTkVaMk8VSUnHyHIa-2V-_Ib1A4jJLU61vUZZo8IjMY6nZPBTS4CjzxtJPGivfRy9cqX6eL-0I6yKlsmHg4zS6nizTOwfa4pvVnhV1DU')"></div>
+<div class="h-16 rounded-lg bg-cover bg-center shadow-xs" data-alt="High ceiling primary bedroom with minimalist teak furniture and floor-to-ceiling forest view glass doors" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDF-L5E3dn5lE-FEqsJMANwEXtmfqa951N7AbzeyL9tSP8v9USmfeAzZlF2h42uJT1wW4dliHNpavmoOSQR7cJAtYgTppN0dCoI-F5oF1UVWHhDks-zeQsn61IL87v7_3SAzCDhbwlUnHaFx1FWA1-u6yCVbALQ094v_ZTHC_dzndnEFSN6JoHQxXJE5HOal5tnCGZkxPGul0ezHAk0oyGuTGaXqKKtG7987GH6cW0')"></div>
+<div class="h-16 rounded-lg bg-surface-container flex flex-col items-center justify-center text-primary font-label-sm text-label-sm hover:bg-surface-container-high cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_photo_alternate</span>
+<span>+9</span>
+</div>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Las fotos se gestionan en el sitio por ahora (12 cargadas en alta fidelidad).</p>
+</div>
+<!-- Propietario & Confidential Shield Banner -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[20px] text-dark-gold">shield</span>
+<span class="font-title-lg text-title-lg text-primary">Datos del Propietario</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">Sovereign Guard</span>
+</div>
+<div class="p-3.5 rounded-xl bg-warm-off-white flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-error">lock</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Privado: nunca se muestra en el sitio público</span>
+</div>
+<div class="flex justify-between items-center pt-1 text-[13px] text-on-surface-variant font-body-md">
+<span>Propietario: <strong>Carabao Trust Ltd.</strong></span>
+<span>Contacto: <strong>Fiduciario A</strong></span>
+</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>Notas internas: Contrato activo 2025-2028</span>
+<a class="text-dark-gold hover:underline font-semibold" href="#">Editar ficha</a>
+</div>
+</div>
+</div>
+</main>
+<!-- RIGHT COLUMN: Sticky Publication & Visibility Panel (4 of 12 cols ~ 30-33%) -->
+<aside class="lg:col-span-4 sticky top-24 flex flex-col gap-6">
+<div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+<!-- Header of Publication Panel -->
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">publish</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-primary">Publicación &amp; Visibilidad</h3>
+</div>
+<span class="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"></span>
+</div>
+<!-- Status Indicator & Metadata -->
+<div class="flex flex-col gap-2 p-3.5 rounded-xl bg-surface-container-low">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Estado actual</span>
+<span class="font-label-sm text-label-sm font-semibold text-emerald-800 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+                Publicada en el sitio
+              </span>
+</div>
+<div class="flex items-center gap-1.5 text-[12px] font-body-md text-on-surface-variant pt-1">
+<span class="material-symbols-outlined text-[15px] text-dark-gold">history</span>
+<span>Última publicación: <strong>hace 2 días</strong> por JV (Super Admin)</span>
+</div>
+</div>
+<!-- Warning Callout Card: Cambios sin publicar -->
+<div class="p-4 rounded-xl bg-secondary-container/40 flex flex-col gap-2">
+<div class="flex items-center gap-2 text-dark-gold">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span class="font-label-md text-label-md font-semibold">Cambios sin publicar</span>
+</div>
+<p class="font-body-md text-[13px] text-on-secondary-container leading-relaxed">
+              Hay modificaciones guardadas en borrador que aún no son visibles para los visitantes del portal público.
+            </p>
+</div>
+<!-- Visibility Switch Toggle -->
+<div class="flex items-center justify-between p-3.5 rounded-xl bg-warm-off-white">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-semibold">Mostrar en el sitio público</span>
+<span class="text-[12px] font-body-md text-on-surface-variant">Activa o pausa reservas públicas</span>
+</div>
+<!-- Toggle Switch in Kuwago Purple -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-12 h-6.5 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-pure-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Site Ordering Field -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1.5">
+<span>Orden en el sitio</span>
+<span class="material-symbols-outlined text-[16px] text-outline cursor-help" title="Determina la posición en la página de inicio">info</span>
+</label>
+<span class="text-[11px] font-label-sm text-dark-gold uppercase font-semibold">Prioridad Alta</span>
+</div>
+<div class="flex items-center gap-3">
+<input class="w-24 h-11 px-3.5 text-center rounded-xl bg-warm-off-white text-primary font-headline-md text-headline-md font-semibold focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary transition-all" max="99" min="1" type="number" value="1"/>
+<p class="text-[12px] font-body-md text-on-surface-variant leading-snug">
+                Determina la posición destacada en la página de inicio de Kuwago.
+              </p>
+</div>
+</div>
+<div class="h-px bg-surface-container my-1"></div>
+<!-- Action Buttons (44px height) -->
+<div class="flex flex-col gap-3">
+<!-- Primary Publish Button -->
+<button class="h-11 w-full rounded-xl bg-primary text-on-primary hover:opacity-95 active:scale-[0.99] font-label-md text-label-md font-semibold shadow-sm flex items-center justify-center gap-2 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-bright-gold">bolt</span>
+<span>Publicar cambios</span>
+</button>
+<!-- Secondary Save Draft Button -->
+<button class="h-11 w-full rounded-xl bg-surface-container-lowest hover:bg-surface-container text-primary font-label-md text-label-md font-semibold flex items-center justify-center gap-2 shadow-xs transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Guardar borrador</span>
+</button>
+</div>
+<!-- Audit & Version History Helper -->
+<div class="pt-2 flex items-center justify-center">
+<a class="text-[13px] font-label-md text-dark-gold hover:text-primary transition-colors flex items-center gap-1.5 font-medium" href="#">
+<span class="material-symbols-outlined text-[16px]">history_edu</span>
+<span>Historial de versiones y auditoría</span>
+</a>
+</div>
+</div>
+<!-- Sovereign Security Verification Badge -->
+<div class="p-4 rounded-2xl bg-surface-container-lowest shadow-sm flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-dark-gold flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary font-semibold">Integridad Criptográfica</span>
+<span class="text-[11px] font-body-md text-on-surface-variant">Sincronizado con Node-Central SSL</span>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+<script>
+  // Interactive micro-interactions for input focus & button feedback
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      if (this.innerText.includes('Publicar cambios')) {
+        const originalContent = this.innerHTML;
+        this.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>Sincronizando...</span>`;
+        setTimeout(() => {
+          this.innerHTML = `<span class="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span><span>¡Publicado con éxito!</span>`;
+          setTimeout(() => {
+            this.innerHTML = originalContent;
+          }, 2400);
+        }, 900);
+      } else if (this.innerText.includes('Guardar borrador')) {
+        const originalContent = this.innerHTML;
+        this.innerHTML = `<span class="material-symbols-outlined text-[18px]">check</span><span>Borrador guardado</span>`;
+        setTimeout(() => {
+          this.innerHTML = originalContent;
+        }, 1800);
+      }
+    });
+  });
+</script></main></div></body></html>
