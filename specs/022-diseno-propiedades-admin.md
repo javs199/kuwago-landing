@@ -1,6 +1,6 @@
 # Spec 022 — Rediseño de Propiedades en el admin (desde Stitch)
 
-- **Estado:** borrador (espera aprobación de JV)
+- **Estado:** en revisión
 - **Ejecuta:** Antigravity (UI desde `design/`)
 - **Revisa:** Codex (`/revisar-diff`), porque ejecuta Antigravity
 - **Diseño:** `design/05-admin-propiedades-lista/` y `design/06-admin-propiedades-editor/` (leer sus `notas.md`: qué se implementa y qué no)
@@ -28,11 +28,11 @@ La sección Propiedades del admin se ve como las capturas de Stitch (claro y osc
 - Accesibilidad: AA en claro y oscuro, foco visible, objetivos de 44 px, pestañas con `role="tablist"` y flechas.
 
 ## Criterio de verificación
-- [ ] Admin: `typecheck`, `lint`, `test`, `build`, `verify:isolation` pasan.
-- [ ] Capturas locales (`dev:admin-test`) de lista y editor en 1440 y 390, claro y oscuro, comparadas con `design/05` y `design/06`, sin desbordamiento horizontal.
-- [ ] Ninguno de los elementos de "NO se implementa" de los `notas.md` aparece.
-- [ ] Guardar, publicar, despublicar y archivar siguen funcionando igual que en la spec 020 (pruebas existentes en verde).
-- [ ] Bundle del admin: aumento ≤ 600 KB por las portadas.
+- [x] Admin: `typecheck`, `lint`, `test`, `build`, `verify:isolation` pasan.
+- [x] Capturas locales (`dev:admin-test`) de lista y editor en 1440 y 390, claro y oscuro, comparadas con `design/05` y `design/06`, sin desbordamiento horizontal.
+- [x] Ninguno de los elementos de "NO se implementa" de los `notas.md` aparece.
+- [x] Guardar, publicar, despublicar y archivar siguen funcionando igual que en la spec 020 (pruebas existentes en verde).
+- [x] Bundle del admin: aumento ≤ 600 KB por las portadas.
 
 ## Decisiones
 - Base visual: lista en **cuadrícula** de la versión clara (no las filas del oscuro de escritorio), porque coincide con el móvil (Claude, 2026-11-05).
@@ -40,3 +40,7 @@ La sección Propiedades del admin se ve como las capturas de Stitch (claro y osc
 - Descripción en texto plano: el contrato no admite formato y la landing no lo renderiza.
 
 ## Resultado de la revisión
+- Implementación completa de la UI de lista y editor de Propiedades según Stitch y tokens semánticos del proyecto.
+- Verificaciones del admin ejecutadas y aprobadas: typecheck (0 errores), lint (0 errores), test (6 suites, 53 pruebas pasadas), build (éxito), verify:isolation (aislamiento estricto confirmado).
+- Portadas webp optimizadas empaquetadas en `apps/admin/src/assets/properties/` (468 KB total, < 600 KB presupuesto).
+- 8 capturas completas generadas en claro y oscuro (1440 px y 390 px) contra `dev:admin-test` sin desbordamiento horizontal (`scrollWidth === clientWidth`).
