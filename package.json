@@ -19,7 +19,7 @@
     "test:catalog": "node --test scripts/test-catalog.mjs",
     "pretest:catalog": "npm run contracts:build",
     "test:contracts": "npm --prefix packages/contracts run build && npm --prefix packages/contracts test",
-    "lint:catalog": "node apps/admin/node_modules/eslint/bin/eslint.js assets/js/catalog-adapter.js assets/js/catalog-static.js assets/js/marketplace.js assets/js/marketplace-data.js --config scripts/eslint.catalog.config.mjs --max-warnings 0"
+    "lint:catalog": "node apps/admin/node_modules/eslint/bin/eslint.js assets/js/catalog-adapter.js assets/js/catalog-static.js assets/js/marketplace.js assets/js/marketplace-data.js assets/js/properties-adapter.js --config scripts/eslint.catalog.config.mjs --max-warnings 0"
   },
   "devDependencies": {
     "tailwindcss": "3.4.19"
