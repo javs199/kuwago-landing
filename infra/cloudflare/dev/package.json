@@ -15,7 +15,7 @@
     "test:e2e:gateway": "node scripts/gateway-e2e.mjs",
     "typecheck": "node ../../../apps/admin/node_modules/typescript/bin/tsc --noEmit",
     "lint": "node ../../../apps/admin/node_modules/eslint/bin/eslint.js src scripts test --config ../../../apps/admin/eslint.config.js --max-warnings 0",
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test --test-force-exit test/*.test.mjs",
     "test:migrations:safe": "node --test test/safe-migration-runner.test.mjs",
     "test:backup:readiness": "node --test test/backup-readiness.test.mjs",
     "backup:only": "node scripts/d1-backup-only.mjs",

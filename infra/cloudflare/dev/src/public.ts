@@ -3,6 +3,7 @@ import { manifestKey, parseSnapshot } from './catalog/snapshot.js';
 import { ApiFailure } from './catalog/errors.js';
 import { readBarrier,sha256,type BarrierBinding } from './catalog/head.js';
 import { activeDiscount } from '../../../../packages/contracts/src/public.js';
+import { PublicPropertiesSchema } from '../../../../packages/contracts/src/public.js';
 export default {
   async fetch(request:Request,env:{APP_ENV:string;PUBLICATION:PublicationStore;CATALOG_BARRIER?:BarrierBinding;ALLOWED_ORIGINS?:string}):Promise<Response> {
     const headers:Record<string,string>={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Vary':'Origin'};
@@ -13,6 +14,15 @@ export default {
       if(env.APP_ENV!=='development'||!env.PUBLICATION)throw new ApiFailure(503,'catalog_unavailable');
       if(!['GET','HEAD'].includes(request.method))throw new ApiFailure(405,'read_only_api');
       const url=new URL(request.url);const media=url.pathname.match(/^\/v1\/media\/([a-f0-9]{64})$/);const detail=url.pathname.match(/^\/v1\/services\/([A-Za-z0-9_-]{1,96})$/);
+      if(url.pathname==='/v1/properties'){
+        if(url.search)throw new ApiFailure(422,'invalid_query');
+        if(!env.CATALOG_BARRIER)throw new ApiFailure(503,'properties_unavailable');
+        const response=await env.CATALOG_BARRIER.fetch(new Request('https://catalog-barrier.internal/properties'));
+        if(!response.ok)throw new ApiFailure(503,'properties_unavailable');
+        const body=PublicPropertiesSchema.parse(await response.json());
+        body.properties.sort((a,b)=>a.sortOrder-b.sortOrder||a.slug.localeCompare(b.slug));
+        return request.method==='HEAD'?new Response(null,{headers}):Response.json(body,{headers});
+      }
       if(!['/v1/catalog','/v1/categories','/v1/services'].includes(url.pathname)&&!detail&&!media)throw new ApiFailure(404,'not_found');
       if([...url.searchParams.keys()].some(k=>!['limit','cursor'].includes(k)))throw new ApiFailure(422,'invalid_query');
       const head=await readBarrier(env.CATALOG_BARRIER);
