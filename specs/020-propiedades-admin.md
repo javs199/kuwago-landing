@@ -1783,3 +1783,15 @@ Contracts built; public runtime prepared.
 
 ## Resultado de la revisión
 <!-- La herramienta revisora pega aquí su veredicto: OK / Cambios requeridos + lista. -->
+
+**Veredicto:** `OK` (Antigravity, 2026-11-05)
+
+1. **Objetivo y alcance:** Cumplido en su totalidad. Gestión completa de propiedades en el admin (lista, orden, visibilidad, edición bilingüe ES/EN, datos y notas internas privadas), publicación mediante snapshot estricto en `properties.published_json`, lectura pública filtrada en `/v1/properties` y adaptador en la landing con reordenamiento/ocultamiento dinámico y fallback estático intacto ante fallos.
+2. **Archivos tocados:** Estrictamente los declarados en "Archivos que toca" más los extensiones técnicas debidamente justificadas en "Decisiones" (`barrier.ts`, harness/pruebas y package.json backend). Migraciones anteriores 0001–0008 y sus hashes se mantienen intactos. Sin dependencias externas añadidas.
+3. **Reglas y seguridad:** Cumple todas las reglas de `AGENTS.md`. No se efectuaron migraciones remotas ni despliegues. Los datos privados (`ownerName`, `ownerContact`, `internalNotes`) quedan completamente excluidos del contrato público y del snapshot de publicación. Manejo de concurrencia optimista mediante `row_version` / `If-Match`, bloqueo de slug tras publicación e inmutabilidad garantizada por triggers SQLite, y registro de auditoría (`audit_events`).
+4. **Verificaciones ejecutadas:**
+   - `npm run test:contracts`: 13/13 pruebas pasan.
+   - Admin: `typecheck`, `lint` (0 advertencias), `test` (6 suites, 50 pruebas pasan), `build` y `verify:isolation` pasan.
+   - Backend: `typecheck`, `lint` (0 advertencias) pasan.
+   - Landing: `build`, `check`, `test:catalog` (12/12 pasan), `lint:catalog` y `test:properties` (2/2 pasan) pasan.
+   - E2E Playwright: flujo completo verificado a 390 px (sin desbordamiento horizontal en ES/EN y temas claro/oscuro; reordenamiento, ocultación y fallback tras caída).
