@@ -6,7 +6,7 @@ export type NavigationItem = { key: TextKey; icon: LucideIcon; available: boolea
 export const navigation: readonly NavigationItem[] = [
   { key: 'overview', icon: LayoutDashboard, available: true },
   { key: 'services', icon: ConciergeBell, available: true },
-  { key: 'properties', icon: Building2, available: false },
+  { key: 'properties', icon: Building2, available: true },
   { key: 'access', icon: KeyRound, available: false },
   { key: 'sales', icon: ConciergeBell, available: false },
   { key: 'invoices', icon: Receipt, available: false },

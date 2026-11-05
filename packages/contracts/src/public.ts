@@ -4,6 +4,39 @@ export type { Currency, Locale, Localized, ServiceDiscount, ServicePrice, Servic
 export { currencies, publicationStatuses } from './models.js';
 export { ContractError } from './validation-core.js';
 export type { Issue, Result, Schema } from './validation-core.js';
+export type { PropertyKind, PublicProperty } from './models.js';
+import type { PublicProperty } from './models.js';
+export const propertyKeys = ['slug','kind','sortOrder','location','maxGuests','bedrooms','bathrooms','airbnbUrl','translations'] as const;
+export function validateProperty(value: unknown, issues: Issue[], path: string) {
+  const row = object(value, propertyKeys, issues, path);
+  if (typeof row.slug !== 'string' || !/^[a-z0-9-]{2,60}$/.test(row.slug)) issue(issues, `${path}.slug`, 'invalid_slug');
+  enumeration(row.kind, ['rental','managed'], issues, `${path}.kind`);
+  integer(row.sortOrder, 0, Number.MAX_SAFE_INTEGER, issues, `${path}.sortOrder`);
+  if (row.location !== null) text(row.location, issues, `${path}.location`, false, 120);
+  for (const key of ['maxGuests','bedrooms']) if (row[key] !== null) integer(row[key], 0, Number.MAX_SAFE_INTEGER, issues, `${path}.${key}`);
+  if (row.bathrooms !== null && (typeof row.bathrooms !== 'number' || !Number.isSafeInteger(row.bathrooms * 2) || row.bathrooms < 0)) issue(issues, `${path}.bathrooms`, 'invalid_bathrooms');
+  if (row.airbnbUrl !== null) {
+    let valid = false;
+    try {
+      const u = new URL(String(row.airbnbUrl));
+      // Explicit Airbnb country domains; a suffix such as airbnb.evil is never accepted.
+      valid = typeof row.airbnbUrl === 'string' && row.airbnbUrl.length <= 2000 && u.protocol === 'https:' &&
+        /^www\.airbnb\.(?:com|co\.cr|es|co\.uk|ca|fr|de|it|pt|com\.br|com\.mx|com\.au|co\.nz|ie|nl|at|ch|be|cl|co\.in|co\.za)$/.test(u.hostname) &&
+        !u.username && !u.password && !u.port && !u.hash && !u.search && /^\/rooms\/[0-9]+\/?$/.test(u.pathname);
+    } catch { /* Invalid URL. */ }
+    if (!valid) issue(issues, `${path}.airbnbUrl`, 'invalid_airbnb_url');
+  }
+  translations(row.translations, (v,i,p) => {
+    const t = object(v, ['name','tagline','description'], i, p);
+    text(t.name,i,`${p}.name`,true,80); text(t.tagline,i,`${p}.tagline`,false,120); text(t.description,i,`${p}.description`,false,2000);
+  }, issues, `${path}.translations`);
+}
+export const PublicPropertySchema = schema<PublicProperty>(validateProperty);
+export const PublicPropertiesSchema = schema<{properties: PublicProperty[]}>((v,i,p) => {
+  const row = object(v, ['properties'], i, p);
+  const values = list(row.properties, validateProperty, i, `${p}.properties`);
+  unique(values, 'slug', i, `${p}.properties`);
+});
 const units = ['person','group','service','dinner'];
 export function validatePrice(value: unknown, issues: Issue[], path: string) {
   const row = object(value, ['kind','currency','unit', ...(value && typeof value === 'object' && 'kind' in value && value.kind === 'quote' ? [] : ['amountMinor'])], issues, path);

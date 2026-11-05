@@ -1,5 +1,28 @@
 import type { AdminService, Category, Service, ServiceRevision, MediaAsset, PublicCatalogService, PublicCatalog } from './models.js';
 import { publicationStatuses } from './models.js';
+import type { AdminProperty, PropertyInput, PublicProperty } from './models.js';
+import { propertyKeys, validateProperty } from './public.js';
+export type { AdminProperty, PropertyInput } from './models.js';
+export function publicProperty(input: PublicProperty): PublicProperty {
+  return Object.fromEntries(propertyKeys.map(key => [key, input[key]])) as PublicProperty;
+}
+const propertyInputKeys = [...propertyKeys,'showOnLanding','ownerName','ownerContact','internalNotes'];
+function validatePropertyInput(v: unknown, i: Issue[], p: string) {
+  const row = object(v, propertyInputKeys, i, p);
+  validateProperty(Object.fromEntries(propertyKeys.map(key => [key,row[key]])), i, p);
+  if (typeof row.showOnLanding !== 'boolean') issue(i,p,'boolean_required');
+  for (const key of ['ownerName','ownerContact','internalNotes']) if (row[key] !== null) text(row[key],i,`${p}.${key}`,false,key==='internalNotes'?10000:250);
+}
+export const PropertyInputSchema = schema<PropertyInput>(validatePropertyInput);
+export const AdminPropertySchema = schema<AdminProperty>((v,i,p) => {
+  const row = object(v,[...propertyInputKeys,'id','status','slugLocked','hasUnpublishedChanges','updatedAt','updatedBy','publishedAt','publishedBy'],i,p);
+  validatePropertyInput(Object.fromEntries(propertyInputKeys.map(key=>[key,row[key]])),i,p);
+  id(row.id,i,`${p}.id`); enumeration(row.status,publicationStatuses,i,`${p}.status`);
+  for (const key of ['slugLocked','hasUnpublishedChanges']) if (typeof row[key]!=='boolean') issue(i,`${p}.${key}`,'boolean_required');
+  date(row.updatedAt,i,`${p}.updatedAt`);
+  if(row.publishedAt!==null) date(row.publishedAt,i,`${p}.publishedAt`);
+  for(const key of ['updatedBy','publishedBy']) if(row[key]!==null) id(row[key],i,`${p}.${key}`);
+});
 import { schema, object, text, id, slug, enumeration, integer, list, unique, translations, date, url, issue, type Issue } from './validation-core.js';
 import { validateCategory, validateTranslation, validateOption, validateDiscount, PublicCatalogSchema, ServiceOptionSchema, ServiceTranslationSchema } from './public.js';
 

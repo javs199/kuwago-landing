@@ -57,3 +57,17 @@ export type CatalogLoadState =
   | { status: 'error'; catalog: null; code: 'invalid_response' | 'source_unavailable' };
 export type CatalogCartItem = { id: string; revisionId: string; optionId: string; date: string; travelers: number };
 export type CartAvailability = 'available' | 'withdrawn' | 'changed' | 'invalid' | 'unverified';
+
+export type PropertyKind = 'rental' | 'managed';
+export type PublicProperty = {
+  slug: string; kind: PropertyKind; sortOrder: number; location: string | null;
+  maxGuests: number | null; bedrooms: number | null; bathrooms: number | null; airbnbUrl: string | null;
+  translations: Localized<{ name: string; tagline: string; description: string }>;
+};
+export type PropertyInput = PublicProperty & {
+  showOnLanding: boolean; ownerName: string | null; ownerContact: string | null; internalNotes: string | null;
+};
+export type AdminProperty = PropertyInput & {
+  id: string; status: PublicationStatus; slugLocked: boolean; hasUnpublishedChanges: boolean;
+  updatedAt: string; updatedBy: string | null; publishedAt: string | null; publishedBy: string | null;
+};

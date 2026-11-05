@@ -1,4 +1,11 @@
 import {AdminServiceSchema,CategorySchema,ServiceRevisionSchema,ServicePriceSchema,type AdminService,type Category,type ServiceRevision,type ServiceDiscount} from '@kuwago/contracts';
+import {AdminPropertySchema, type AdminProperty, type PropertyInput} from '@kuwago/contracts';
+export type PropertyDocument={data:AdminProperty;version:number};
+function propertyDocument(value:unknown,response?:Response):PropertyDocument{
+  const row=object(value),version=integer(row.version),data=AdminPropertySchema.parse(row.data);
+  if(version<1||response&&etag(response)!==`"${version}"`)throw new ApiError(502,'invalid_response');
+  return {data,version};
+}
 export type MediaDocument={id:string;state:'quarantine'|'validated'|'approved'|'rejected'|'retired'|'deleted';version:number;validationCode:string;mimeType:string|null;width:number|null;height:number|null;byteSize:number|null;usageApproval:'pending'|'approved';uploadedBy:string};
 function mediaDocument(value:unknown):MediaDocument{const row=object(value);if(integer(row.version)<1)throw new ApiError(502,'invalid_response');if(!['quarantine','validated','approved','rejected','retired','deleted'].includes(text(row.state))||!['pending','approved'].includes(text(row.usageApproval)))throw new ApiError(502,'invalid_response');return {id:text(row.id),state:row.state as MediaDocument['state'],version:integer(row.version),validationCode:text(row.validationCode),mimeType:row.mimeType===null?null:text(row.mimeType),width:row.width===null?null:integer(row.width),height:row.height===null?null:integer(row.height),byteSize:row.byteSize===null?null:integer(row.byteSize),usageApproval:row.usageApproval as MediaDocument['usageApproval'],uploadedBy:text(row.uploadedBy)};}
 function mediaEnvelope(value:unknown,response:Response):MediaDocument{const result=mediaDocument(object(value).media);if(etag(response)!==`"${result.version}"`)throw new ApiError(502,'invalid_response');return result;}
@@ -39,6 +46,10 @@ function syncStatus(value:unknown):SyncStatus{
 function cursor(value:unknown):string|null{if(value===null)return null;return text(value);}
 const segment=(id:string)=>{if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$/.test(id))throw new ApiError(422,'invalid_identifier');return id;};
 export class AdminClient{
+  properties(cursorValue='',signal?:AbortSignal){return this.request('/properties'+(cursorValue?'?cursor='+encodeURIComponent(cursorValue):''),value=>{const row=object(value);return {items:array(row.items).map(v=>propertyDocument(v)),nextCursor:cursor(row.nextCursor)};},{signal});}
+  property(id:string,signal?:AbortSignal){return this.request('/properties/'+segment(id),propertyDocument,{signal});}
+  saveProperty(input:PropertyInput,id?:string,version?:number){return this.request('/properties'+(id?'/'+segment(id):''),propertyDocument,{method:id?'PUT':'POST',body:input,version});}
+  publishProperty(id:string,action:'publish'|'unpublish'|'archive',version:number){return this.request('/properties/'+segment(id)+'/'+action,propertyDocument,{method:'POST',body:{},version});}
   constructor(private fetcher:typeof fetch=(...args)=>globalThis.fetch(...args)){}
   private async request<T>(path:string,decode:(value:unknown,response:Response)=>T,{method='GET',body,rawBody,version,signal}:{method?:string;body?:unknown;rawBody?:File;version?:number|undefined;signal?:AbortSignal|undefined}={}):Promise<T>{
     for(let attempt=0;attempt<2;attempt++){

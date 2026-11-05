@@ -61,7 +61,8 @@ const server=createServer(async(req,res)=>{
       res.writeHead(result.status,Object.fromEntries(result.headers));res.end(Buffer.from(await result.arrayBuffer()));return;
     }
     if(url.pathname.startsWith('/v1/')&&['GET','HEAD'].includes(req.method)){
-      const result=await publicWorker.fetch(new Request('https://public.test.invalid'+url.pathname+url.search),{APP_ENV:'development',PUBLICATION:store,CATALOG_BARRIER:localBarrier(db)});
+      if(apiDown)return send(503,{error:'test_api_unavailable'});
+      const result=await publicWorker.fetch(new Request('https://public.test.invalid'+url.pathname+url.search,{method:req.method,headers:req.headers.origin?{Origin:req.headers.origin}:{}}),{APP_ENV:'development',PUBLICATION:store,CATALOG_BARRIER:localBarrier(db),ALLOWED_ORIGINS:'http://127.0.0.1:4173'});
       res.writeHead(result.status,Object.fromEntries(result.headers));res.end(Buffer.from(await result.arrayBuffer()));return;
     }
     return send(404,{error:'not_found'});

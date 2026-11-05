@@ -8,8 +8,10 @@ import type { CatalogEnvironment } from './catalog/types.js';
 import { catalogRoutes, handleCatalog, auditPage } from './catalog/routes.js';
 import { ApiFailure } from './catalog/errors.js';
 
+import { propertyRoutes, handleProperties } from './properties/routes.js';
 type Route = { pattern: RegExp; method: string; permission: Permission; session?: boolean };
 const routes: readonly Route[] = [
+  ...propertyRoutes,
   ...catalogRoutes,
   ...mediaRoutes,
   { pattern:/^\/api\/v1\/session$/, method:'GET', permission:'admin:read', session:true },
@@ -49,6 +51,10 @@ export function createWorker(fetcher: typeof fetch = fetch, log: SecurityLogger 
         if (!route) throw new SecurityFailure(routes.some(row => row.pattern.test(pathname)) ? 405 : 404, routes.some(row => row.pattern.test(pathname)) ? 'method_not_allowed' : 'not_found');
         if (!['GET','HEAD','OPTIONS'].includes(request.method)) requireMutationOrigin(request,env.ADMIN_ORIGIN,pathname==='/api/v1/media'&&request.method==='POST');
         if (route.session) return Response.json({ administrator:{id:administrator.id,role:administrator.role,permissions:administrator.permissions} },{headers});
+        if(propertyRoutes.some(r=>r.method===request.method&&r.pattern.test(pathname))){
+          if(request.method!=='GET'&&env.MUTATIONS_ENABLED!=='true')throw new SecurityFailure(501,'operation_not_enabled');
+          return await handleProperties(request,env,administrator,requestId,headers);
+        }
         if(mediaRoutes.some(r=>r.method===request.method&&r.pattern.test(pathname))){
           if(request.method!=='GET'&&env.MUTATIONS_ENABLED!=='true')throw new SecurityFailure(501,'operation_not_enabled');
           return await handleMedia(request,env,administrator,requestId,headers);

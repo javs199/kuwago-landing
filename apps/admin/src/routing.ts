@@ -1,7 +1,10 @@
 import { useSyncExternalStore } from 'react';
 
-export type AdminRoute = { page: 'overview' } | { page: 'services'; mode: 'list' | 'new' } | { page: 'services'; mode: 'edit' | 'preview'; id: string } | { page: 'missing' };
+export type AdminRoute = { page: 'overview' } | { page: 'services'; mode: 'list' | 'new' } | { page: 'services'; mode: 'edit' | 'preview'; id: string } | { page: 'properties'; id: string | null } | { page: 'missing' };
 export function parseRoute(hash: string): AdminRoute {
+  if(hash==='#properties')return {page:'properties',id:null};
+  const property=/^#properties\/([a-zA-Z0-9_-]+)$/.exec(hash);
+  if(property?.[1])return {page:'properties',id:property[1]};
   if (hash === '' || hash === '#overview') return { page: 'overview' };
   if (hash === '#services') return { page: 'services', mode: 'list' };
   if (hash === '#services/new') return { page: 'services', mode: 'new' };
