@@ -32,6 +32,10 @@
     {
       "file": "0008_service_discounts.sql",
       "sha256": "586bef43b22f5ce6e8e53c048e19bc9aedf2080270af6ad61a3079131d7949d0"
+    },
+    {
+      "file": "0009_properties.sql",
+      "sha256": "c0c3ea3ec623cc5de65c4aaa7ec7ccfc8d7d7c7b1790a4a7ebc83800e2e1449a"
     }
   ]
 }
