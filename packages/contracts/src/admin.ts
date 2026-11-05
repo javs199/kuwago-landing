@@ -21,7 +21,8 @@ export const AdminPropertySchema = schema<AdminProperty>((v,i,p) => {
   for (const key of ['slugLocked','hasUnpublishedChanges']) if (typeof row[key]!=='boolean') issue(i,`${p}.${key}`,'boolean_required');
   date(row.updatedAt,i,`${p}.updatedAt`);
   if(row.publishedAt!==null) date(row.publishedAt,i,`${p}.publishedAt`);
-  for(const key of ['updatedBy','publishedBy']) if(row[key]!==null) id(row[key],i,`${p}.${key}`);
+  // Principal ids come from Access as `access:<sha256>`, so they are not catalog ids.
+  for(const key of ['updatedBy','publishedBy']) if(row[key]!==null) text(row[key],i,`${p}.${key}`,true,200);
 });
 import { schema, object, text, id, slug, enumeration, integer, list, unique, translations, date, url, issue, type Issue } from './validation-core.js';
 import { validateCategory, validateTranslation, validateOption, validateDiscount, PublicCatalogSchema, ServiceOptionSchema, ServiceTranslationSchema } from './public.js';
