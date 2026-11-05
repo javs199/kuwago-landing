@@ -40,6 +40,7 @@ export function AdminHeader() {
 }
 export function MobileNavigation() {
   const { t } = usePreferences();
+  const session=useOptionalSession();
   const route = useAdminRoute();
   const dialog = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -65,7 +66,9 @@ export function MobileNavigation() {
   }}>
     <div className="dialog-heading"><h2 id="menu-title">{t('menuTitle')}</h2><IconButton icon={X} label={t('close')} onClick={() => dialog.current?.close()} /></div>
     <NavigationList onNavigate={() => dialog.current?.close()} />
-    <div className="dialog-preferences"><h3>{t('preferences')}</h3><div><LanguageSwitcher /><ThemeToggle /></div></div><p className="muted text-sm">{t('noAuth')}</p>
+    <div className="dialog-preferences"><h3>{t('preferences')}</h3><div><LanguageSwitcher /><ThemeToggle /></div></div>
+    <button type="button" className="dialog-signout" disabled={!cloudflareDevelopment||!session?.identity} title={session?.identity?undefined:t('noSession')} onClick={()=>void signOutToPublicSite()}><LogOut size={18} aria-hidden="true" />{t('signOut')}</button>
+    <p className="muted text-sm">{t('noAuth')}</p>
   </dialog></>;
 }
 export function AdminShell({ children }: { children: ReactNode }) {
