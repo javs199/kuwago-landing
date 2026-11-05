@@ -47,6 +47,7 @@ describe('local administrative foundation', () => {
     await user.click(more);
     const dialog = screen.getByRole('dialog', { name: 'Menú administrativo' });
     expect(within(dialog).getByRole('button', { name: /Ventas concierge/ })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: /Cerrar sesión/ })).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Cerrar menú' }));
     expect(dialog).not.toHaveAttribute('open');
     expect(more).toHaveFocus();

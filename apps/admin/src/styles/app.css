@@ -118,6 +118,8 @@ td svg { margin: 0 auto 12px; }
 .nav-list small { font-size: 9px; color: var(--text-muted); margin-left: auto; }
 .dialog-preferences { margin: 24px 0; padding-top: 24px; border-top: 1px solid var(--border); }
 .dialog-preferences > div { margin-top: 16px; display: flex; justify-content: space-between; }
+.dialog-signout { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 44px; margin-bottom: 16px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-weight: 600; }
+.dialog-signout:disabled { opacity: .5; }
 @media(max-width: 379px) {
   .mobile-brand .admin-brand strong { font-size: 17px; }
   .mobile-brand .admin-brand { gap: 4px; }
