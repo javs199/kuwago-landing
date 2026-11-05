@@ -59,6 +59,7 @@ const fixture = (): PropertyDocument => ({
 });
 
 beforeEach(() => {
+  localStorage.setItem('kuwago-admin-language', 'es');
   session.identity.permissions = [
     'admin:read',
     'drafts:write',
@@ -77,16 +78,27 @@ const editor = () =>
     </PreferencesProvider>
   );
 
-it('routes list/new/editor and shows property status, visibility, order and unpublished changes', async () => {
+it('routes list/new/editor and shows property status, effective visibility, order and unpublished changes', async () => {
   expect(parseRoute('#properties')).toEqual({ page: 'properties', id: null });
   expect(parseRoute('#properties/new')).toEqual({ page: 'properties', id: 'new' });
   expect(parseRoute('#properties/test-property')).toEqual({
     page: 'properties',
     id: 'test-property',
   });
-  const value = fixture();
-  value.data.hasUnpublishedChanges = true;
-  vi.spyOn(adminApi, 'properties').mockResolvedValue({ items: [value], nextCursor: null });
+  const publishedWithDraft = fixture();
+  publishedWithDraft.data.hasUnpublishedChanges = true;
+
+  const archivedButShowOnLanding = fixture();
+  archivedButShowOnLanding.data.id = 'archived-prop';
+  archivedButShowOnLanding.data.slug = 'carabao-villa';
+  archivedButShowOnLanding.data.status = 'archived';
+  archivedButShowOnLanding.data.showOnLanding = true;
+  archivedButShowOnLanding.data.translations.es.name = 'Carabao Villa';
+
+  vi.spyOn(adminApi, 'properties').mockResolvedValue({
+    items: [publishedWithDraft, archivedButShowOnLanding],
+    nextCursor: null,
+  });
   render(
     <PreferencesProvider>
       <PropertiesModule id={null} />
@@ -95,8 +107,10 @@ it('routes list/new/editor and shows property status, visibility, order and unpu
   expect(await screen.findByText('Villa Maya')).toBeInTheDocument();
   expect(screen.getByText('Cambios sin publicar')).toBeInTheDocument();
   expect(screen.getByText('Publicada')).toBeInTheDocument();
-  expect(screen.getByText('Visible')).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Editar' })).toHaveAttribute(
+  expect(screen.getByText('Visible en el sitio (según el borrador)')).toBeInTheDocument();
+  expect(screen.getByText('Archivada')).toBeInTheDocument();
+  expect(screen.getByText('Oculta en el sitio')).toBeInTheDocument();
+  expect(screen.getAllByRole('link', { name: 'Editar' })[0]).toHaveAttribute(
     'href',
     '#properties/test-property'
   );
@@ -140,7 +154,7 @@ it('editor may save but cannot publish, unpublish or archive', async () => {
   expect(screen.getByRole('button', { name: 'Guardar cambios' })).toBeEnabled();
 });
 
-it('read-only identity cannot edit and English copy is complete', async () => {
+it('read-only identity cannot edit and English copy is complete without Spanish leftovers', async () => {
   session.identity.permissions = ['admin:read'];
   localStorage.setItem('kuwago-admin-language', 'en');
   editor();
@@ -148,21 +162,44 @@ it('read-only identity cannot edit and English copy is complete', async () => {
   expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   expect(screen.getByLabelText('Owner')).toBeDisabled();
   expect(screen.getByText('Team only. Never published.')).toBeInTheDocument();
+  expect(screen.getByRole('tablist', { name: 'Property editor tabs' })).toBeInTheDocument();
+  expect(screen.getByPlaceholderText('E.g. Uvita, Costa Rica')).toBeInTheDocument();
+  expect(screen.getByText('5 bedrooms')).toBeInTheDocument();
 });
 
-it('rejects invalid input locally and keeps conflict edits for review/reload', async () => {
+it('rejects invalid input locally, switches to the tab with the invalid field, focuses it and shows alert with reason', async () => {
   const save = vi
     .spyOn(adminApi, 'saveProperty')
     .mockRejectedValue(new ApiError(409, 'version_or_state_conflict'));
-  editor();
+  const { container } = editor();
   await screen.findByDisplayValue('villa-maya');
-  fireEvent.change(screen.getByLabelText('Enlace Airbnb'), {
-    target: { value: 'https://evil.invalid/rooms/1' },
+
+  const formElement = container.querySelector('form.editor-workspace');
+  expect(formElement).toHaveAttribute('novalidate');
+
+  // Switch to Datos tab, enter invalid URL in Airbnb, then return to General tab
+  fireEvent.click(screen.getByRole('tab', { name: /Datos/ }));
+  const airbnbInput = screen.getByLabelText('Enlace Airbnb');
+  fireEvent.change(airbnbInput, {
+    target: { value: 'invalid-url' },
   });
+  fireEvent.click(screen.getByRole('tab', { name: /General/ }));
+  expect(screen.getByRole('tab', { name: /General/ })).toHaveAttribute('aria-selected', 'true');
+
+  // Submit from General tab while Datos tab is hidden
   fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
   expect(save).not.toHaveBeenCalled();
-  expect(screen.getByText(/Revisa los campos/)).toBeInTheDocument();
-  fireEvent.change(screen.getByLabelText('Enlace Airbnb'), { target: { value: '' } });
+
+  // Editor must switch to Datos tab, focus the invalid Airbnb input, and display role="alert" with the reason
+  expect(screen.getByRole('tab', { name: /Datos/ })).toHaveAttribute('aria-selected', 'true');
+  expect(airbnbInput).toHaveAttribute('aria-invalid', 'true');
+  expect(document.activeElement).toBe(airbnbInput);
+  const alert = screen.getByRole('alert');
+  expect(alert).toHaveTextContent(/Revisa los campos/);
+  expect(alert).toHaveTextContent(/Enlace Airbnb/);
+
+  // Fix Airbnb URL, test 409 conflict preservation
+  fireEvent.change(airbnbInput, { target: { value: '' } });
   fireEvent.change(screen.getByLabelText('Dueño'), { target: { value: 'No perder' } });
   fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
   await screen.findByText('La propiedad cambió. Recarga antes de guardar de nuevo.');
@@ -170,7 +207,7 @@ it('rejects invalid input locally and keeps conflict edits for review/reload', a
   expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled();
 });
 
-it('filters properties by client search query and status chip', async () => {
+it('filters properties by client search query and aria-pressed status chip buttons', async () => {
   const p1 = fixture();
   const p2 = fixture();
   p2.data.id = 'prop-2';
@@ -202,19 +239,29 @@ it('filters properties by client search query and status chip', async () => {
   fireEvent.change(searchInput, { target: { value: '' } });
   expect(screen.getByText('Carabao Villa')).toBeInTheDocument();
 
-  // Status chip filter: Borradores
-  fireEvent.click(screen.getByRole('tab', { name: /Borradores/ }));
+  // Status chip filter: Borradores (button with aria-pressed, not tab)
+  const allChip = screen.getByRole('button', { name: /Todas/ });
+  const draftChip = screen.getByRole('button', { name: /Borradores/ });
+  expect(allChip).toHaveAttribute('aria-pressed', 'true');
+  expect(draftChip).toHaveAttribute('aria-pressed', 'false');
+
+  fireEvent.click(draftChip);
+  expect(draftChip).toHaveAttribute('aria-pressed', 'true');
+  expect(allChip).toHaveAttribute('aria-pressed', 'false');
   expect(screen.queryByText('Villa Maya')).not.toBeInTheDocument();
   expect(screen.getByText('Carabao Villa')).toBeInTheDocument();
 });
 
-it('resolves packaged cover webp for known slugs and null for unknown', () => {
+it('resolves packaged cover webp for known slugs and null for unknown or Object.prototype keys', () => {
   expect(getPropertyCover('carabao-villa')).toBeTruthy();
   expect(getPropertyCover('villa-maya')).toBeTruthy();
   expect(getPropertyCover('casa-bella-mia')).toBeTruthy();
   expect(getPropertyCover('casa-heliconia')).toBeTruthy();
   expect(getPropertyCover('casa-cielo')).toBeNull();
   expect(getPropertyCover('unknown-slug')).toBeNull();
+  expect(getPropertyCover('constructor')).toBeNull();
+  expect(getPropertyCover('toString')).toBeNull();
+  expect(getPropertyCover('__proto__')).toBeNull();
 });
 
 it('switches tabs in the editor and preserves soon badges on locked tabs', async () => {

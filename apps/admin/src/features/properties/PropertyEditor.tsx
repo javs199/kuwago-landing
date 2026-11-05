@@ -4,13 +4,17 @@ import {
   ArrowLeft,
   Bath,
   Bed,
+  Building2,
   Check,
   ExternalLink,
   Eye,
   EyeOff,
   FileText,
+  Globe,
   Home,
   ImageIcon,
+  Info,
+  KeyRound,
   Lock,
   MapPin,
   Save,
@@ -24,7 +28,7 @@ import { useSession } from '../../api/session';
 import { Button } from '../../components/ui';
 import { ErrorNotice, useUnsaved } from '../services/api-support';
 import { usePreferences } from '../../preferences';
-import { usePropertyCopy } from './copy';
+import { usePropertyCopy, type PropertyCopy } from './copy';
 import { getPropertyCover } from './covers';
 import './properties.css';
 
@@ -55,6 +59,61 @@ function editable(p: PropertyInput): PropertyInput {
 
 type TabKey = 'general' | 'data' | 'photos' | 'guests' | 'owner' | 'calendar';
 
+function resolveIssueTarget(
+  path: string,
+  c: PropertyCopy
+): { tab: TabKey | null; fieldId: string; label: string } {
+  if (path.includes('translations.es.name')) {
+    return { tab: 'general', fieldId: 'prop-name-es', label: c.nameEs };
+  }
+  if (path.includes('translations.es.tagline')) {
+    return { tab: 'general', fieldId: 'prop-tagline-es', label: c.taglineEs };
+  }
+  if (path.includes('translations.es.description')) {
+    return { tab: 'general', fieldId: 'prop-desc-es', label: c.descriptionEs };
+  }
+  if (path.includes('translations.en.name')) {
+    return { tab: 'general', fieldId: 'prop-name-en', label: c.nameEn };
+  }
+  if (path.includes('translations.en.tagline')) {
+    return { tab: 'general', fieldId: 'prop-tagline-en', label: c.taglineEn };
+  }
+  if (path.includes('translations.en.description')) {
+    return { tab: 'general', fieldId: 'prop-desc-en', label: c.descriptionEn };
+  }
+  if (path.endsWith('.airbnbUrl')) {
+    return { tab: 'data', fieldId: 'prop-airbnb', label: c.airbnbUrl };
+  }
+  if (path.endsWith('.slug')) {
+    return { tab: 'data', fieldId: 'prop-slug', label: c.slug };
+  }
+  if (path.endsWith('.location')) {
+    return { tab: 'data', fieldId: 'prop-location', label: c.location };
+  }
+  if (path.endsWith('.maxGuests')) {
+    return { tab: 'data', fieldId: 'prop-guests', label: c.maxGuests };
+  }
+  if (path.endsWith('.bedrooms')) {
+    return { tab: 'data', fieldId: 'prop-bedrooms', label: c.bedrooms };
+  }
+  if (path.endsWith('.bathrooms')) {
+    return { tab: 'data', fieldId: 'prop-bathrooms', label: c.bathrooms };
+  }
+  if (path.endsWith('.ownerName')) {
+    return { tab: 'owner', fieldId: 'prop-owner-name', label: c.ownerName };
+  }
+  if (path.endsWith('.ownerContact')) {
+    return { tab: 'owner', fieldId: 'prop-owner-contact', label: c.ownerContact };
+  }
+  if (path.endsWith('.internalNotes')) {
+    return { tab: 'owner', fieldId: 'prop-internal-notes', label: c.internalNotes };
+  }
+  if (path.endsWith('.sortOrder')) {
+    return { tab: null, fieldId: 'prop-order', label: c.order };
+  }
+  return { tab: 'general', fieldId: 'prop-name-es', label: c.name };
+}
+
 export function PropertyEditor({ id }: { id: string | null }) {
   const c = usePropertyCopy();
   const { identity, reject } = useSession();
@@ -67,10 +126,13 @@ export function PropertyEditor({ id }: { id: string | null }) {
   const [loading, setLoading] = useState(!!id);
   const [error, setError] = useState<ApiError | null>(null);
   const [invalid, setInvalid] = useState(false);
+  const [invalidFieldId, setInvalidFieldId] = useState<string | null>(null);
+  const [invalidReason, setInvalidReason] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);
 
   const [activeTab, setActiveTab] = useState<TabKey>('general');
   const tabsListRef = useRef<HTMLDivElement | null>(null);
+  const pendingFocusRef = useRef<string | null>(null);
 
   const active = useRef(true);
   useEffect(() => {
@@ -81,6 +143,16 @@ export function PropertyEditor({ id }: { id: string | null }) {
   }, []);
 
   useUnsaved(dirty);
+
+  useEffect(() => {
+    if (!invalid || !pendingFocusRef.current) return;
+    const fieldId = pendingFocusRef.current;
+    const el = document.getElementById(fieldId);
+    if (el) {
+      el.focus();
+      pendingFocusRef.current = null;
+    }
+  }, [activeTab, invalid, invalidFieldId]);
 
   useEffect(() => {
     if (!id) return;
@@ -112,12 +184,29 @@ export function PropertyEditor({ id }: { id: string | null }) {
     setForm((old) => ({ ...old, [key]: value }));
     setDirty(true);
     setInvalid(false);
+    setInvalidFieldId(null);
+    setInvalidReason(null);
   }
 
   async function save() {
     if (!identity?.permissions.includes('drafts:write')) return;
-    if (!PropertyInputSchema.safeParse(form).success) {
+    const parsed = PropertyInputSchema.safeParse(form);
+    if (!parsed.success) {
+      const firstIssue = parsed.issues[0];
+      const target = resolveIssueTarget(firstIssue?.path ?? '', c);
       setInvalid(true);
+      setInvalidFieldId(target.fieldId);
+      setInvalidReason(target.label);
+      pendingFocusRef.current = target.fieldId;
+      if (target.tab && target.tab !== activeTab) {
+        setActiveTab(target.tab);
+      } else {
+        const el = document.getElementById(target.fieldId);
+        if (el) {
+          el.focus();
+          pendingFocusRef.current = null;
+        }
+      }
       return;
     }
     setBusy(true);
@@ -321,13 +410,13 @@ export function PropertyEditor({ id }: { id: string | null }) {
       {error?.status === 409 && <p role="alert">{c.conflict}</p>}
       {invalid && (
         <p role="alert" className="field-error">
-          {c.invalid}
+          {invalidReason ? `${c.invalid} (${invalidReason})` : c.invalid}
         </p>
       )}
 
       <div
         ref={tabsListRef}
-        aria-label="Pestañas del editor de propiedades"
+        aria-label={c.editorTabsLabel}
         className="editor-tabs-bar"
         role="tablist"
       >
@@ -359,6 +448,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
 
       <form
         className="editor-workspace"
+        noValidate
         onSubmit={(e) => {
           e.preventDefault();
           void save();
@@ -387,6 +477,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="service-field">
                     <label htmlFor="prop-name-es">{c.nameEs}</label>
                     <input
+                      aria-invalid={invalid && invalidFieldId === 'prop-name-es' ? true : undefined}
                       id="prop-name-es"
                       maxLength={80}
                       onChange={(e) =>
@@ -403,6 +494,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="service-field field-with-counter">
                     <label htmlFor="prop-tagline-es">{c.taglineEs}</label>
                     <input
+                      aria-invalid={invalid && invalidFieldId === 'prop-tagline-es' ? true : undefined}
                       id="prop-tagline-es"
                       maxLength={120}
                       onChange={(e) =>
@@ -420,6 +512,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="service-field field-with-counter">
                     <label htmlFor="prop-desc-es">{c.descriptionEs}</label>
                     <textarea
+                      aria-invalid={invalid && invalidFieldId === 'prop-desc-es' ? true : undefined}
                       id="prop-desc-es"
                       maxLength={2000}
                       onChange={(e) =>
@@ -440,6 +533,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="service-field">
                     <label htmlFor="prop-name-en">{c.nameEn}</label>
                     <input
+                      aria-invalid={invalid && invalidFieldId === 'prop-name-en' ? true : undefined}
                       id="prop-name-en"
                       maxLength={80}
                       onChange={(e) =>
@@ -456,6 +550,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="service-field field-with-counter">
                     <label htmlFor="prop-tagline-en">{c.taglineEn}</label>
                     <input
+                      aria-invalid={invalid && invalidFieldId === 'prop-tagline-en' ? true : undefined}
                       id="prop-tagline-en"
                       maxLength={120}
                       onChange={(e) =>
@@ -473,6 +568,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="service-field field-with-counter">
                     <label htmlFor="prop-desc-en">{c.descriptionEn}</label>
                     <textarea
+                      aria-invalid={invalid && invalidFieldId === 'prop-desc-en' ? true : undefined}
                       id="prop-desc-en"
                       maxLength={2000}
                       onChange={(e) =>
@@ -491,22 +587,22 @@ export function PropertyEditor({ id }: { id: string | null }) {
             </section>
           </div>
 
-          {/* TAB 2: DATOS */}
+          {/* TAB 2: DATOS (Tarjetas separadas según diseño 06 móvil y escritorio) */}
           <div
             aria-labelledby="tab-data"
             id="tabpanel-data"
             role="tabpanel"
             style={{ display: activeTab === 'data' ? 'block' : 'none' }}
           >
-            <section className="panel form-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <h2>
-                <Sliders size={20} aria-hidden="true" />
-                <span>{c.data}</span>
-              </h2>
-
-              {/* Modalidad Operativa (Segmented Control) */}
-              <div className="service-field">
-                <label>{c.operationalMode}</label>
+            <div className="data-cards-stack">
+              {/* 1. Modalidad Operativa */}
+              <section className="panel data-card service-field">
+                <div className="data-card-header">
+                  <label className="data-card-label">
+                    <span>{c.operationalMode}</span>
+                  </label>
+                  <Building2 size={18} aria-hidden="true" className="data-card-icon-muted" />
+                </div>
                 <div className="segmented-control" role="group" aria-label={c.operationalMode}>
                   <button
                     aria-pressed={form.kind === 'rental'}
@@ -514,7 +610,8 @@ export function PropertyEditor({ id }: { id: string | null }) {
                     onClick={() => update('kind', 'rental')}
                     type="button"
                   >
-                    {c.rental}
+                    <KeyRound size={16} aria-hidden="true" />
+                    <span>{c.rental}</span>
                   </button>
                   <button
                     aria-pressed={form.kind === 'managed'}
@@ -522,34 +619,53 @@ export function PropertyEditor({ id }: { id: string | null }) {
                     onClick={() => update('kind', 'managed')}
                     type="button"
                   >
-                    {c.managed}
+                    <Building2 size={16} aria-hidden="true" />
+                    <span>{c.managed}</span>
                   </button>
                 </div>
-              </div>
+              </section>
 
-              {/* Ubicación */}
-              <div className="service-field">
-                <label htmlFor="prop-location">{c.location}</label>
+              {/* 2. Ubicación */}
+              <section className="panel data-card service-field">
+                <label htmlFor="prop-location" className="data-card-label">
+                  <MapPin size={18} aria-hidden="true" className="data-card-icon-accent" />
+                  <span>{c.location}</span>
+                </label>
                 <input
+                  aria-invalid={invalid && invalidFieldId === 'prop-location' ? true : undefined}
                   id="prop-location"
                   maxLength={120}
                   onChange={(e) => update('location', e.target.value || null)}
-                  placeholder="Ej. Uvita, Costa Rica"
+                  placeholder={c.locationPlaceholder}
                   type="text"
                   value={form.location ?? ''}
                 />
-                <small>{c.locationHelp}</small>
-              </div>
+                <small className="data-card-help">
+                  <Info size={14} aria-hidden="true" />
+                  <span>{c.locationHelp}</span>
+                </small>
+              </section>
 
-              {/* Capacidad (Guests / Bedrooms / Bathrooms) */}
-              <div className="service-field">
-                <label>{c.capacitySection}</label>
+              {/* 3. Distribución y Aforo (3 columnas incluso a 390 px) */}
+              <section className="panel data-card service-field">
+                <div className="data-card-header">
+                  <span className="data-card-label">
+                    <Users size={18} aria-hidden="true" className="data-card-icon-accent" />
+                    <span>{c.capacitySection}</span>
+                  </span>
+                  {form.maxGuests != null && (
+                    <span className="data-card-meta">
+                      {form.maxGuests} {c.guestsShort}
+                    </span>
+                  )}
+                </div>
                 <div className="capacity-grid">
                   <div className="capacity-item">
                     <label htmlFor="prop-guests">{c.maxGuests}</label>
                     <input
-                      id="prop-guests"
+                      aria-invalid={invalid && invalidFieldId === 'prop-guests' ? true : undefined}
                       aria-label={c.maxGuestsLabel}
+                      id="prop-guests"
                       min="0"
                       onChange={(e) => update('maxGuests', e.target.value === '' ? null : Number(e.target.value))}
                       step="1"
@@ -562,8 +678,9 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="capacity-item">
                     <label htmlFor="prop-bedrooms">{c.bedrooms}</label>
                     <input
-                      id="prop-bedrooms"
+                      aria-invalid={invalid && invalidFieldId === 'prop-bedrooms' ? true : undefined}
                       aria-label={c.bedrooms}
+                      id="prop-bedrooms"
                       min="0"
                       onChange={(e) => update('bedrooms', e.target.value === '' ? null : Number(e.target.value))}
                       step="1"
@@ -576,8 +693,9 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="capacity-item">
                     <label htmlFor="prop-bathrooms">{c.bathrooms}</label>
                     <input
-                      id="prop-bathrooms"
+                      aria-invalid={invalid && invalidFieldId === 'prop-bathrooms' ? true : undefined}
                       aria-label={c.bathrooms}
+                      id="prop-bathrooms"
                       min="0"
                       onChange={(e) => update('bathrooms', e.target.value === '' ? null : Number(e.target.value))}
                       step="0.5"
@@ -587,18 +705,20 @@ export function PropertyEditor({ id }: { id: string | null }) {
                     />
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* Enlace Airbnb */}
-              <div className="service-field">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label htmlFor="prop-airbnb">{c.airbnbUrl}</label>
+              {/* 4. Enlace Airbnb */}
+              <section className="panel data-card service-field">
+                <div className="data-card-header">
+                  <label htmlFor="prop-airbnb" className="data-card-label">
+                    <Home size={18} aria-hidden="true" className="data-card-icon-accent" />
+                    <span>{c.airbnbUrl}</span>
+                  </label>
                   {form.airbnbUrl && (
                     <a
-                      className="button-quiet"
+                      className="button-quiet data-card-link"
                       href={form.airbnbUrl}
                       rel="noopener noreferrer"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px' }}
                       target="_blank"
                     >
                       <ExternalLink size={14} aria-hidden="true" />
@@ -607,21 +727,28 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   )}
                 </div>
                 <input
+                  aria-invalid={invalid && invalidFieldId === 'prop-airbnb' ? true : undefined}
                   id="prop-airbnb"
                   maxLength={2000}
                   onChange={(e) => update('airbnbUrl', e.target.value || null)}
-                  placeholder="https://airbnb.com/rooms/..."
+                  placeholder="https://www.airbnb.com/rooms/..."
                   type="url"
                   value={form.airbnbUrl ?? ''}
                 />
-              </div>
+              </section>
 
-              {/* Slug Web */}
-              <div className="service-field">
-                <label htmlFor="prop-slug">{c.slug}</label>
+              {/* 5. Slug Web */}
+              <section className="panel data-card service-field">
+                <div className="data-card-header">
+                  <label htmlFor="prop-slug" className="data-card-label">
+                    <Globe size={18} aria-hidden="true" className="data-card-icon-accent" />
+                    <span>{c.slug}</span>
+                  </label>
+                </div>
                 <div className="slug-input-wrapper">
                   <span className="slug-prefix">grupokuwago.com/</span>
                   <input
+                    aria-invalid={invalid && invalidFieldId === 'prop-slug' ? true : undefined}
                     disabled={!!doc?.data.slugLocked}
                     id="prop-slug"
                     maxLength={60}
@@ -630,9 +757,12 @@ export function PropertyEditor({ id }: { id: string | null }) {
                     value={form.slug}
                   />
                 </div>
-                <small>{c.locked}</small>
-              </div>
-            </section>
+                <small className="data-card-help">
+                  <Lock size={14} aria-hidden="true" />
+                  <span>{c.locked}</span>
+                </small>
+              </section>
+            </div>
           </div>
 
           {/* TAB 3: FOTOS */}
@@ -656,7 +786,6 @@ export function PropertyEditor({ id }: { id: string | null }) {
                   <div className="property-card-placeholder">
                     <ImageIcon size={36} aria-hidden="true" />
                     <span>{c.noCover}</span>
-                    <small>{c.noCoverHelp}</small>
                   </div>
                 )}
               </div>
@@ -701,6 +830,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
               <div className="service-field">
                 <label htmlFor="prop-owner-name">{c.ownerName}</label>
                 <input
+                  aria-invalid={invalid && invalidFieldId === 'prop-owner-name' ? true : undefined}
                   id="prop-owner-name"
                   maxLength={250}
                   onChange={(e) => update('ownerName', e.target.value || null)}
@@ -712,6 +842,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
               <div className="service-field">
                 <label htmlFor="prop-owner-contact">{c.ownerContact}</label>
                 <input
+                  aria-invalid={invalid && invalidFieldId === 'prop-owner-contact' ? true : undefined}
                   id="prop-owner-contact"
                   maxLength={250}
                   onChange={(e) => update('ownerContact', e.target.value || null)}
@@ -723,6 +854,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
               <div className="service-field">
                 <label htmlFor="prop-internal-notes">{c.internalNotes}</label>
                 <textarea
+                  aria-invalid={invalid && invalidFieldId === 'prop-internal-notes' ? true : undefined}
                   id="prop-internal-notes"
                   maxLength={10000}
                   onChange={(e) => update('internalNotes', e.target.value || null)}
@@ -811,6 +943,7 @@ export function PropertyEditor({ id }: { id: string | null }) {
               </label>
               <div className="publication-order-input-wrap">
                 <input
+                  aria-invalid={invalid && invalidFieldId === 'prop-order' ? true : undefined}
                   className="publication-order-input"
                   disabled={busy || !writable}
                   id="prop-order"

@@ -38,6 +38,18 @@ La sección Propiedades del admin se ve como las capturas de Stitch (claro y osc
 - Base visual: lista en **cuadrícula** de la versión clara (no las filas del oscuro de escritorio), porque coincide con el móvil (Claude, 2026-11-05).
 - El arrastre para reordenar queda fuera: cambiar el orden de varias propiedades obligaría a publicar cada una o a un endpoint nuevo de orden en lote. Si JV lo quiere, va en una spec de API aparte.
 - Descripción en texto plano: el contrato no admite formato y la landing no lo renderiza.
+- Hallazgo #1: se añadió `noValidate` al `<form>` del editor y validación explícita en `save()` con `PropertyInputSchema`; cuando falla un campo en otra pestaña, se activa esa pestaña, se enfoca el input con `aria-invalid="true"` y se muestra `role="alert"` con el motivo.
+- Hallazgo #2: se reemplazó `role="tablist"`/`role="tab"` en los chips de filtro por `role="group"` y botones con `aria-pressed`.
+- Hallazgo #3: `.badge-kind` usa ahora la pareja semántica `background: var(--action)` y `color: var(--on-action)` (contraste 13,56:1 en claro y 7,81:1 en oscuro, cumpliendo AA/AAA).
+- Hallazgo #4: se ampliaron las áreas interactivas a ≥ 44 × 44 px (`.filter-chip`, `.properties-search-clear`, `.property-menu-item`, `.toggle-switch` e input, migas y enlaces) y se añadió margen/padding en `.properties-filter-chips` y `.editor-tabs-bar` con `flex-shrink: 0` para que el anillo de foco (`--focus`) sea visible sin recorte.
+- Hallazgo #5: `bedsShort` en inglés se cambió de `'beds'` a `'bedrooms'` en `copy.ts` para reflejar habitaciones sin deducir camas.
+- Hallazgo #6: las tarjetas muestran `"Visible en el sitio"` solo cuando `status === 'published'` y `showOnLanding` es verdadero; en borrador, archivada o despublicada muestran `"Oculta en el sitio"`, y si `status === 'published'` tiene `hasUnpublishedChanges` se añade `"(según el borrador)"`.
+- Hallazgo #7: se eliminó `noCoverHelp` («Se requiere al menos 1 imagen para publicar» / «At least 1 photo is required to publish») de `copy.ts`, `PropertiesModule.tsx` y `PropertyEditor.tsx`.
+- Hallazgo #8: se trasladaron a `copy.ts` (ES/EN) el nombre accesible del grupo de filtros (`filterGroupLabel`), el `aria-label` del `tablist` del editor (`editorTabsLabel`) y el placeholder de ubicación (`locationPlaceholder`).
+- Hallazgo #9: en la pestaña Datos se separaron Modalidad Operativa, Ubicación, Distribución y Aforo, Enlace Airbnb y Slug en 5 tarjetas `.panel.data-card` independientes y se mantuvo `.capacity-grid` en 3 columnas a 390 px.
+- Hallazgo #10: se recomprimió `apps/admin/src/assets/properties/carabao-villa.webp` a 111 224 bytes (≤ 120 000 bytes).
+- Hallazgo #11: se restauró el subtítulo exacto `"Portafolio Activo · Uvita, CR"` (`"Active Portfolio · Uvita, CR"` en EN) y se retiró `"luxury"` de `integrateNewDesc` en inglés.
+- Hallazgo #12: `covers.ts` usa ahora `Map<string, string>` para evitar heredar claves de `Object.prototype` y se añadieron pruebas unitarias para `constructor`, `toString` y `__proto__`.
 
 ## Resultado de la revisión
 **Cambios requeridos** — Codex, sesión nueva de revisión, 2026-11-05. Diff revisado: `git diff main...3d64e2a`. Solo revisión; no se implementaron correcciones. Los criterios marcados arriba por el ejecutor no equivalen a aprobación: quedan los siguientes hallazgos.

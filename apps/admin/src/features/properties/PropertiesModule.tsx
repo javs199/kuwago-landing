@@ -184,42 +184,38 @@ function PropertiesList() {
       </div>
 
       <div className="properties-toolbar">
-        <div aria-label="Filtro de propiedades" className="properties-filter-chips" role="tablist">
+        <div aria-label={c.filterGroupLabel} className="properties-filter-chips" role="group">
           <button
-            aria-selected={filter === 'all'}
+            aria-pressed={filter === 'all'}
             className="filter-chip"
             onClick={() => setFilter('all')}
-            role="tab"
             type="button"
           >
             <span>{c.filterAll}</span>
             <span className="filter-chip-count">{allCount}</span>
           </button>
           <button
-            aria-selected={filter === 'published'}
+            aria-pressed={filter === 'published'}
             className="filter-chip"
             onClick={() => setFilter('published')}
-            role="tab"
             type="button"
           >
             <span>{c.filterPublished}</span>
             <span className="filter-chip-count">{publishedCount}</span>
           </button>
           <button
-            aria-selected={filter === 'draft'}
+            aria-pressed={filter === 'draft'}
             className="filter-chip"
             onClick={() => setFilter('draft')}
-            role="tab"
             type="button"
           >
             <span>{c.filterDraft}</span>
             <span className="filter-chip-count">{draftCount}</span>
           </button>
           <button
-            aria-selected={filter === 'archived'}
+            aria-pressed={filter === 'archived'}
             className="filter-chip"
             onClick={() => setFilter('archived')}
-            role="tab"
             type="button"
           >
             <span>{c.filterArchived}</span>
@@ -294,6 +290,12 @@ function PropertiesList() {
                 : 'badge-status-archived';
             const statusText =
               p.status === 'published' ? c.published : p.status === 'draft' ? c.draft : c.archived;
+            const isVisibleOnSite = p.status === 'published' && p.showOnLanding;
+            const visibilityBaseText = isVisibleOnSite ? c.visible : c.hidden;
+            const visibilityText =
+              p.status === 'published' && p.hasUnpublishedChanges
+                ? `${visibilityBaseText} (${c.accordingToDraft})`
+                : visibilityBaseText;
             const isMenuOpen = activeMenuId === p.id;
 
             return (
@@ -309,7 +311,6 @@ function PropertiesList() {
                     <div className="property-card-placeholder">
                       <ImageIcon size={32} aria-hidden="true" />
                       <span>{c.noCover}</span>
-                      <small>{c.noCoverHelp}</small>
                     </div>
                   )}
                   <div className="property-card-scrim" />
@@ -320,17 +321,12 @@ function PropertiesList() {
 
                   <div className="property-card-top-right">
                     <span className="badge-visibility">
-                      {p.showOnLanding ? (
-                        <>
-                          <Eye size={13} aria-hidden="true" />
-                          <span>{c.visible}</span>
-                        </>
+                      {isVisibleOnSite ? (
+                        <Eye size={13} aria-hidden="true" />
                       ) : (
-                        <>
-                          <EyeOff size={13} aria-hidden="true" />
-                          <span>{c.hidden}</span>
-                        </>
+                        <EyeOff size={13} aria-hidden="true" />
                       )}
+                      <span>{visibilityText}</span>
                     </span>
                     <span className={`badge-status ${statusClass}`}>
                       <span className="badge-dot" />

@@ -2,7 +2,7 @@ import { usePreferences } from '../../preferences';
 
 const es = {
   title: 'Propiedades',
-  portfolioSubtitle: 'Portafolio Activo · Costa Ballena, Uvita',
+  portfolioSubtitle: 'Portafolio Activo · Uvita, CR',
   descriptionList: 'Casas y santuarios residenciales que Kuwago administra, comercializa o arrienda en la Costa Ballena.',
   new: '+ Nueva propiedad',
   integrateNew: 'Integrar nueva propiedad',
@@ -18,6 +18,7 @@ const es = {
   back: 'Volver a propiedades',
   breadcrumbProperties: 'Propiedades',
   editTitle: 'Editar',
+  editorTabsLabel: 'Pestañas del editor de propiedades',
   general: 'General',
   data: 'Datos',
   photos: 'Fotos',
@@ -46,6 +47,7 @@ const es = {
   managed: 'Administrada',
   rental: 'En alquiler',
   location: 'Ubicación',
+  locationPlaceholder: 'Ej. Uvita, Costa Rica',
   locationHelp: 'Zona pública visible para el huésped en el sitio.',
   capacitySection: 'Distribución y Aforo',
   maxGuests: 'Huéspedes',
@@ -83,8 +85,9 @@ const es = {
   saved: 'Guardado',
   yes: 'Sí',
   no: 'No',
-  visible: 'Visible',
-  hidden: 'Oculta',
+  visible: 'Visible en el sitio',
+  hidden: 'Oculta en el sitio',
+  accordingToDraft: 'según el borrador',
   state: 'Estado',
   currentStatus: 'Estado actual',
   lastPublished: 'Última publicación',
@@ -99,6 +102,7 @@ const es = {
   unpublishedChangesNotice: 'Hay modificaciones guardadas en borrador que aún no son visibles para los visitantes del portal público.',
   invalid: 'Revisa los campos: nombres ES/EN, slug, números y enlace Airbnb.',
   conflict: 'La propiedad cambió. Recarga antes de guardar de nuevo.',
+  filterGroupLabel: 'Filtro de propiedades',
   searchPlaceholder: 'Buscar por nombre, slug o ubicación…',
   clearSearch: 'Limpiar búsqueda',
   filterAll: 'Todas',
@@ -106,7 +110,6 @@ const es = {
   filterDraft: 'Borradores',
   filterArchived: 'Archivadas',
   noCover: 'Sin fotografía de portada',
-  noCoverHelp: 'Se requiere al menos 1 imagen para publicar',
   unassignedOrder: 'Sin orden',
   guestsShort: 'huést.',
   bedsShort: 'hab.',
@@ -115,11 +118,11 @@ const es = {
 
 const en: typeof es = {
   title: 'Properties',
-  portfolioSubtitle: 'Active Portfolio · Costa Ballena, Uvita',
+  portfolioSubtitle: 'Active Portfolio · Uvita, CR',
   descriptionList: 'Residential sanctuaries and estates managed, marketed, or rented by Kuwago in Costa Ballena.',
   new: '+ New property',
   integrateNew: 'Integrate new property',
-  integrateNewDesc: 'Register a new luxury villa for rental or exclusive management in Costa Ballena.',
+  integrateNewDesc: 'Register a new villa for rental or exclusive management in Costa Ballena.',
   startNew: 'Start onboarding',
   loading: 'Loading…',
   retry: 'Retry',
@@ -131,6 +134,7 @@ const en: typeof es = {
   back: 'Back to properties',
   breadcrumbProperties: 'Properties',
   editTitle: 'Edit',
+  editorTabsLabel: 'Property editor tabs',
   general: 'General',
   data: 'Details',
   photos: 'Photos',
@@ -159,6 +163,7 @@ const en: typeof es = {
   managed: 'Managed',
   rental: 'Rental',
   location: 'Location',
+  locationPlaceholder: 'E.g. Uvita, Costa Rica',
   locationHelp: 'Public location visible to guests on the website.',
   capacitySection: 'Layout & Capacity',
   maxGuests: 'Guests',
@@ -196,8 +201,9 @@ const en: typeof es = {
   saved: 'Saved',
   yes: 'Yes',
   no: 'No',
-  visible: 'Visible',
-  hidden: 'Hidden',
+  visible: 'Visible on site',
+  hidden: 'Hidden on site',
+  accordingToDraft: 'per draft',
   state: 'Status',
   currentStatus: 'Current status',
   lastPublished: 'Last published',
@@ -212,6 +218,7 @@ const en: typeof es = {
   unpublishedChangesNotice: 'There are modifications saved in draft that are not yet visible on the public website.',
   invalid: 'Check the fields: ES/EN names, slug, numbers and Airbnb link.',
   conflict: 'The property changed. Reload before saving again.',
+  filterGroupLabel: 'Property filter',
   searchPlaceholder: 'Search by name, slug, or location…',
   clearSearch: 'Clear search',
   filterAll: 'All',
@@ -219,13 +226,14 @@ const en: typeof es = {
   filterDraft: 'Drafts',
   filterArchived: 'Archived',
   noCover: 'No cover photograph',
-  noCoverHelp: 'At least 1 photo is required to publish',
   unassignedOrder: 'Unordered',
   guestsShort: 'guests',
-  bedsShort: 'beds',
+  bedsShort: 'bedrooms',
   bathsShort: 'baths',
 };
 
-export function usePropertyCopy() {
+export type PropertyCopy = typeof es;
+
+export function usePropertyCopy(): PropertyCopy {
   return usePreferences().language === 'es' ? es : en;
 }
